@@ -26,17 +26,17 @@ migrate-list:
 	npx knex migrate:list
 
 database-build:
-	docker build -t comingstorm_database services/database
+	docker build -t tiny_tiger_database services/database
 
 database-up:
 	docker run --rm -d -e POSTGRES_PASSWORD=1 \
 	-p 5432:5432 \
-	-v comingstorm_database:/var/lib/postgresql/data \
-	--name=comingstorm_database \
-	comingstorm_database
+	-v tiny_tiger_database:/var/lib/postgresql/data \
+	--name=tiny_tiger_database \
+	tiny_tiger_database
 
 database-down:
-	docker stop comingstorm_database
+	docker stop tiny_tiger_database
 
 database-seed:
 	npx knex seed:run
@@ -55,6 +55,3 @@ test-once:
 
 lint:
 	npx tsc
-
-css-styles:
-	npx sass --no-source-map public/css/src/bootstrap-grid.scss public/css/bootstrap-grid.css

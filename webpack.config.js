@@ -1,9 +1,9 @@
+import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
+import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import path from 'path';
 import webpack from 'webpack';
-import MiniCssExtractPlugin from 'mini-css-extract-plugin';
-import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
 import babelConfig from './babelconfig.js';
-import { dirname } from './lib/utils.js';
+import { dirname } from './lib/devUtils.js';
 
 const isProduction = process.env.NODE_ENV === 'production';
 const __dirname = dirname(import.meta.url);
@@ -16,7 +16,13 @@ const common = {
     filename: 'js/[name].js',
     path: path.resolve(__dirname, 'dist/public'),
   },
-  resolve: { extensions: ['.tsx', '.ts', '.js'] },
+  resolve: {
+    extensions: ['.tsx', '.ts', '.js'],
+    extensionAlias: {
+      '.js': ['.ts', '.tsx', '.js'],
+      '.jsx': ['.ts', '.tsx', '.js'],
+    },
+  },
   module: {
     rules: [
       {

@@ -1,12 +1,12 @@
-import path from 'path';
-import EventEmitter from 'events';
+import { listen, makeServer } from 'blunt-livereload';
 import { spawn } from 'child_process';
 import { deleteAsync } from 'del';
 import gulp from 'gulp';
+import babel from 'gulp-babel';
 import waitOn from 'wait-on';
-import { dirname } from './lib/devUtils.js';
-import { makeServer, listen } from 'blunt-livereload';
 import webpack from 'webpack';
+import babelConfig from './babelconfig.js';
+import { dirname } from './lib/devUtils.js';
 import webpackConfig from './webpack.config.js';
 
 const __dirname = dirname(import.meta.url);
@@ -16,15 +16,26 @@ const paths = {
   dest: 'dist',
   public: { src: ['public/**/*', '!public/cssSource/**'], dest: 'dist/public' },
   serverJs: {
-    src: ['*/**/*.{js,ts,tsx}', '!node_modules/**', '!dist/**', '!client/**'],
+    src: [
+      '*/**/*.{js,ts,tsx}',
+      'knexfile.js',
+      '!node_modules/**',
+      '!dist/**',
+      '!public/**',
+      '!client/**',
+      '!__tests__/**',
+      '!seeds/**',
+      '!migrations/**',
+      '!services/**',
+    ],
   },
-  client: { src: ['client/**/*.{js,ts,tsx,css}', '!client/**/*.d.ts'] },
+  client: { src: ['client/**/*.{js,ts,tsx}', '!client/**/*.d.ts'] },
 };
 
 let server;
 let isWaitonListening = false;
 const startServer = async () => {
-  server = spawn('node', ['dist/main/index.js'], { stdio: 'inherit' });
+  server = spawn('node', ['dist/bin/server.js'], { stdio: 'inherit' });
 
   if (!isWaitonListening) {
     isWaitonListening = true;
@@ -56,8 +67,11 @@ const copyPublicDev = () =>
     .src(paths.public.src, { since: gulp.lastRun(copyPublicDev) })
     .pipe(gulp.symlink(paths.public.dest, { overwrite: false }));
 
-const copyServerJs = () =>
-  gulp.src(paths.serverJs.src, { since: gulp.lastRun(copyServerJs) }).pipe(gulp.dest(paths.dest));
+const transpileServerJs = () =>
+  gulp
+    .src(paths.serverJs.src, { base: '.', since: gulp.lastRun(transpileServerJs) })
+    .pipe(babel(babelConfig.server))
+    .pipe(gulp.dest(paths.dest));
 
 const compiler = webpack(webpackConfig);
 const startWebpack = done => {
@@ -75,16 +89,16 @@ const trackChangesInDist = () => {
 };
 
 const watch = async () => {
-  gulp.watch(paths.serverJs.src, series(copyServerJs, restartServer, reloadBrowser));
+  gulp.watch(paths.serverJs.src, series(transpileServerJs, restartServer, reloadBrowser));
   trackChangesInDist();
 };
 
 export const dev = series(
   clean,
-  parallel(copyPublicDev, copyServerJs, startDevServer),
+  parallel(copyPublicDev, transpileServerJs, startDevServer),
   startWebpack,
   startServer,
   watch
 );
 
-export const build = series(clean, copyPublicDev, copyServerJs, bundleClient);
+export const build = series(clean, copyPublicDev, transpileServerJs, bundleClient);

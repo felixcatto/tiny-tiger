@@ -12,4 +12,7 @@ export default {
       '@babel/preset-typescript',
     ],
   },
+  server: {
+    presets: ['@babel/preset-typescript'],
+  },
 };

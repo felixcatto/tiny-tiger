@@ -1,11 +1,10 @@
 import React from 'react';
-import s from './styles.module.css';
-import cn from 'classnames';
 
-const App = () => {
+const App = props => {
+  const { Component } = props;
   return (
-    <div className={s.white}>
-      <div className="container">Hello world!</div>
+    <div>
+      <Component />
     </div>
   );
 };
