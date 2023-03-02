@@ -1,0 +1,6 @@
+.white {
+  color: white;
+  &_nested {
+    background: violet;
+  }
+}
