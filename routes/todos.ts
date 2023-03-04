@@ -7,7 +7,7 @@ export default async (app: FastifyInstance) => {
   const { User, Todo } = app.objection;
 
   app.get('/todos', async (req, res) => {
-    const todos = await Todo.query();
+    const todos = await Todo.query().withGraphFetched('author');
     res.code(200).send(todos);
   });
 

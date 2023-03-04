@@ -3,7 +3,7 @@ import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import path from 'path';
 import webpack from 'webpack';
 import babelConfig from './babelconfig.js';
-import { dirname } from './lib/devUtils.js';
+import { dirname, generateScopedName } from './lib/devUtils.js';
 
 const isProduction = process.env.NODE_ENV === 'production';
 const __dirname = dirname(import.meta.url);
@@ -40,7 +40,14 @@ const common = {
           { loader: 'css-modules-typescript-loader' },
           {
             loader: 'css-loader',
-            options: { url: false, modules: { auto: true } },
+            options: {
+              url: false,
+              modules: {
+                auto: true,
+                getLocalIdent: ({ resourcePath }, _, localName) =>
+                  generateScopedName(localName, resourcePath),
+              },
+            },
           },
           { loader: 'postcss-loader' },
         ],

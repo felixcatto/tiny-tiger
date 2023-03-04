@@ -23,7 +23,8 @@
 }
 
 html,
-body {
+body,
+#root {
   height: 100%;
 }
 
@@ -114,7 +115,11 @@ h3 {
   }
 }
 
-a {
+a,
+.link {
+  display: inline-block;
+  cursor: pointer;
+  user-select: none;
   color: var(--secondary);
   &:hover {
     text-decoration: underline;
@@ -125,10 +130,6 @@ input.form-control,
 input.form-control:focus,
 textarea.form-control,
 textarea.form-control:focus,
-select.form-control,
-select.form-control:focus {
-  color: #222;
-}
 .form-control {
   display: block;
   width: 100%;

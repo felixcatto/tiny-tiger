@@ -1,10 +1,9 @@
 import { AxiosInstance, AxiosRequestConfig } from 'axios';
-import { ModelObject } from 'objection';
-import * as y from 'yup';
-import { Todo, todoSchema, User, userLoginSchema, userSchema } from '../models/index.js';
-import { asyncStates, getApiUrl, roles } from './utils.js';
 import { Knex } from 'knex';
+import * as y from 'yup';
 import * as models from '../models/index.js';
+import { Todo, todoSchema, User, userLoginSchema } from '../models/index.js';
+import { asyncStates, getApiUrl, roles } from './utils.js';
 
 export type IMakeEnum = <T extends ReadonlyArray<string>>(
   ...args: T
@@ -20,10 +19,6 @@ export type IRole = keyof typeof roles;
 export type IAsyncState = keyof typeof asyncStates;
 
 export type IMode = 'test' | 'development' | 'production';
-
-export interface IEmptyObject {
-  [key: string]: undefined;
-}
 
 export type IUser = {
   id: number;
@@ -57,7 +52,6 @@ export type ISession = {
   currentUser: IUser;
   isAdmin: boolean;
   isSignedIn: boolean;
-  isBelongsToUser: (resourceAuthorId: string) => boolean;
   status: IAsyncState;
   errors: any;
 };
@@ -66,6 +60,17 @@ type IModels = {
   [Property in keyof typeof models]: (typeof models)[Property];
 };
 export type IObjection = { knex: Knex<any, any> } & IModels;
+
+export interface IAxiosInstance extends AxiosInstance {
+  request<T = any, R = T, D = any>(config: AxiosRequestConfig<D>): Promise<R>;
+  get<T = any, R = T, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
+  delete<T = any, R = T, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
+  head<T = any, R = T, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
+  options<T = any, R = T, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
+  post<T = any, R = T, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
+  put<T = any, R = T, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
+  patch<T = any, R = T, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
+}
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -81,7 +86,6 @@ declare module 'fastify' {
 }
 
 export type IContext = {
-  getApiUrl: IGetApiUrl;
   axios: IAxiosInstance;
   // actions: IActions;
   // $session: ISessionStore;
@@ -91,17 +95,6 @@ export type IApiErrors = {
   apiErrors: any;
   setApiErrors: any;
 };
-
-export interface IAxiosInstance extends AxiosInstance {
-  request<T = any, R = T, D = any>(config: AxiosRequestConfig<D>): Promise<R>;
-  get<T = any, R = T, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
-  delete<T = any, R = T, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
-  head<T = any, R = T, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
-  options<T = any, R = T, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
-  post<T = any, R = T, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
-  put<T = any, R = T, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
-  patch<T = any, R = T, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
-}
 
 export type IPayloadTypes = 'query' | 'body';
 export type IValidateFn = (schema, payloadType?: IPayloadTypes) => (req, res) => any;

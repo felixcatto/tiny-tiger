@@ -89,6 +89,7 @@ const trackChangesInDist = () => {
 };
 
 const watch = async () => {
+  gulp.watch(paths.public.src, series(copyPublicDev, restartServer, reloadBrowser));
   gulp.watch(paths.serverJs.src, series(transpileServerJs, restartServer, reloadBrowser));
   trackChangesInDist();
 };
