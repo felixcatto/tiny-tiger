@@ -5,28 +5,25 @@ import Layout from '../common/layout.js';
 import {
   ErrorMessage,
   Field,
-  getApiUrl,
   getUrl,
+  persistUser,
   SubmitBtn,
   useContext,
   WithApiErrors,
 } from '../lib/utils.js';
 
 const Login = WithApiErrors(props => {
-  const { axios } = useContext();
-  // const { actions } = useContext();
+  const { actions } = useContext();
   const navigate = useNavigate();
   const { setApiErrors } = props;
 
   const onSubmit = async values => {
     try {
-      console.log(values);
-      await axios.post(getApiUrl('session'), values);
-      // await actions.signIn(values);
-      // router.push(getUrl('home'));
-      // navigate(getUrl('home'));
+      const user = await actions.signIn(values);
+      persistUser(user);
+      navigate(getUrl('home'));
     } catch (e: any) {
-      setApiErrors(e.response.data.errors);
+      setApiErrors(e.errors);
     }
   };
 
@@ -36,7 +33,6 @@ const Login = WithApiErrors(props => {
         <div className="col-4">
           <Formik initialValues={{ email: '', password: '' }} onSubmit={onSubmit}>
             <Form>
-              <h3 className="mb-4">Add new todo</h3>
               <div className="mb-4">
                 <label className="text-sm">Email</label>
                 <Field className="form-control" name="email" />

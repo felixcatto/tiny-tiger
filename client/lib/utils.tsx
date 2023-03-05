@@ -1,12 +1,12 @@
 import cn from 'classnames';
+import { useFormikContext } from 'formik';
+import produce from 'immer';
+import { isFunction, omit } from 'lodash-es';
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { roles } from '../../lib/sharedUtils.js';
-import { IApiErrors, IContext } from '../../lib/types.js';
+import { IApiErrors, IContext, IUser } from '../../lib/types.js';
 import Context from './context.js';
-import { useFormikContext } from 'formik';
-import { isFunction, omit } from 'lodash-es';
-import produce from 'immer';
 
 export * from '../../lib/sharedUtils.js';
 export { Context };
@@ -85,4 +85,25 @@ export const SubmitBtn = ({ children, ...props }) => {
       {children}
     </button>
   );
+};
+
+export const localStorageUserKey = 'currentUser';
+export const persistUser = (user: IUser) => {
+  localStorage.setItem(localStorageUserKey, JSON.stringify(user));
+};
+export const removePersistedUser = () => {
+  localStorage.removeItem(localStorageUserKey);
+};
+export const restoreUser = (): IUser | null => {
+  const serializedUser = localStorage.getItem(localStorageUserKey);
+  return serializedUser ? JSON.parse(serializedUser) : null;
+};
+
+export const thunk = asyncFn => async (arg, thunkAPI) => {
+  try {
+    const response = await asyncFn(arg, thunkAPI);
+    return response;
+  } catch (e) {
+    return thunkAPI.rejectWithValue(e);
+  }
 };

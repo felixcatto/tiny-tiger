@@ -1,9 +1,10 @@
 import { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { Knex } from 'knex';
 import * as y from 'yup';
+import { reduxActions, makeThunks } from '../client/common/reduxActions.js';
 import * as models from '../models/index.js';
 import { Todo, todoSchema, User, userLoginSchema } from '../models/index.js';
-import { asyncStates, getApiUrl, roles } from './utils.js';
+import { asyncStates, roles } from './utils.js';
 
 export type IMakeEnum = <T extends ReadonlyArray<string>>(
   ...args: T
@@ -12,8 +13,6 @@ export type IMakeEnum = <T extends ReadonlyArray<string>>(
 export type IMakeUrlFor = <T extends object>(
   rawRoutes: T
 ) => (name: keyof T, args?, opts?) => string;
-
-export type IGetApiUrl = typeof getApiUrl;
 
 export type IRole = keyof typeof roles;
 export type IAsyncState = keyof typeof asyncStates;
@@ -30,7 +29,6 @@ export type IUser = {
   todos?: ITodo[];
 };
 export type IUserClass = typeof User;
-export type IUserSchema = y.InferType<typeof userSchema>;
 export type IUserLoginSchema = y.InferType<typeof userLoginSchema>;
 
 export type IUserLoginCreds = {
@@ -47,14 +45,6 @@ export type ITodo = {
 };
 export type ITodoClass = typeof Todo;
 export type ITodoSchema = y.InferType<typeof todoSchema>;
-
-export type ISession = {
-  currentUser: IUser;
-  isAdmin: boolean;
-  isSignedIn: boolean;
-  status: IAsyncState;
-  errors: any;
-};
 
 type IModels = {
   [Property in keyof typeof models]: (typeof models)[Property];
@@ -85,12 +75,6 @@ declare module 'fastify' {
   }
 }
 
-export type IContext = {
-  axios: IAxiosInstance;
-  // actions: IActions;
-  // $session: ISessionStore;
-};
-
 export type IApiErrors = {
   apiErrors: any;
   setApiErrors: any;
@@ -98,3 +82,23 @@ export type IApiErrors = {
 
 export type IPayloadTypes = 'query' | 'body';
 export type IValidateFn = (schema, payloadType?: IPayloadTypes) => (req, res) => any;
+
+type IAnyFn = (...args: any) => any;
+type IThunkArg<T extends IAnyFn> = Parameters<T>;
+type IThunkReturn<T extends IAnyFn> = ReturnType<ReturnType<ReturnType<T>>['unwrap']>;
+export type IReduxActions = typeof reduxActions;
+export type IReduxThunks = ReturnType<typeof makeThunks>;
+export type IBindedThunks = {
+  [K in keyof IReduxThunks]: (...args: IThunkArg<IReduxThunks[K]>) => IThunkReturn<IReduxThunks[K]>;
+};
+export type IActions = IReduxActions & IReduxThunks;
+export type IBindedActions = IReduxActions & IBindedThunks;
+
+export type IReduxState = {
+  currentUser: IUser;
+};
+
+export type IContext = {
+  axios: IAxiosInstance;
+  actions: IBindedActions;
+};

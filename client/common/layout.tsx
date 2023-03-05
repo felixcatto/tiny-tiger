@@ -1,15 +1,25 @@
 import cn from 'classnames';
 import React from 'react';
+import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { getUrl, guestUser, NavLink, userRolesToIcons } from '../lib/utils.js';
+import {
+  getUrl,
+  NavLink,
+  removePersistedUser,
+  useContext,
+  userRolesToIcons,
+} from '../lib/utils.js';
 import s from './layout.module.css';
+import { selectSession } from './reduxReducers.js';
 
 const Layout = ({ children }: any) => {
-  // const { $session, actions } = useContext();
-  // const { currentUser, isSignedIn } = useStore($session);
-  const actions = { signOut: () => {} };
-  const currentUser = guestUser;
-  const isSignedIn = false;
+  const { actions } = useContext();
+  const { currentUser, isSignedIn } = useSelector(selectSession);
+  const onSignOut = async () => {
+    await actions.signOut();
+    removePersistedUser();
+  };
+
   const userIconClass = role => cn(s.userRoleIcon, 'mr-1', userRolesToIcons[role]);
 
   return (
@@ -31,7 +41,7 @@ const Layout = ({ children }: any) => {
               <i
                 className={cn('fa fa-sign-out-alt', s.signIcon)}
                 title="Sign out"
-                onClick={() => actions.signOut()}
+                onClick={onSignOut}
               ></i>
             </div>
           ) : (

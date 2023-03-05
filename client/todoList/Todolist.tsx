@@ -10,7 +10,7 @@ import {
   useContext,
   useImmerState,
 } from '../lib/utils.js';
-// import s from './styles.module.css';
+import s from './styles.module.css';
 import useSWR from 'swr';
 import { ITodo } from '../../lib/types.js';
 import cn from 'classnames';
@@ -62,6 +62,7 @@ const TodoList = WithApiErrors(() => {
     });
   const changeStatusIconTitle = todo =>
     todo.is_completed ? 'Mark as Incomplete' : 'Mark as Completed';
+  const todoRowClass = todo => cn({ [s.todoRow_completed]: todo.is_completed });
 
   return (
     <Layout>
@@ -112,7 +113,7 @@ const TodoList = WithApiErrors(() => {
             </thead>
             <tbody>
               {todos?.map(todo => (
-                <tr key={todo.id}>
+                <tr key={todo.id} className={todoRowClass(todo)}>
                   <td>{todo.author?.name}</td>
                   <td>{todo.author?.email}</td>
                   <td>{todo.text}</td>

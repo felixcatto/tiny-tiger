@@ -10,17 +10,6 @@ export const asyncStates = makeEnum('idle', 'pending', 'resolved', 'rejected');
 
 export const isSignedIn = currentUser => currentUser.role !== roles.guest;
 export const isAdmin = currentUser => currentUser.role === roles.admin;
-export const isBelongsToUser = currentUser => resourceAuthorId =>
-  currentUser.id === resourceAuthorId || currentUser.role === roles.admin;
-
-export const makeSessionInfo: any = currentUser => ({
-  currentUser,
-  isSignedIn: isSignedIn(currentUser),
-  isAdmin: isAdmin(currentUser),
-  isBelongsToUser: isBelongsToUser(currentUser),
-});
-
-export const unwrap = value => JSON.parse(JSON.stringify(value));
 
 export const guestUser = {
   id: -111,
