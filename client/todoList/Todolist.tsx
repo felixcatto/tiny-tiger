@@ -1,19 +1,19 @@
+import cn from 'classnames';
 import { Form, Formik } from 'formik';
 import React from 'react';
+import useSWR from 'swr';
+import { IGetTodosResponse, ITodo } from '../../lib/types.js';
 import Layout from '../common/layout.js';
 import {
-  Field,
   ErrorMessage,
-  SubmitBtn,
-  WithApiErrors,
+  Field,
   getApiUrl,
+  SubmitBtn,
   useContext,
   useImmerState,
+  WithApiErrors,
 } from '../lib/utils.js';
 import s from './styles.module.css';
-import useSWR from 'swr';
-import { ITodo } from '../../lib/types.js';
-import cn from 'classnames';
 
 type IState = {
   editingTodo: ITodo | null;
@@ -22,7 +22,8 @@ type IState = {
 const TodoList = WithApiErrors(() => {
   const onSubmit = () => {};
   const { axios } = useContext();
-  const { data: todos, mutate } = useSWR<ITodo[]>(getApiUrl('todos'));
+  const { data, mutate } = useSWR<IGetTodosResponse>(getApiUrl('todos'));
+  const todos = data?.rows;
   const [state, setState] = useImmerState<IState>({
     editingTodo: null,
   });
@@ -67,12 +68,18 @@ const TodoList = WithApiErrors(() => {
   return (
     <Layout>
       <div className="row">
-        <div className="col-4">
+        <div className="col-3">
           <Formik key={editingTodo?.id ?? '?'} initialValues={initialValues} onSubmit={onSubmit}>
             <Form>
               <div className="flex mb-4 items-center">
-                <h3 className="mb-0">Add new todo</h3>
-                {editingTodo && <i className="fa fa-pen ml-4 text-xl text-secondary"></i>}
+                {editingTodo ? (
+                  <>
+                    <h3 className="mb-0">Edit todo</h3>
+                    <i className="fa fa-pen ml-4 text-xl text-secondary"></i>
+                  </>
+                ) : (
+                  <h3 className="mb-0">Add new todo</h3>
+                )}
               </div>
               <div className="mb-4">
                 <label className="text-sm">Name</label>
@@ -91,15 +98,15 @@ const TodoList = WithApiErrors(() => {
               </div>
               {editingTodo && (
                 <div className="link mr-3" onClick={cancelEdit}>
-                  Cancel edit
+                  Cancel
                 </div>
               )}
-              <SubmitBtn className="btn">Save</SubmitBtn>
+              <SubmitBtn className="btn">{editingTodo ? 'Edit' : 'Add'}</SubmitBtn>
             </Form>
           </Formik>
         </div>
 
-        <div className="col-8">
+        <div className="col-9">
           <h3 className="mb-4">List of todos</h3>
           <table>
             <thead>
@@ -107,8 +114,8 @@ const TodoList = WithApiErrors(() => {
                 <th>Name</th>
                 <th>Email</th>
                 <th>Text</th>
-                <th className="text-center">Status</th>
-                <th className=""></th>
+                <th>Status</th>
+                <th className="w-32"></th>
               </tr>
             </thead>
             <tbody>
@@ -117,11 +124,14 @@ const TodoList = WithApiErrors(() => {
                   <td>{todo.author?.name}</td>
                   <td>{todo.author?.email}</td>
                   <td>{todo.text}</td>
-                  <td className="text-center">
+                  <td>
                     <i
                       className={todoClass(todo)}
                       title={todo.is_completed ? 'Completed' : 'Incomplete'}
                     ></i>
+                    {todo.is_edited_by_admin && (
+                      <i className="fa fa-pen ml-2" title="Edited by admin"></i>
+                    )}
                   </td>
                   <td className="text-right">
                     <i

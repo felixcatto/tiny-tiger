@@ -3,8 +3,8 @@ import { Knex } from 'knex';
 import * as y from 'yup';
 import { reduxActions, makeThunks } from '../client/common/reduxActions.js';
 import * as models from '../models/index.js';
-import { Todo, todoSchema, User, userLoginSchema } from '../models/index.js';
-import { asyncStates, roles } from './utils.js';
+import { Todo, todoSchema, todoSortSchema, User, userLoginSchema } from '../models/index.js';
+import { asyncStates, paginationSchema, roles } from './utils.js';
 
 export type IMakeEnum = <T extends ReadonlyArray<string>>(
   ...args: T
@@ -18,6 +18,8 @@ export type IRole = keyof typeof roles;
 export type IAsyncState = keyof typeof asyncStates;
 
 export type IMode = 'test' | 'development' | 'production';
+
+export type IPaginationSchema = y.InferType<typeof paginationSchema>;
 
 export type IUser = {
   id: number;
@@ -41,10 +43,12 @@ export type ITodo = {
   text: string;
   author_id: any;
   is_completed: boolean;
+  is_edited_by_admin: boolean;
   author?: IUser;
 };
 export type ITodoClass = typeof Todo;
 export type ITodoSchema = y.InferType<typeof todoSchema>;
+export type ITodoSortSchema = y.InferType<typeof todoSortSchema>;
 
 type IModels = {
   [Property in keyof typeof models]: (typeof models)[Property];
@@ -101,4 +105,9 @@ export type IReduxState = {
 export type IContext = {
   axios: IAxiosInstance;
   actions: IBindedActions;
+};
+
+export type IGetTodosResponse = {
+  rows: ITodo[];
+  totalRows: number;
 };

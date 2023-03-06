@@ -13,4 +13,18 @@ export default [
     email: 'guest@unknown.ru',
     password: '1',
   },
+  {
+    id: -3,
+    name: 'Ryan Florence',
+    role: 'guest',
+    email: 'ryanF@gmail.com',
+    password: '1',
+  },
+  {
+    id: -4,
+    name: 'Sarah Dayan',
+    role: 'guest',
+    email: 'sarahD@gmail.com',
+    password: '1',
+  },
 ];

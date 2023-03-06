@@ -1,14 +1,15 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
 import cookie from 'cookie';
 import crypto from 'crypto';
 import fp from 'fastify-plugin';
-import knexConfig from '../knexfile.js';
-import { Model } from 'objection';
-import { isObject, capitalize, isString, isNull } from 'lodash-es';
-import { guestUser, isAdmin, isSignedIn } from './sharedUtils.js';
-import { IObjection, IUserClass, IValidateFn } from './types.js';
 import knexConnect from 'knex';
+import { capitalize, isString } from 'lodash-es';
+import { Model } from 'objection';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import * as y from 'yup';
+import knexConfig from '../knexfile.js';
+import { guestUser, isAdmin, isSignedIn } from './sharedUtils.js';
+import { IValidateFn } from './types.js';
 
 export * from './sharedUtils.js';
 
@@ -144,4 +145,11 @@ export const currentUserPlugin = fp(async app => {
       }
     }
   });
+});
+
+export const sortOrder = ['asc', 'desc'] as const;
+
+export const paginationSchema = y.object({
+  size: y.number(),
+  page: y.number(),
 });
