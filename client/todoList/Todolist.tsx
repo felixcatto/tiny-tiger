@@ -4,6 +4,7 @@ import React from 'react';
 import useSWR from 'swr';
 import { IGetTodosResponse, ITodo } from '../../lib/types.js';
 import Layout from '../common/layout.js';
+import { getTotalPages, Pagination } from '../components/Pagination.js';
 import {
   ErrorMessage,
   Field,
@@ -17,6 +18,7 @@ import s from './styles.module.css';
 
 type IState = {
   editingTodo: ITodo | null;
+  page: number;
 };
 
 const TodoList = WithApiErrors(() => {
@@ -24,14 +26,17 @@ const TodoList = WithApiErrors(() => {
   const { axios } = useContext();
   const { data, mutate } = useSWR<IGetTodosResponse>(getApiUrl('todos'));
   const todos = data?.rows;
+
   const [state, setState] = useImmerState<IState>({
     editingTodo: null,
+    page: 0,
   });
-  const { editingTodo } = state;
+  const { editingTodo, page } = state;
+  const size = 3;
   const initialValues = editingTodo
     ? { name: editingTodo.author?.name, email: editingTodo.author?.email, text: editingTodo.text }
     : { name: '', email: '', text: '' };
-  console.log(todos);
+  // console.log(todos);
 
   const editTodo = todo => async () => {
     setState({ editingTodo: todo });
@@ -50,6 +55,8 @@ const TodoList = WithApiErrors(() => {
     await axios.delete(getApiUrl('todo', { id }));
     mutate();
   };
+
+  const onPageChange = newPage => setState({ page: newPage - 1 });
 
   const todoClass = todo =>
     cn('fa', {
@@ -101,13 +108,14 @@ const TodoList = WithApiErrors(() => {
                   Cancel
                 </div>
               )}
-              <SubmitBtn className="btn">{editingTodo ? 'Edit' : 'Add'}</SubmitBtn>
+              <SubmitBtn className="btn btn_primary">{editingTodo ? 'Edit' : 'Add'}</SubmitBtn>
             </Form>
           </Formik>
         </div>
 
         <div className="col-9">
           <h3 className="mb-4">List of todos</h3>
+
           <table>
             <thead>
               <tr>
@@ -154,6 +162,15 @@ const TodoList = WithApiErrors(() => {
               ))}
             </tbody>
           </table>
+
+          {data?.rows && (
+            <Pagination
+              className="mt-3"
+              page={page + 1}
+              totalPages={getTotalPages(data.rows.length, size)}
+              onPageChange={onPageChange}
+            />
+          )}
         </div>
       </div>
     </Layout>

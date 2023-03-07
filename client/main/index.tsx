@@ -1,7 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import '../../public/cssSource/index.css';
+import '../css/index.css';
 import { routes } from '../lib/utils.jsx';
 import Login from '../session/Login.jsx';
 import TodoList from '../todoList/Todolist.jsx';

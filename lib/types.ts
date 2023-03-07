@@ -111,3 +111,6 @@ export type IGetTodosResponse = {
   rows: ITodo[];
   totalRows: number;
 };
+
+export type IOnSubmit = (values) => Promise<any>;
+export type IUseSubmit = (onSubmit: IOnSubmit) => IOnSubmit;

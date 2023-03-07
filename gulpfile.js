@@ -14,7 +14,7 @@ const { series, parallel } = gulp;
 
 const paths = {
   dest: 'dist',
-  public: { src: ['public/**/*', '!public/cssSource/**'], dest: 'dist/public' },
+  public: { src: 'public/**/*', dest: 'dist/public' },
   serverJs: {
     src: [
       '*/**/*.{js,ts,tsx}',

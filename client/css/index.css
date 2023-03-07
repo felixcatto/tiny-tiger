@@ -18,7 +18,7 @@
   --primary-rgba-25: rgba(81, 45, 168, 0.25);
   --secondary: #1976d2;
   --secondary-light: #e3f2fd;
-  --secondary-dark: #0d47a1;
+  --secondary-dark: #1156b0; /* #0d47a1 #1565c0 */
   --secondary-rgba-25: rgba(25, 118, 210, 0.25);
 }
 
@@ -76,42 +76,82 @@ h3 {
   transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
     border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 
-  color: #fff;
-  background-color: var(--primary);
-  border-color: var(--primary);
-  &:hover {
-    text-decoration: none;
-    background-color: var(--primary-dark);
-    border-color: var(--primary-dark);
+  &_sm {
+    padding: 4px 8px;
+    font-size: 0.875rem;
+    border-radius: 4px;
   }
-  &:active,
-  &:focus {
-    background-color: var(--primary-dark);
-    border-color: var(--primary-dark);
-    box-shadow: 0 0 0 3.2px var(--primary-rgba-50);
+  &_textSm {
+    font-size: 0.875rem;
+  }
+
+  &_primary {
+    color: #fff;
+    background-color: var(--primary);
+    border-color: var(--primary);
+    &:hover {
+      text-decoration: none;
+      background-color: var(--primary-dark);
+      border-color: var(--primary-dark);
+    }
+    &:active,
+    &:focus {
+      background-color: var(--primary-dark);
+      border-color: var(--primary-dark);
+      box-shadow: 0 0 0 3.2px var(--primary-rgba-50);
+    }
   }
 
   &_outline {
     color: var(--primary);
     background-color: #fff;
     border-color: var(--primary);
-    &:hover {
-      color: #fff;
-      background-color: var(--primary);
-      border-color: var(--primary);
-    }
+    &:hover,
     &:active,
     &:focus {
       color: #fff;
       background-color: var(--primary);
-      border-color: var(--primary);
+    }
+    &:active,
+    &:focus {
       box-shadow: 0 0 0 3.2px var(--primary-rgba-50);
     }
   }
-  &_sm {
-    padding: 4px 8px;
-    font-size: 0.875rem;
-    border-radius: 4px;
+
+  &_light {
+    color: #000;
+    background-color: white;
+    border-color: #ced4da;
+    &:hover {
+      background-color: #f2f2f2;
+      border-color: #ced4da;
+    }
+    &:active,
+    &:focus {
+      background-color: white;
+      border-color: #ced4da;
+    }
+  }
+  &_lightSm {
+    font-size: 0.9rem;
+  }
+  &_lightActive {
+    color: white;
+    background-color: var(--secondary);
+    border-color: var(--secondary);
+    &:hover,
+    &:active,
+    &:focus {
+      background-color: var(--secondary);
+      border-color: var(--secondary);
+    }
+  }
+
+  &_lightDisabled {
+    background-color: white;
+    border-color: #ced4da;
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 }
 
@@ -177,6 +217,9 @@ textarea.form-control:focus,
   }
   &_secondary {
     color: var(--secondary);
+  }
+  &_noColor {
+    color: inherit;
   }
 }
 

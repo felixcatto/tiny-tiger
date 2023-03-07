@@ -9,23 +9,18 @@ import {
   persistUser,
   SubmitBtn,
   useContext,
+  useSubmit,
   WithApiErrors,
 } from '../lib/utils.js';
 
-const Login = WithApiErrors(props => {
+const Login = () => {
   const { actions } = useContext();
   const navigate = useNavigate();
-  const { setApiErrors } = props;
-
-  const onSubmit = async values => {
-    try {
-      const user = await actions.signIn(values);
-      persistUser(user);
-      navigate(getUrl('home'));
-    } catch (e: any) {
-      setApiErrors(e.errors);
-    }
-  };
+  const onSubmit = useSubmit(async values => {
+    const user = await actions.signIn(values);
+    persistUser(user);
+    navigate(getUrl('home'));
+  });
 
   return (
     <Layout>
@@ -48,7 +43,7 @@ const Login = WithApiErrors(props => {
                 <Link to={getUrl('home')} className="mr-3">
                   Cancel
                 </Link>
-                <SubmitBtn className="btn">Sign in</SubmitBtn>
+                <SubmitBtn className="btn btn_primary">Sign in</SubmitBtn>
               </div>
             </Form>
           </Formik>
@@ -56,6 +51,6 @@ const Login = WithApiErrors(props => {
       </div>
     </Layout>
   );
-});
+};
 
-export default Login;
+export default WithApiErrors(Login);

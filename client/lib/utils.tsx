@@ -5,7 +5,7 @@ import { isFunction, omit } from 'lodash-es';
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { roles } from '../../lib/sharedUtils.js';
-import { IApiErrors, IContext, IUser } from '../../lib/types.js';
+import { IApiErrors, IContext, IUser, IUseSubmit } from '../../lib/types.js';
 import Context from './context.js';
 
 export * from '../../lib/sharedUtils.js';
@@ -56,6 +56,20 @@ export const WithApiErrors = (Component: React.ComponentType<IApiErrors>) => pro
       <Component {...props} apiErrors={apiErrors} setApiErrors={setApiErrors} />
     </FormContext.Provider>
   );
+};
+
+export const useSubmit: IUseSubmit = onSubmit => {
+  const { setApiErrors } = React.useContext(FormContext);
+
+  const wrappedSubmit = async values => {
+    try {
+      await onSubmit(values);
+    } catch (e: any) {
+      setApiErrors(e.errors);
+    }
+  };
+
+  return wrappedSubmit;
 };
 
 export const ErrorMessage = ({ name }) => {
