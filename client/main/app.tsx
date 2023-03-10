@@ -53,7 +53,7 @@ const App = (props: IAppProps) => {
 
     const reduxStore = configureStore({
       reducer: {
-        currentUser: initialUserState
+        [makeCurUserReducer.key]: initialUserState
           ? makeCurUserReducer(actions, initialUserState)
           : makeCurUserReducer(actions),
       },

@@ -2,6 +2,7 @@ import { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { Knex } from 'knex';
 import * as y from 'yup';
 import { reduxActions, makeThunks } from '../client/common/reduxActions.js';
+import { makeCurUserReducer } from '../client/common/reduxReducers.js';
 import * as models from '../models/index.js';
 import { Todo, todoSchema, todoSortSchema, User, userLoginSchema } from '../models/index.js';
 import { asyncStates, paginationSchema, roles } from './utils.js';
@@ -88,6 +89,14 @@ export type IPayloadTypes = 'query' | 'body';
 export type IValidateFn = (schema, payloadType?: IPayloadTypes) => (req, res) => any;
 
 type IAnyFn = (...args: any) => any;
+type IReducerKey = { key: any };
+type IGenericReducer = IAnyFn & IReducerKey;
+
+type IReduxRecord<T extends IGenericReducer> = Record<
+  T['key'],
+  ReturnType<ReturnType<T>['getInitialState']>
+>;
+
 type IThunkArg<T extends IAnyFn> = Parameters<T>;
 type IThunkReturn<T extends IAnyFn> = ReturnType<ReturnType<ReturnType<T>>['unwrap']>;
 export type IReduxActions = typeof reduxActions;
@@ -98,9 +107,7 @@ export type IBindedThunks = {
 export type IActions = IReduxActions & IReduxThunks;
 export type IBindedActions = IReduxActions & IBindedThunks;
 
-export type IReduxState = {
-  currentUser: IUser;
-};
+export type IReduxState = IReduxRecord<typeof makeCurUserReducer>;
 
 export type IContext = {
   axios: IAxiosInstance;

@@ -9,6 +9,8 @@ export const makeCurUserReducer = (actions: IActions, initialState: IUser = gues
       .addCase(actions.signOut.fulfilled, (state, action) => action.payload);
   });
 
+makeCurUserReducer.key = 'currentUser' as const;
+
 export const selectSession = createSelector(
   (state: IReduxState) => state.currentUser,
   currentUser => ({
