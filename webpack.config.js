@@ -71,7 +71,7 @@ if (isProduction) {
     mode: 'production',
   };
 } else {
-  common.entry.index = ['blunt-livereload/dist/client', common.entry.index];
+  common.entry.index = ['blunt-livereload/dist/frontClient', common.entry.index];
   config = {
     ...common,
     mode: 'development',

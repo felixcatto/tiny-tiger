@@ -1,4 +1,4 @@
-import { listen, makeServer } from 'blunt-livereload';
+import { listen, makeBackClient, makeLrServer } from 'blunt-livereload';
 import { spawn } from 'child_process';
 import { deleteAsync } from 'del';
 import gulp from 'gulp';
@@ -57,9 +57,12 @@ process.on('exit', () => server && server.kill());
 
 const clean = async () => deleteAsync(['dist']);
 
-const devServer = makeServer();
-const startDevServer = async () => listen(devServer);
-const reloadBrowser = async () => devServer.reloadBrowser();
+const startLrServer = async () => {
+  const lrServer = makeLrServer();
+  return listen(lrServer);
+};
+const backClient = makeBackClient();
+const reloadBrowser = async () => backClient.notifyWindowReload();
 
 const copyPublic = () => gulp.src(paths.public.src).pipe(gulp.dest(paths.public.dest));
 const copyPublicDev = () =>
@@ -75,8 +78,10 @@ const transpileServerJs = () =>
 
 const compiler = webpack(webpackConfig);
 const startWebpack = done => {
-  compiler.hooks.done.tap('done', async () => reloadBrowser());
-  compiler.watch({}, done);
+  compiler.watch({}, () => {
+    compiler.hooks.done.tap('done', async () => reloadBrowser());
+    done();
+  });
 };
 const bundleClient = done => compiler.run(done);
 
@@ -96,7 +101,7 @@ const watch = async () => {
 
 export const dev = series(
   clean,
-  parallel(copyPublicDev, transpileServerJs, startDevServer),
+  parallel(copyPublicDev, transpileServerJs, startLrServer),
   startWebpack,
   startServer,
   watch
