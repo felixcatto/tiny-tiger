@@ -30,12 +30,12 @@ const Login = () => {
             <Form>
               <div className="mb-4">
                 <label className="text-sm">Email</label>
-                <Field className="form-control" name="email" />
+                <Field className="input" name="email" />
                 <ErrorMessage name="email" />
               </div>
               <div className="mb-4">
                 <label className="text-sm">Password</label>
-                <Field className="form-control" name="password" type="password" />
+                <Field className="input" name="password" type="password" />
                 <ErrorMessage name="password" />
               </div>
 

@@ -1,11 +1,8 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 @import './bootstrap-grid.css';
 @import './fontawesome.min.css';
 @import './regular.css';
 @import './solid.css';
+@tailwind base;
 
 :root {
   --headerHeight: 70px;
@@ -79,7 +76,6 @@ h3 {
   &_sm {
     padding: 4px 8px;
     font-size: 0.875rem;
-    border-radius: 4px;
   }
   &_textSm {
     font-size: 0.875rem;
@@ -164,20 +160,23 @@ a,
   &:hover {
     text-decoration: underline;
   }
+  &_disabled {
+    color: black;
+    opacity: 0.5;
+    cursor: not-allowed;
+    &:hover {
+      text-decoration: none;
+    }
+  }
 }
 
-input.form-control,
-input.form-control:focus,
-textarea.form-control,
-textarea.form-control:focus,
-.form-control {
+.input {
+  @apply border border-slate-300;
   display: block;
   width: 100%;
   padding: 6px 12px;
   background-color: #fff;
   background-clip: padding-box;
-  border: 1px solid;
-  @apply border-slate-300;
   appearance: none;
   border-radius: 6px;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;

@@ -3,3 +3,7 @@
     background: var(--secondary-light);
   }
 }
+
+.filterRoot {
+  @apply p-2 rounded shadow border border-slate-200;
+}

@@ -11,8 +11,8 @@
 .visualBox {
   @apply rounded-sm;
   position: relative;
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   border: 1px solid;
   @apply border-slate-300;
   transition: 0.25s;
@@ -37,14 +37,13 @@
   left: 1px;
   top: 1px;
   color: white;
-  font-size: 13px;
+  font-size: 16px;
   &_active {
     display: block;
   }
 }
 
 .label {
-  @apply text-sm;
   margin-left: 8px;
   &_disabled {
     opacity: 0.5;
