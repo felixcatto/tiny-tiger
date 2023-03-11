@@ -147,8 +147,6 @@ export const currentUserPlugin = fp(async app => {
   });
 });
 
-export const sortOrder = ['asc', 'desc'] as const;
-
 export const paginationSchema = y.object({
   size: y.number(),
   page: y.number(),

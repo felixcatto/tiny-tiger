@@ -2,6 +2,8 @@ import cn from 'classnames';
 import React from 'react';
 import { makeEnum } from '../lib/utils.js';
 
+// TODO: add ability to change page size like in ant design
+
 type IPaginationProps = {
   page: number;
   totalPages: number;

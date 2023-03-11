@@ -2,13 +2,15 @@ import cn from 'classnames';
 import { Form, Formik } from 'formik';
 import React from 'react';
 import useSWR from 'swr';
-import { IGetTodosResponse, ITodo } from '../../lib/types.js';
+import { IGetTodosResponse, ISortOrder, ITodo } from '../../lib/types.js';
 import Layout from '../common/layout.js';
+import { HeaderCell } from '../components/HeaderCell.js';
 import { getTotalPages, Pagination } from '../components/Pagination.js';
 import {
   ErrorMessage,
   Field,
   getApiUrl,
+  sortOrders,
   SubmitBtn,
   useContext,
   useImmerState,
@@ -19,6 +21,8 @@ import s from './styles.module.css';
 type IState = {
   editingTodo: ITodo | null;
   page: number;
+  sortBy: string | null;
+  sortOrder: ISortOrder;
 };
 
 const TodoList = WithApiErrors(() => {
@@ -30,8 +34,10 @@ const TodoList = WithApiErrors(() => {
   const [state, setState] = useImmerState<IState>({
     editingTodo: null,
     page: 0,
+    sortBy: null,
+    sortOrder: sortOrders.none,
   });
-  const { editingTodo, page } = state;
+  const { editingTodo, page, sortBy, sortOrder } = state;
   const size = 3;
   const initialValues = editingTodo
     ? { name: editingTodo.author?.name, email: editingTodo.author?.email, text: editingTodo.text }
@@ -57,6 +63,10 @@ const TodoList = WithApiErrors(() => {
   };
 
   const onPageChange = newPage => setState({ page: newPage - 1 });
+
+  const onSortOrderChange = sortBy => sortOrder => {
+    setState({ sortBy, sortOrder });
+  };
 
   const todoClass = todo =>
     cn('fa', {
@@ -116,13 +126,39 @@ const TodoList = WithApiErrors(() => {
         <div className="col-9">
           <h3 className="mb-4">List of todos</h3>
 
+          <div></div>
+
+          <div className="mb-3"></div>
+
           <table>
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Text</th>
-                <th>Status</th>
+                <HeaderCell
+                  sortOrder={sortBy === 'name' ? sortOrder : sortOrders.none}
+                  onSort={onSortOrderChange('name')}
+                  filterable
+                >
+                  <div>Name</div>
+                </HeaderCell>
+                <HeaderCell
+                  sortOrder={sortBy === 'email' ? sortOrder : sortOrders.none}
+                  onSort={onSortOrderChange('email')}
+                >
+                  <div>Email</div>
+                </HeaderCell>
+                <HeaderCell
+                  sortOrder={sortBy === 'text' ? sortOrder : sortOrders.none}
+                  onSort={onSortOrderChange('text')}
+                >
+                  <div>Text</div>
+                </HeaderCell>
+                <HeaderCell
+                  className="w-24"
+                  sortOrder={sortBy === 'status' ? sortOrder : sortOrders.none}
+                  onSort={onSortOrderChange('status')}
+                >
+                  <div>Status</div>
+                </HeaderCell>
                 <th className="w-32"></th>
               </tr>
             </thead>

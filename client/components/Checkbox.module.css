@@ -1,0 +1,53 @@
+.checkbox {
+  @apply inline-flex items-center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.input {
+  display: none;
+}
+
+.visualBox {
+  @apply rounded-sm;
+  position: relative;
+  width: 16px;
+  height: 16px;
+  border: 1px solid;
+  @apply border-slate-300;
+  transition: 0.25s;
+  &_active {
+    background: var(--secondary);
+    border-color: var(--secondary);
+  }
+  &_disabled {
+    @apply bg-slate-200 border-slate-400;
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.checkbox:hover .visualBox:not(.visualBox_disabled) {
+  border-color: var(--secondary);
+}
+
+.checkMark {
+  display: none;
+  position: absolute;
+  left: 1px;
+  top: 1px;
+  color: white;
+  font-size: 13px;
+  &_active {
+    display: block;
+  }
+}
+
+.label {
+  @apply text-sm;
+  margin-left: 8px;
+  &_disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}

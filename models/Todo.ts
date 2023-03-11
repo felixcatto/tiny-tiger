@@ -2,7 +2,7 @@ import { without } from 'lodash-es';
 import { Model } from 'objection';
 import * as y from 'yup';
 import { IUser } from '../lib/types.js';
-import { sortOrder } from '../lib/utils.js';
+import { sortOrders } from '../lib/utils.js';
 import { User } from './User.js';
 
 export class Todo extends Model {
@@ -40,6 +40,6 @@ export const todoSchema = y.object({
 });
 
 export const todoSortSchema = y.object({
-  sortOrder: y.string().oneOf(sortOrder),
+  sortOrder: y.string().oneOf([sortOrders.asc, sortOrders.desc]),
   sortBy: y.string().oneOf(todoFields),
 });

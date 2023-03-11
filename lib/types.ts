@@ -5,7 +5,7 @@ import { reduxActions, makeThunks } from '../client/common/reduxActions.js';
 import { makeCurUserReducer } from '../client/common/reduxReducers.js';
 import * as models from '../models/index.js';
 import { Todo, todoSchema, todoSortSchema, User, userLoginSchema } from '../models/index.js';
-import { asyncStates, paginationSchema, roles } from './utils.js';
+import { asyncStates, paginationSchema, roles, sortOrders } from './utils.js';
 
 export type IMakeEnum = <T extends ReadonlyArray<string>>(
   ...args: T
@@ -121,3 +121,5 @@ export type IGetTodosResponse = {
 
 export type IOnSubmit = (values) => Promise<any>;
 export type IUseSubmit = (onSubmit: IOnSubmit) => IOnSubmit;
+
+export type ISortOrder = keyof typeof sortOrders;

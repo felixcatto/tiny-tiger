@@ -1,0 +1,22 @@
+.headCell {
+  padding: 0;
+  cursor: pointer;
+  user-select: none;
+  transition: 0.15s;
+
+  &:hover {
+    background: #f8f9fa;
+  }
+}
+
+.sortIcon {
+  width: 16px;
+}
+
+.filterIcon {
+  @apply ml-2 text-sm text-slate-500 rounded-md;
+  padding: 2px 8px;
+  &:hover {
+    background: #e2e8f0;
+  }
+}
