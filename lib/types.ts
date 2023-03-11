@@ -1,11 +1,11 @@
 import { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { Knex } from 'knex';
 import * as y from 'yup';
-import { reduxActions, makeThunks } from '../client/common/reduxActions.js';
+import { makeThunks, reduxActions } from '../client/common/reduxActions.js';
 import { makeCurUserReducer } from '../client/common/reduxReducers.js';
 import * as models from '../models/index.js';
 import { Todo, todoSchema, todoSortSchema, User, userLoginSchema } from '../models/index.js';
-import { asyncStates, paginationSchema, roles, sortOrders } from './utils.js';
+import { asyncStates, filterTypes, paginationSchema, roles, sortOrders } from './utils.js';
 
 export type IMakeEnum = <T extends ReadonlyArray<string>>(
   ...args: T
@@ -122,4 +122,48 @@ export type IGetTodosResponse = {
 export type IOnSubmit = (values) => Promise<any>;
 export type IUseSubmit = (onSubmit: IOnSubmit) => IOnSubmit;
 
+export type ISelectItem = {
+  value: any;
+  label: string;
+  [key: string]: any;
+};
+
 export type ISortOrder = keyof typeof sortOrders;
+export type IFilterTypes = typeof filterTypes;
+
+export type ISelectFilter = {
+  filter: ISelectItem[];
+  onFilter: (filter: ISelectItem[], filterBy: string) => void;
+  selectFilterData: ISelectItem[];
+};
+
+export type ISearchFilter = {
+  filter: string;
+  onFilter: (filter: string, filterBy: string) => void;
+};
+
+export type IMixedOnFilter = (filter: string | ISelectItem[], filterBy: string) => void;
+
+export type INonFilterableOpts = {
+  filterType?: undefined;
+  filter?: undefined;
+  onFilter?: undefined;
+  selectFilterData?: undefined;
+};
+
+export type ISelectFilterOpts = {
+  filterType: typeof filterTypes.select;
+} & ISelectFilter;
+
+export type ISearchFilterOpts = {
+  filterType: typeof filterTypes.search;
+  selectFilterData?: undefined;
+} & ISearchFilter;
+
+export type IHeaderCellProps = {
+  children: any;
+  onSort: (sortOrder: ISortOrder, sortBy: string) => void;
+  name: string;
+  sortOrder?: ISortOrder;
+  className?: string;
+} & (ISearchFilterOpts | ISelectFilterOpts | INonFilterableOpts);

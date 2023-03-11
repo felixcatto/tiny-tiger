@@ -8,10 +8,22 @@ type ICheckboxProps = {
   label?: string;
   className?: string;
   disabled?: boolean;
+  display?: 'inline' | 'block';
 };
 
 export const Checkbox = (props: ICheckboxProps) => {
-  const { onChange, checked, label = '', className = '', disabled = false } = props;
+  const {
+    onChange,
+    checked,
+    label = '',
+    className = '',
+    disabled = false,
+    display = 'inline',
+  } = props;
+
+  const checkboxClass = cn(s.checkbox, className, {
+    [s.checkbox_block]: display === 'block',
+  });
   const visualBoxClass = cn(s.visualBox, {
     [s.visualBox_disabled]: disabled,
     [s.visualBox_active]: checked,
@@ -24,7 +36,7 @@ export const Checkbox = (props: ICheckboxProps) => {
   });
 
   return (
-    <label className={cn(s.checkbox, className)}>
+    <label className={checkboxClass}>
       <input
         type="checkbox"
         className={s.input}

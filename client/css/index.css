@@ -157,6 +157,7 @@ a,
   cursor: pointer;
   user-select: none;
   color: var(--secondary);
+  transition: 0.15s;
   &:hover {
     text-decoration: underline;
   }

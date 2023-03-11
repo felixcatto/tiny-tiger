@@ -2,6 +2,9 @@
   @apply inline-flex items-center;
   cursor: pointer;
   user-select: none;
+  &_block {
+    display: flex;
+  }
 }
 
 .input {

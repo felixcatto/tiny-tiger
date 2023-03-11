@@ -5,7 +5,7 @@
   transition: 0.15s;
 
   &:hover {
-    background: #f8f9fa;
+    @apply bg-slate-100;
   }
 }
 
@@ -16,7 +16,11 @@
 .filterIcon {
   @apply ml-2 text-sm text-slate-500 rounded-md;
   padding: 2px 8px;
+  transition: 0.2s;
   &:hover {
-    background: #e2e8f0;
+    @apply bg-slate-300;
+  }
+  &_active {
+    color: var(--primary);
   }
 }

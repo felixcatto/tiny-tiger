@@ -2,13 +2,22 @@ import cn from 'classnames';
 import { Form, Formik } from 'formik';
 import React from 'react';
 import useSWR from 'swr';
-import { IGetTodosResponse, ISortOrder, ITodo } from '../../lib/types.js';
+import {
+  IFilterTypes,
+  IGetTodosResponse,
+  IHeaderCellProps,
+  IMixedOnFilter,
+  ISortOrder,
+  ITodo,
+} from '../../lib/types.js';
 import Layout from '../common/layout.js';
+import { Checkbox } from '../components/Checkbox.js';
 import { HeaderCell } from '../components/HeaderCell.js';
 import { getTotalPages, Pagination } from '../components/Pagination.js';
 import {
   ErrorMessage,
   Field,
+  filterTypes,
   getApiUrl,
   sortOrders,
   SubmitBtn,
@@ -18,12 +27,39 @@ import {
 } from '../lib/utils.js';
 import s from './styles.module.css';
 
+type IFilters = Map<
+  string,
+  {
+    filterBy: string;
+    filterType: any;
+    filter: any;
+  }
+>;
+
 type IState = {
   editingTodo: ITodo | null;
   page: number;
   sortBy: string | null;
   sortOrder: ISortOrder;
+  filters: IFilters;
 };
+
+const defaultFilters = new Map();
+defaultFilters.set('name', {
+  filterBy: 'name',
+  filterType: filterTypes.search,
+  filter: '',
+});
+defaultFilters.set('text', {
+  filterBy: 'text',
+  filterType: filterTypes.search,
+  filter: '',
+});
+defaultFilters.set('status', {
+  filterBy: 'status',
+  filterType: filterTypes.select,
+  filter: [],
+});
 
 const TodoList = WithApiErrors(() => {
   const onSubmit = () => {};
@@ -36,13 +72,16 @@ const TodoList = WithApiErrors(() => {
     page: 0,
     sortBy: null,
     sortOrder: sortOrders.none,
+    filters: defaultFilters,
   });
-  const { editingTodo, page, sortBy, sortOrder } = state;
+  const { editingTodo, page, sortBy, sortOrder, filters } = state;
   const size = 3;
   const initialValues = editingTodo
     ? { name: editingTodo.author?.name, email: editingTodo.author?.email, text: editingTodo.text }
     : { name: '', email: '', text: '' };
+
   // console.log(todos);
+  console.log(Array.from(filters.values()));
 
   const editTodo = todo => async () => {
     setState({ editingTodo: todo });
@@ -64,8 +103,14 @@ const TodoList = WithApiErrors(() => {
 
   const onPageChange = newPage => setState({ page: newPage - 1 });
 
-  const onSortOrderChange = sortBy => sortOrder => {
+  const onSortChange: IHeaderCellProps['onSort'] = (sortOrder, sortBy) => {
     setState({ sortBy, sortOrder });
+  };
+
+  const onFilterChange: IMixedOnFilter = (filter, filterBy) => {
+    const filterOpts = filters.get(filterBy)!;
+    filters.set(filterBy, { ...filterOpts, filter });
+    setState({ filters });
   };
 
   const todoClass = todo =>
@@ -100,17 +145,17 @@ const TodoList = WithApiErrors(() => {
               </div>
               <div className="mb-4">
                 <label className="text-sm">Name</label>
-                <Field className="form-control" name="name" />
+                <Field className="input" name="name" />
                 <ErrorMessage name="name" />
               </div>
               <div className="mb-4">
                 <label className="text-sm">Email</label>
-                <Field className="form-control" name="email" />
+                <Field className="input" name="email" />
                 <ErrorMessage name="email" />
               </div>
               <div className="mb-6">
                 <label className="text-sm">Text</label>
-                <Field className="form-control" name="text" as="textarea" />
+                <Field className="input" name="text" as="textarea" />
                 <ErrorMessage name="text" />
               </div>
               {editingTodo && (
@@ -126,36 +171,48 @@ const TodoList = WithApiErrors(() => {
         <div className="col-9">
           <h3 className="mb-4">List of todos</h3>
 
-          <div></div>
-
-          <div className="mb-3"></div>
-
           <table>
             <thead>
               <tr>
                 <HeaderCell
+                  name="name"
                   sortOrder={sortBy === 'name' ? sortOrder : sortOrders.none}
-                  onSort={onSortOrderChange('name')}
-                  filterable
+                  onSort={onSortChange}
+                  filterType={filters.get('name')!.filterType}
+                  filter={filters.get('name')!.filter}
+                  onFilter={onFilterChange}
                 >
                   <div>Name</div>
                 </HeaderCell>
                 <HeaderCell
+                  name="email"
                   sortOrder={sortBy === 'email' ? sortOrder : sortOrders.none}
-                  onSort={onSortOrderChange('email')}
+                  onSort={onSortChange}
                 >
                   <div>Email</div>
                 </HeaderCell>
                 <HeaderCell
+                  name="text"
                   sortOrder={sortBy === 'text' ? sortOrder : sortOrders.none}
-                  onSort={onSortOrderChange('text')}
+                  onSort={onSortChange}
+                  filterType={filters.get('text')!.filterType}
+                  filter={filters.get('text')!.filter}
+                  onFilter={onFilterChange}
                 >
                   <div>Text</div>
                 </HeaderCell>
                 <HeaderCell
-                  className="w-24"
+                  name="status"
+                  className="w-32"
                   sortOrder={sortBy === 'status' ? sortOrder : sortOrders.none}
-                  onSort={onSortOrderChange('status')}
+                  onSort={onSortChange}
+                  filterType={filters.get('status')!.filterType}
+                  filter={filters.get('status')!.filter}
+                  onFilter={onFilterChange}
+                  selectFilterData={[
+                    { label: 'Completed', value: true },
+                    { label: 'Incomplete', value: false },
+                  ]}
                 >
                   <div>Status</div>
                 </HeaderCell>

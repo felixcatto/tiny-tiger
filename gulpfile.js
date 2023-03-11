@@ -104,6 +104,7 @@ export const dev = series(
   parallel(copyPublicDev, transpileServerJs, startLrServer),
   startWebpack,
   startServer,
+  reloadBrowser,
   watch
 );
 

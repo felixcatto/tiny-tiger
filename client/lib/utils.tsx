@@ -3,6 +3,7 @@ import { useFormikContext } from 'formik';
 import produce from 'immer';
 import { isFunction, omit } from 'lodash-es';
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
 import { roles } from '../../lib/sharedUtils.js';
 import { IApiErrors, IContext, IUser, IUseSubmit } from '../../lib/types.js';
@@ -99,6 +100,18 @@ export const SubmitBtn = ({ children, ...props }) => {
       {children}
     </button>
   );
+};
+
+export const Portal = ({ children, selector }) => {
+  const ref: any = React.useRef();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    ref.current = document.querySelector(selector);
+    setMounted(true);
+  }, [selector]);
+
+  return mounted ? createPortal(children, ref.current) : null;
 };
 
 export const localStorageUserKey = 'currentUser';
