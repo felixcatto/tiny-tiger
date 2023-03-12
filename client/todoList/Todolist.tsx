@@ -3,7 +3,6 @@ import { Form, Formik } from 'formik';
 import React from 'react';
 import useSWR from 'swr';
 import {
-  IFilterTypes,
   IGetTodosResponse,
   IHeaderCellProps,
   IMixedOnFilter,
@@ -11,9 +10,8 @@ import {
   ITodo,
 } from '../../lib/types.js';
 import Layout from '../common/layout.js';
-import { Checkbox } from '../components/Checkbox.js';
 import { HeaderCell } from '../components/HeaderCell.js';
-import { getTotalPages, Pagination } from '../components/Pagination.js';
+import { Pagination } from '../components/Pagination.js';
 import {
   ErrorMessage,
   Field,
@@ -39,6 +37,7 @@ type IFilters = Map<
 type IState = {
   editingTodo: ITodo | null;
   page: number;
+  size: number;
   sortBy: string | null;
   sortOrder: ISortOrder;
   filters: IFilters;
@@ -70,12 +69,13 @@ const TodoList = WithApiErrors(() => {
   const [state, setState] = useImmerState<IState>({
     editingTodo: null,
     page: 0,
+    size: 3,
     sortBy: null,
     sortOrder: sortOrders.none,
     filters: defaultFilters,
   });
-  const { editingTodo, page, sortBy, sortOrder, filters } = state;
-  const size = 3;
+  const { editingTodo, page, size, sortBy, sortOrder, filters } = state;
+
   const initialValues = editingTodo
     ? { name: editingTodo.author?.name, email: editingTodo.author?.email, text: editingTodo.text }
     : { name: '', email: '', text: '' };
@@ -102,6 +102,7 @@ const TodoList = WithApiErrors(() => {
   };
 
   const onPageChange = newPage => setState({ page: newPage - 1 });
+  const onSizeChange = newSize => setState({ size: newSize, page: 0 });
 
   const onSortChange: IHeaderCellProps['onSort'] = (sortOrder, sortBy) => {
     setState({ sortBy, sortOrder });
@@ -209,7 +210,7 @@ const TodoList = WithApiErrors(() => {
                   filterType={filters.get('status')!.filterType}
                   filter={filters.get('status')!.filter}
                   onFilter={onFilterChange}
-                  selectFilterData={[
+                  selectFilterOptions={[
                     { label: 'Completed', value: true },
                     { label: 'Incomplete', value: false },
                   ]}
@@ -260,8 +261,10 @@ const TodoList = WithApiErrors(() => {
             <Pagination
               className="mt-3"
               page={page + 1}
-              totalPages={getTotalPages(data.rows.length, size)}
+              size={size}
+              totalRows={data.rows.length}
               onPageChange={onPageChange}
+              onSizeChange={onSizeChange}
             />
           )}
         </div>

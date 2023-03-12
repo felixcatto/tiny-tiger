@@ -31,6 +31,7 @@ type IPopupProps = {
   refs: ExtendedRefs<ReferenceType>;
   getFloatingProps: any;
   context: any;
+  shouldSkipCloseAnimation?: boolean;
 };
 
 export const usePopup = (props: IUsePopupProps) => {
@@ -48,15 +49,30 @@ export const usePopup = (props: IUsePopupProps) => {
   const dismiss = useDismiss(context);
   const { getReferenceProps, getFloatingProps } = useInteractions([click, dismiss]);
 
-  return { x, y, strategy, refs, getReferenceProps, getFloatingProps, context };
+  const popupProps = { isOpen, x, y, strategy, refs, getFloatingProps, context };
+
+  return { refs, getReferenceProps, popupProps };
 };
 
 export const Popup = (props: IPopupProps) => {
   const tooltipRootSelector = '#popoverRoot';
-  const { children, isOpen, x, y, strategy, refs, getFloatingProps, context } = props;
+  const {
+    children,
+    isOpen,
+    x,
+    y,
+    strategy,
+    refs,
+    getFloatingProps,
+    context,
+    shouldSkipCloseAnimation = false,
+  } = props;
 
   const { isMounted, styles } = useTransitionStyles(context, {
-    duration: 150,
+    duration: {
+      open: 200,
+      close: shouldSkipCloseAnimation ? 0 : 200,
+    },
     initial: ({ side }) => {
       switch (side) {
         case 'left':

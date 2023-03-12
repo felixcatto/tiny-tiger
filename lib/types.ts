@@ -122,19 +122,19 @@ export type IGetTodosResponse = {
 export type IOnSubmit = (values) => Promise<any>;
 export type IUseSubmit = (onSubmit: IOnSubmit) => IOnSubmit;
 
-export type ISelectItem = {
+export type ISelectOption = {
   value: any;
   label: string;
   [key: string]: any;
 };
+export type ISelectedOption = ISelectOption | null;
 
 export type ISortOrder = keyof typeof sortOrders;
 export type IFilterTypes = typeof filterTypes;
 
 export type ISelectFilter = {
-  filter: ISelectItem[];
-  onFilter: (filter: ISelectItem[], filterBy: string) => void;
-  selectFilterData: ISelectItem[];
+  filter: ISelectOption[];
+  onFilter: (filter: ISelectOption[], filterBy: string) => void;
 };
 
 export type ISearchFilter = {
@@ -142,22 +142,21 @@ export type ISearchFilter = {
   onFilter: (filter: string, filterBy: string) => void;
 };
 
-export type IMixedOnFilter = (filter: string | ISelectItem[], filterBy: string) => void;
+export type IMixedOnFilter = (filter: string | ISelectOption[], filterBy: string) => void;
 
 export type INonFilterableOpts = {
   filterType?: undefined;
   filter?: undefined;
   onFilter?: undefined;
-  selectFilterData?: undefined;
 };
 
 export type ISelectFilterOpts = {
   filterType: typeof filterTypes.select;
+  selectFilterOptions: ISelectOption[];
 } & ISelectFilter;
 
 export type ISearchFilterOpts = {
   filterType: typeof filterTypes.search;
-  selectFilterData?: undefined;
 } & ISearchFilter;
 
 export type IHeaderCellProps = {

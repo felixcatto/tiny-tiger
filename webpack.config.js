@@ -4,6 +4,7 @@ import path from 'path';
 import webpack from 'webpack';
 import babelConfig from './babelconfig.js';
 import { dirname, generateScopedName } from './lib/devUtils.js';
+import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 
 const isProduction = process.env.NODE_ENV === 'production';
 const __dirname = dirname(import.meta.url);
@@ -65,7 +66,14 @@ const common = {
 };
 
 let config;
-if (isProduction) {
+if (process.env.ANALYZE) {
+  const plugins = [new BundleAnalyzerPlugin()].concat(common.plugins);
+  config = {
+    ...common,
+    mode: 'production',
+    plugins,
+  };
+} else if (isProduction) {
   config = {
     ...common,
     mode: 'production',

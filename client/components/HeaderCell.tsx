@@ -23,17 +23,15 @@ export const HeaderCell = (props: IHeaderCellProps) => {
     filter,
     onFilter,
     filterType,
-    selectFilterData,
   } = props;
 
   const [isOpen, setIsOpen] = React.useState(false);
 
-  const { x, y, strategy, refs, getReferenceProps, getFloatingProps, context } = usePopup({
+  const { refs, getReferenceProps, popupProps } = usePopup({
     placement: 'bottom-end',
     isOpen,
     setIsOpen,
   });
-  const popupProps = { isOpen, x, y, strategy, refs, getFloatingProps, context };
 
   const { onClick: onReferenceClick, ...restReferenceProps } = getReferenceProps() as any;
   const stopPropagation = e => e.stopPropagation();
@@ -86,7 +84,7 @@ export const HeaderCell = (props: IHeaderCellProps) => {
                 filter={filter}
                 onFilter={onFilter}
                 setIsOpen={setIsOpen}
-                selectFilterData={selectFilterData}
+                selectFilterOptions={props.selectFilterOptions}
               />
             )}
           </div>

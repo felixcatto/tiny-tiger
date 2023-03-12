@@ -181,6 +181,9 @@ a,
   appearance: none;
   border-radius: 6px;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  &_hover:hover {
+    border-color: var(--primary);
+  }
   &:focus {
     border-color: var(--primary);
     outline: 0;
@@ -189,10 +192,28 @@ a,
   &_inline {
     width: auto;
   }
-  &_secondary:focus {
+}
+
+.input-secondary {
+  @apply border border-slate-300;
+  display: block;
+  width: 100%;
+  padding: 6px 12px;
+  background-color: #fff;
+  background-clip: padding-box;
+  appearance: none;
+  border-radius: 6px;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  &_hover:hover {
+    border-color: var(--secondary);
+  }
+  &:focus {
     border-color: var(--secondary);
     outline: 0;
     box-shadow: 0 0 0 4px var(--secondary-rgba-25);
+  }
+  &_inline {
+    width: auto;
   }
 }
 

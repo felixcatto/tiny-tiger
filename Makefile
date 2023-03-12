@@ -11,7 +11,7 @@ build:
 	NODE_ENV=production npx gulp build
 
 analyze-bundle:
-	ANALYZE=true npx next build
+	ANALYZE=true npx webpack
 
 migrate:
 	npx knex migrate:latest

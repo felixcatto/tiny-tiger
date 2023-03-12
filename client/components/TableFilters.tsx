@@ -1,7 +1,7 @@
 import cn from 'classnames';
 import { isEmpty } from 'lodash-es';
 import React from 'react';
-import { ISearchFilter, ISelectFilter, ISelectItem } from '../../lib/types.js';
+import { ISearchFilter, ISelectFilter, ISelectOption } from '../../lib/types.js';
 import { useImmerState } from '../lib/utils.js';
 import { Checkbox } from './Checkbox.js';
 
@@ -62,16 +62,16 @@ export const SearchFilter = (props: ISearchFilterProps) => {
 type ISelectFilterProps = {
   name: string;
   setIsOpen: any;
-  selectFilterData: ISelectItem[];
+  selectFilterOptions: ISelectOption[];
 } & ISelectFilter;
 
 type ISelectFilterState = {
-  ownFilter: ISelectItem[];
+  ownFilter: ISelectOption[];
   hasChanges: boolean;
 };
 
 export const SelectFilter = (props: ISelectFilterProps) => {
-  const { filter: parentFilter, onFilter, name, setIsOpen, selectFilterData } = props;
+  const { filter: parentFilter, onFilter, name, setIsOpen, selectFilterOptions } = props;
   const [state, setState] = useImmerState<ISelectFilterState>({ ownFilter: [], hasChanges: false });
   const { ownFilter, hasChanges } = state;
 
@@ -95,7 +95,7 @@ export const SelectFilter = (props: ISelectFilterProps) => {
   return (
     <>
       <div className="mb-3">
-        {selectFilterData.map(el => (
+        {selectFilterOptions.map(el => (
           <div key={el.value}>
             <Checkbox
               label={el.label}
