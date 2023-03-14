@@ -61,19 +61,17 @@ export const Select = (props: ISelectProps) => {
     placement,
   });
 
-  const getOptionValue = (option: ISelectOption) => (isString(option) ? option : option.value);
-  const getOptionLabel = (option: ISelectOption) => (isString(option) ? option : option.label);
   const getOptionIndex = (option: ISelectOption, options: ISelectOption[]) => {
-    const i = options.findIndex(el => getOptionValue(option) === getOptionValue(el));
+    const i = options.findIndex(el => option.value === el.value);
     return i === -1 ? null : i;
   };
 
   const filteredOptions = React.useMemo(() => {
     const regex = new RegExp(ownInputValue.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'), 'i');
-    return options.filter(el => getOptionLabel(el).match(regex));
+    return options.filter(el => el.label.match(regex));
   }, [options, ownInputValue]);
 
-  const parentInputValue = selectedOption ? getOptionLabel(selectedOption) : '';
+  const parentInputValue = selectedOption ? selectedOption.label : '';
   const inputValue = hasChanges ? ownInputValue : parentInputValue;
 
   const parentKeyboardChoosenIndex = selectedOption
@@ -82,7 +80,7 @@ export const Select = (props: ISelectProps) => {
   const keyboardChoosenIndex = ownKeyboardChoosenIndex ?? parentKeyboardChoosenIndex;
 
   const isOptionSelected = (option: ISelectOption) =>
-    selectedOption && getOptionValue(option) === getOptionValue(selectedOption);
+    selectedOption && option.value === selectedOption.value;
 
   const onChange = e => {
     const { value } = e.target;
@@ -93,8 +91,7 @@ export const Select = (props: ISelectProps) => {
   };
 
   const selectOption = (el: ISelectOption) => () => {
-    const isNewOptionSameAsPrevious =
-      !isNull(selectedOption) && getOptionValue(el) === getOptionValue(selectedOption);
+    const isNewOptionSameAsPrevious = !isNull(selectedOption) && el.value === selectedOption.value;
 
     setIsOpen(false);
     setState(defaultState);
@@ -175,13 +172,13 @@ export const Select = (props: ISelectProps) => {
       <Popup {...popupProps} shouldSkipCloseAnimation={searchable}>
         <div className={popupClass || s.popup} onMouseDown={preventFocusLoosing}>
           {filteredOptions.map((el, i) => (
-            <div key={getOptionValue(el)} className={optionClass(el, i)} onClick={selectOption(el)}>
+            <div key={el.value} className={optionClass(el, i)} onClick={selectOption(el)}>
               {optionComponent
                 ? React.createElement(optionComponent, {
                     option: el,
                     isSelected: isOptionSelected(el),
                   })
-                : getOptionLabel(el)}
+                : el.label}
             </div>
           ))}
           {isEmpty(filteredOptions) && (
