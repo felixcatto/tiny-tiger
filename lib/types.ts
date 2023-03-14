@@ -132,32 +132,42 @@ export type ISelectedOption = ISelectOption | null;
 export type ISortOrder = keyof typeof sortOrders;
 export type IFilterTypes = typeof filterTypes;
 
-export type ISelectFilter = {
-  filter: ISelectOption[];
-  onFilter: (filter: ISelectOption[], filterBy: string) => void;
+export type ISelectFilter = ISelectOption[];
+export type ISearchFilter = string;
+
+export type IMixedOnFilter = (filter: ISearchFilter | ISelectFilter, filterBy: string) => void;
+
+export type ISelectFilterProps = {
+  name: string;
+  setIsOpen: any;
+  selectFilterOptions: ISelectFilter;
+  filter: ISelectFilter;
+  onFilter: (filter: ISelectFilter, filterBy: string) => void;
 };
 
-export type ISearchFilter = {
-  filter: string;
-  onFilter: (filter: string, filterBy: string) => void;
+export type ISearchFilterProps = {
+  name: string;
+  setIsOpen: any;
+  filter: ISearchFilter;
+  onFilter: (filter: ISearchFilter, filterBy: string) => void;
 };
-
-export type IMixedOnFilter = (filter: string | ISelectOption[], filterBy: string) => void;
 
 export type INonFilterableOpts = {
   filterType?: undefined;
-  filter?: undefined;
-  onFilter?: undefined;
 };
 
 export type ISelectFilterOpts = {
   filterType: typeof filterTypes.select;
-  selectFilterOptions: ISelectOption[];
-} & ISelectFilter;
+  filter: ISelectFilterProps['filter'];
+  onFilter: ISelectFilterProps['onFilter'];
+  selectFilterOptions: ISelectFilterProps['selectFilterOptions'];
+};
 
 export type ISearchFilterOpts = {
   filterType: typeof filterTypes.search;
-} & ISearchFilter;
+  filter: ISearchFilterProps['filter'];
+  onFilter: ISearchFilterProps['onFilter'];
+};
 
 export type IHeaderCellProps = {
   children: any;

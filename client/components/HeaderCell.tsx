@@ -14,16 +14,7 @@ const sortOrderIconSrcs = {
 };
 
 export const HeaderCell = (props: IHeaderCellProps) => {
-  const {
-    children,
-    onSort,
-    name,
-    sortOrder = sortOrders.none,
-    className = '',
-    filter,
-    onFilter,
-    filterType,
-  } = props;
+  const { children, onSort, name, sortOrder = sortOrders.none, className = '', filterType } = props;
 
   const [isOpen, setIsOpen] = React.useState(false);
 
@@ -58,7 +49,7 @@ export const HeaderCell = (props: IHeaderCellProps) => {
           {filterType && (
             <i
               className={cn('fa fa-filter', s.filterIcon, {
-                [s.filterIcon_active]: !isEmpty(filter),
+                [s.filterIcon_active]: !isEmpty(props.filter),
               })}
               ref={refs.setReference}
               {...restReferenceProps}
@@ -76,13 +67,18 @@ export const HeaderCell = (props: IHeaderCellProps) => {
             onClick={stopPropagation}
           >
             {filterType === filterTypes.search && (
-              <SearchFilter name={name} filter={filter} onFilter={onFilter} setIsOpen={setIsOpen} />
+              <SearchFilter
+                name={name}
+                filter={props.filter}
+                onFilter={props.onFilter}
+                setIsOpen={setIsOpen}
+              />
             )}
             {filterType === filterTypes.select && (
               <SelectFilter
                 name={name}
-                filter={filter}
-                onFilter={onFilter}
+                filter={props.filter}
+                onFilter={props.onFilter}
                 setIsOpen={setIsOpen}
                 selectFilterOptions={props.selectFilterOptions}
               />

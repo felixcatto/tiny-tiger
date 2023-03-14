@@ -1,14 +1,9 @@
 import cn from 'classnames';
 import { isEmpty } from 'lodash-es';
 import React from 'react';
-import { ISearchFilter, ISelectFilter, ISelectOption } from '../../lib/types.js';
+import { ISearchFilterProps, ISelectFilterProps, ISelectOption } from '../../lib/types.js';
 import { useImmerState } from '../lib/utils.js';
 import { Checkbox } from './Checkbox.js';
-
-type ISearchFilterProps = {
-  name: string;
-  setIsOpen: any;
-} & ISearchFilter;
 
 type ISearchFilterState = {
   ownFilter: string;
@@ -45,10 +40,7 @@ export const SearchFilter = (props: ISearchFilterProps) => {
         value={filter}
       />
       <div className="flex items-center justify-between">
-        <div
-          className={cn('link text-sm', { link_disabled: !filter })}
-          onClick={onResetOwnFilter}
-        >
+        <div className={cn('link text-sm', { link_disabled: !filter })} onClick={onResetOwnFilter}>
           Reset
         </div>
         <button className="btn btn_primary btn_sm rounded-md" onClick={onFilterChange}>
@@ -58,12 +50,6 @@ export const SearchFilter = (props: ISearchFilterProps) => {
     </>
   );
 };
-
-type ISelectFilterProps = {
-  name: string;
-  setIsOpen: any;
-  selectFilterOptions: ISelectOption[];
-} & ISelectFilter;
 
 type ISelectFilterState = {
   ownFilter: ISelectOption[];
