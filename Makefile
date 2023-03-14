@@ -35,6 +35,14 @@ database-up:
 	--name=tiny_tiger_database \
 	tiny_tiger_database
 
+database-up-with-log:
+	docker run --rm -e POSTGRES_PASSWORD=1 \
+	-p 5432:5432 \
+	-v tiny_tiger_database:/var/lib/postgresql/data \
+	--name=tiny_tiger_database \
+	tiny_tiger_database \
+	postgres -c 'config_file=postgresql.conf'
+
 database-down:
 	docker stop tiny_tiger_database
 

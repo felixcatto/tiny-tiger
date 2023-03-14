@@ -23,8 +23,7 @@ export default async (app: FastifyInstance) => {
 
     if (size && isNumber(page)) {
       todoQuery.offset(page * size).limit(size);
-      const [data] = await knex.count('*').from('todos');
-      totalRows = Number(data.count);
+      totalRows = await Todo.query().resultSize();
     }
 
     const todos = await todoQuery.withGraphFetched('author');

@@ -15,7 +15,9 @@ export * from './sharedUtils.js';
 
 export const dirname = url => fileURLToPath(path.dirname(url));
 
-const getYupErrors = e => {
+export const yupToJson = value => (isString(value) ? JSON.parse(value) : value);
+
+export const getYupErrors = e => {
   if (e.inner) {
     return e.inner.reduce(
       (acc, el) => ({
@@ -26,7 +28,7 @@ const getYupErrors = e => {
     );
   }
 
-  return e.message; // TODO: no object?
+  return e.message;
 };
 
 export const makeErrors = errors => ({ errors });
