@@ -1,10 +1,18 @@
 import { AxiosInstance, AxiosRequestConfig } from 'axios';
+import { FormikHelpers } from 'formik';
 import { Knex } from 'knex';
 import * as y from 'yup';
 import { makeThunks, reduxActions } from '../client/common/reduxActions.js';
 import { makeCurUserReducer } from '../client/common/reduxReducers.js';
 import * as models from '../models/index.js';
-import { Todo, todoSchema, todoSortSchema, User, userLoginSchema } from '../models/index.js';
+import {
+  Todo,
+  todoPostGuestSchema,
+  todoPostUserSchema,
+  todoPutSchema,
+  User,
+  userLoginSchema,
+} from '../models/index.js';
 import { asyncStates, filterTypes, paginationSchema, roles, sortOrders } from './utils.js';
 
 export type IMakeEnum = <T extends ReadonlyArray<string>>(
@@ -59,7 +67,9 @@ export type ITodo = {
   author?: IUser;
 };
 export type ITodoClass = typeof Todo;
-export type ITodoSchema = y.InferType<typeof todoSchema>;
+export type ITodoPostGuestSchema = y.InferType<typeof todoPostGuestSchema>;
+export type ITodoPostUserSchema = y.InferType<typeof todoPostUserSchema>;
+export type ITodoPutSchema = y.InferType<typeof todoPutSchema>;
 
 type IModels = {
   [Property in keyof typeof models]: (typeof models)[Property];
@@ -95,8 +105,18 @@ export type IApiErrors = {
   setApiErrors: any;
 };
 
+export type IAuthenticate = (
+  rawCookies,
+  keygrip,
+  fetchUser: (id) => Promise<IUser | undefined>
+) => Promise<[currentUser: IUser, shouldRemoveSession: boolean]>;
+
+export type IValidate = <T = any>(
+  schema,
+  payload
+) => [data: T, error: null] | [data: null, error: object];
 export type IPayloadTypes = 'query' | 'body';
-export type IValidateFn = (schema, payloadType?: IPayloadTypes) => (req, res) => any;
+export type IValidateMW = (schema, payloadType?: IPayloadTypes) => (req, res) => any;
 
 type IAnyFn = (...args: any) => any;
 type IReducerKey = { key: any };
@@ -129,7 +149,7 @@ export type IGetTodosResponse = {
   totalRows: number;
 };
 
-export type IOnSubmit = (values) => Promise<any>;
+export type IOnSubmit = (values, actions: FormikHelpers<any>) => Promise<any>;
 export type IUseSubmit = (onSubmit: IOnSubmit) => IOnSubmit;
 
 export type ISelectOption = {
@@ -139,7 +159,7 @@ export type ISelectOption = {
 };
 export type ISelectedOption = ISelectOption | null;
 
-export type ISortOrder = keyof typeof sortOrders;
+export type ISortOrder = keyof typeof sortOrders | null;
 export type IFilterTypes = typeof filterTypes;
 
 export type ISelectFilter = ISelectOption[];
@@ -199,3 +219,20 @@ export type IHeaderCellProps = {
   sortOrder?: ISortOrder;
   className?: string;
 } & (ISearchFilterOpts | ISelectFilterOpts | INonFilterableOpts);
+
+export type IUseTableProps<T> = {
+  rows: T;
+  page: number;
+  size: number;
+  sortBy: string | null;
+  sortOrder: ISortOrder;
+  filters: IFilters;
+};
+
+export type IUseTable = <T extends any[]>(
+  props: IUseTableProps<T>
+) => { rows: T; totalRows: number };
+
+type IProduceFn<T> = (draftState: T) => any;
+type ISetState<T> = (fnOrObject: Partial<T> | IProduceFn<T>) => void;
+export type IUseImmerState = <T>(initialState: T) => [state: T, setState: ISetState<T>];

@@ -3,7 +3,7 @@ import cn from 'classnames';
 import { isEmpty, isFunction, isNull, isString } from 'lodash-es';
 import React from 'react';
 import { ISelectOption } from '../../lib/types.js';
-import { useImmerState } from '../lib/utils.js';
+import { makeCaseInsensitiveRegex, useImmerState } from '../lib/utils.js';
 import { Popup, usePopup } from './Popup.js';
 import s from './Select.module.css';
 
@@ -67,7 +67,7 @@ export const Select = (props: ISelectProps) => {
   };
 
   const filteredOptions = React.useMemo(() => {
-    const regex = new RegExp(ownInputValue.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'), 'i');
+    const regex = makeCaseInsensitiveRegex(ownInputValue);
     return options.filter(el => el.label.match(regex));
   }, [options, ownInputValue]);
 

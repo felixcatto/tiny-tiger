@@ -61,7 +61,7 @@ export const extraTodos = [
   },
   {
     id: -5,
-    text: "Tailwind CSS is the only framework that I've seen scale on large teams. It’s easy to customize, adapts to any design, and the build size is tiny.",
+    text: "Tailwind CSS ... It’s easy to customize, adapts to any design, and the build size is tiny.",
     is_completed: false,
     is_edited_by_admin: false,
     author_id: -4,

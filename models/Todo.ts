@@ -33,9 +33,20 @@ export class Todo extends Model {
 
 export const todoFields = ['id', 'text', 'is_completed', 'is_edited_by_admin', 'author.name'];
 
-export const todoSchema = y.object({
+export const todoPostGuestSchema = y.object({
   text: y.string().required('required'),
-  author_id: y.number().required('required'),
+  name: y.string().required('required'),
+  email: y.string().email().required('required'),
+  is_completed: y.boolean().default(false),
+});
+
+export const todoPostUserSchema = y.object({
+  text: y.string().required('required'),
+  is_completed: y.boolean().default(false),
+});
+
+export const todoPutSchema = y.object({
+  text: y.string().required('required'),
   is_completed: y.boolean().default(false),
 });
 

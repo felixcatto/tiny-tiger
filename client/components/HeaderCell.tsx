@@ -1,20 +1,25 @@
 import cn from 'classnames';
-import { isEmpty } from 'lodash-es';
+import { isEmpty, isNull } from 'lodash-es';
 import React from 'react';
-import { IHeaderCellProps } from '../../lib/types.js';
+import { IHeaderCellProps, ISortOrder } from '../../lib/types.js';
 import { filterTypes, sortOrders } from '../lib/utils.js';
 import s from './HeaderCell.module.css';
 import { Popup, usePopup } from './Popup.js';
 import { SearchFilter, SelectFilter } from './TableFilters.js';
 
-const sortOrderIconSrcs = {
-  [sortOrders.none]: '/img/sort.svg',
-  [sortOrders.asc]: '/img/sortDown.svg',
-  [sortOrders.desc]: '/img/sortUp.svg',
+const getSortOrderIcon = (sortOrder: ISortOrder) => {
+  switch (sortOrder) {
+    case sortOrders.asc:
+      return '/img/sortDown.svg';
+    case sortOrders.desc:
+      return '/img/sortUp.svg';
+    default:
+      return '/img/sort.svg';
+  }
 };
 
 export const HeaderCell = (props: IHeaderCellProps) => {
-  const { children, onSort, name, sortOrder = sortOrders.none, className = '', filterType } = props;
+  const { children, onSort, name, sortOrder = null, className = '', filterType } = props;
 
   const [isOpen, setIsOpen] = React.useState(false);
 
@@ -32,9 +37,9 @@ export const HeaderCell = (props: IHeaderCellProps) => {
   };
 
   const onSortChange = () => {
-    if (sortOrders.none === sortOrder) return onSort(sortOrders.asc, name);
+    if (isNull(sortOrder)) return onSort(sortOrders.asc, name);
     if (sortOrders.asc === sortOrder) return onSort(sortOrders.desc, name);
-    return onSort(sortOrders.none, name);
+    return onSort(null, name);
   };
 
   return (
@@ -56,7 +61,7 @@ export const HeaderCell = (props: IHeaderCellProps) => {
               onClick={onFilterIconClick}
             ></i>
           )}
-          <img src={sortOrderIconSrcs[sortOrder]} className={s.sortIcon} />
+          <img src={getSortOrderIcon(sortOrder)} className={s.sortIcon} />
         </div>
       </div>
 

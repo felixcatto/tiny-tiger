@@ -111,7 +111,6 @@ describe('todos', () => {
   });
 
   it('GET /api/todos - filter & sort & pagination', async () => {
-    const [vasa] = usersFixture;
     const filters = [
       { filterBy: 'text', filter: 's' },
       { filterBy: 'is_completed', filter: [false] },
@@ -149,11 +148,29 @@ describe('todos', () => {
   });
 
   it('POST /api/todos', async () => {
-    const todo = { text: 'ggwp', author_id: -1 };
-    const res = await server.inject({ method: 'post', url: getApiUrl('todos'), payload: todo });
-    const todoFromDb = await Todo.query().findOne({ text: 'ggwp', author_id: -1 });
+    const todo = { text: 'ggwp' };
+    const res = await server.inject({
+      method: 'post',
+      url: getApiUrl('todos'),
+      payload: todo,
+      cookies: loginCookie,
+    });
+    const todoFromDb = await Todo.query().findOne({ text: todo.text });
     expect(res.statusCode).toBe(201);
     expect(todoFromDb).toMatchObject(todo);
+  });
+
+  it('POST /api/todos creates user if not authentificated', async () => {
+    const todo = { text: 'ggwp', name: 'guest', email: 'guest@guest.com' };
+    const res = await server.inject({ method: 'post', url: getApiUrl('todos'), payload: todo });
+
+    const expectedTodo = { text: 'ggwp' };
+    const expectedUser = { name: todo.name, email: todo.email };
+    const todoFromDb = await Todo.query().findOne(expectedTodo);
+    const userFromDb = await User.query().findOne(expectedUser);
+    expect(res.statusCode).toBe(201);
+    expect(todoFromDb).toMatchObject(expectedTodo);
+    expect(userFromDb).toMatchObject(expectedUser);
   });
 
   it('PUT /api/todos/:id - as admin, edit any field except `text`', async () => {

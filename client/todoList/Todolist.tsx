@@ -1,6 +1,7 @@
 import cn from 'classnames';
 import { Form, Formik } from 'formik';
 import React from 'react';
+import { useSelector } from 'react-redux';
 import useSWR from 'swr';
 import {
   IGetTodosResponse,
@@ -10,6 +11,7 @@ import {
   ITodo,
 } from '../../lib/types.js';
 import Layout from '../common/layout.js';
+import { selectSession } from '../common/reduxReducers.js';
 import { HeaderCell } from '../components/HeaderCell.js';
 import { Pagination } from '../components/Pagination.js';
 import {
@@ -17,10 +19,11 @@ import {
   Field,
   filterTypes,
   getApiUrl,
-  sortOrders,
   SubmitBtn,
   useContext,
   useImmerState,
+  useSubmit,
+  useTable,
   WithApiErrors,
 } from '../lib/utils.js';
 import s from './styles.module.css';
@@ -60,28 +63,46 @@ defaultFilters.set('is_completed', {
   filter: [],
 });
 
-const TodoList = WithApiErrors(() => {
-  const onSubmit = () => {};
+const TodoList = () => {
+  const { isSignedIn } = useSelector(selectSession);
   const { axios } = useContext();
   const { data, mutate } = useSWR<IGetTodosResponse>(getApiUrl('todos'));
-  const todos = data?.rows;
+  const todos = data?.rows || [];
 
   const [state, setState] = useImmerState<IState>({
     editingTodo: null,
     page: 0,
     size: 3,
     sortBy: null,
-    sortOrder: sortOrders.none,
+    sortOrder: null,
     filters: defaultFilters,
   });
   const { editingTodo, page, size, sortBy, sortOrder, filters } = state;
+
+  const filtersList = React.useMemo(() => Array.from(filters.values()), [filters]);
+  const { rows, totalRows } = useTable({
+    rows: todos,
+    filters: filtersList,
+    page,
+    size,
+    sortBy,
+    sortOrder,
+  });
 
   const initialValues = editingTodo
     ? { name: editingTodo.author?.name, email: editingTodo.author?.email, text: editingTodo.text }
     : { name: '', email: '', text: '' };
 
-  // console.log(todos);
-  console.log(Array.from(filters.values()));
+  const onSubmit = useSubmit(async (values, actions) => {
+    if (editingTodo) {
+      await axios.put(getApiUrl('todo', { id: editingTodo.id }), { text: values.text });
+    } else {
+      await axios.post(getApiUrl('todos'), values);
+    }
+    actions.resetForm();
+    mutate();
+    setState({ editingTodo: null });
+  });
 
   const editTodo = todo => async () => {
     setState({ editingTodo: todo });
@@ -111,7 +132,7 @@ const TodoList = WithApiErrors(() => {
   const onFilterChange: IMixedOnFilter = (filter, filterBy) => {
     const filterOpts = filters.get(filterBy)!;
     filters.set(filterBy, { ...filterOpts, filter });
-    setState({ filters });
+    setState({ filters: new Map(filters) });
   };
 
   const todoClass = todo =>
@@ -144,16 +165,20 @@ const TodoList = WithApiErrors(() => {
                   <h3 className="mb-0">Add new todo</h3>
                 )}
               </div>
-              <div className="mb-4">
-                <label className="text-sm">Name</label>
-                <Field className="input" name="name" />
-                <ErrorMessage name="name" />
-              </div>
-              <div className="mb-4">
-                <label className="text-sm">Email</label>
-                <Field className="input" name="email" />
-                <ErrorMessage name="email" />
-              </div>
+              {!isSignedIn && !editingTodo && (
+                <>
+                  <div className="mb-4">
+                    <label className="text-sm">Name</label>
+                    <Field className="input" name="name" />
+                    <ErrorMessage name="name" />
+                  </div>
+                  <div className="mb-4">
+                    <label className="text-sm">Email</label>
+                    <Field className="input" name="email" />
+                    <ErrorMessage name="email" />
+                  </div>
+                </>
+              )}
               <div className="mb-6">
                 <label className="text-sm">Text</label>
                 <Field className="input" name="text" as="textarea" />
@@ -177,7 +202,7 @@ const TodoList = WithApiErrors(() => {
               <tr>
                 <HeaderCell
                   name="author.name"
-                  sortOrder={sortBy === 'author.name' ? sortOrder : sortOrders.none}
+                  sortOrder={sortBy === 'author.name' ? sortOrder : null}
                   onSort={onSortChange}
                   filterType={filters.get('author.name')!.filterType}
                   filter={filters.get('author.name')!.filter}
@@ -186,15 +211,15 @@ const TodoList = WithApiErrors(() => {
                   <div>Name</div>
                 </HeaderCell>
                 <HeaderCell
-                  name="email"
-                  sortOrder={sortBy === 'email' ? sortOrder : sortOrders.none}
+                  name="author.email"
+                  sortOrder={sortBy === 'author.email' ? sortOrder : null}
                   onSort={onSortChange}
                 >
                   <div>Email</div>
                 </HeaderCell>
                 <HeaderCell
                   name="text"
-                  sortOrder={sortBy === 'text' ? sortOrder : sortOrders.none}
+                  sortOrder={sortBy === 'text' ? sortOrder : null}
                   onSort={onSortChange}
                   filterType={filters.get('text')!.filterType}
                   filter={filters.get('text')!.filter}
@@ -205,7 +230,7 @@ const TodoList = WithApiErrors(() => {
                 <HeaderCell
                   name="is_completed"
                   className="w-32"
-                  sortOrder={sortBy === 'is_completed' ? sortOrder : sortOrders.none}
+                  sortOrder={sortBy === 'is_completed' ? sortOrder : null}
                   onSort={onSortChange}
                   filterType={filters.get('is_completed')!.filterType}
                   filter={filters.get('is_completed')!.filter}
@@ -217,11 +242,11 @@ const TodoList = WithApiErrors(() => {
                 >
                   <div>Status</div>
                 </HeaderCell>
-                <th className="w-32"></th>
+                {isSignedIn && <th className="w-32"></th>}
               </tr>
             </thead>
             <tbody>
-              {todos?.map(todo => (
+              {rows.map(todo => (
                 <tr key={todo.id} className={todoRowClass(todo)}>
                   <td>{todo.author?.name}</td>
                   <td>{todo.author?.email}</td>
@@ -235,34 +260,36 @@ const TodoList = WithApiErrors(() => {
                       <i className="fa fa-pen ml-2" title="Edited by admin"></i>
                     )}
                   </td>
-                  <td className="text-right">
-                    <i
-                      className={changeStatusIconClass(todo)}
-                      title={changeStatusIconTitle(todo)}
-                      onClick={changeTodoStatus(todo)}
-                    ></i>
-                    <i
-                      className="fa fa-edit fa_big mr-3 clickable"
-                      title="Edit"
-                      onClick={editTodo(todo)}
-                    ></i>
-                    <i
-                      className="far fa-trash-can fa_big clickable"
-                      title="Delete"
-                      onClick={deleteTodo(todo.id)}
-                    ></i>
-                  </td>
+                  {isSignedIn && (
+                    <td className="text-right">
+                      <i
+                        className={changeStatusIconClass(todo)}
+                        title={changeStatusIconTitle(todo)}
+                        onClick={changeTodoStatus(todo)}
+                      ></i>
+                      <i
+                        className="fa fa-edit fa_big mr-3 clickable"
+                        title="Edit"
+                        onClick={editTodo(todo)}
+                      ></i>
+                      <i
+                        className="far fa-trash-can fa_big clickable"
+                        title="Delete"
+                        onClick={deleteTodo(todo.id)}
+                      ></i>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
           </table>
 
-          {data?.rows && (
+          {rows && (
             <Pagination
               className="mt-3"
               page={page + 1}
               size={size}
-              totalRows={data.rows.length}
+              totalRows={totalRows}
               onPageChange={onPageChange}
               onSizeChange={onSizeChange}
             />
@@ -271,6 +298,6 @@ const TodoList = WithApiErrors(() => {
       </div>
     </Layout>
   );
-});
+};
 
-export default TodoList;
+export default WithApiErrors(TodoList);

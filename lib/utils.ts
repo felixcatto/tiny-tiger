@@ -9,7 +9,7 @@ import { fileURLToPath } from 'url';
 import * as y from 'yup';
 import knexConfig from '../knexfile.js';
 import { guestUser, isAdmin, isSignedIn } from './sharedUtils.js';
-import { IValidateFn } from './types.js';
+import { IAuthenticate, IUser, IValidate, IValidateMW } from './types.js';
 
 export * from './sharedUtils.js';
 
@@ -33,25 +33,34 @@ export const getYupErrors = e => {
 
 export const makeErrors = errors => ({ errors });
 
-export const validate: IValidateFn =
+export const ivalidate: IValidate = (schema, payload) => {
+  try {
+    const validatedPayload = schema.validateSync(payload, {
+      abortEarly: false,
+      stripUnknown: true,
+    });
+    return [validatedPayload, null];
+  } catch (e) {
+    return [null, { message: 'Input is not valid', errors: getYupErrors(e) }];
+  }
+};
+
+export const validate: IValidateMW =
   (schema, payloadType = 'body') =>
   async (req, res) => {
     const payload = payloadType === 'query' ? req.query : req.body;
 
-    try {
-      const validatedBody = schema.validateSync(payload, {
-        abortEarly: false,
-        stripUnknown: true,
-      });
-      req[`vl${capitalize(payloadType)}`] = validatedBody;
-    } catch (e) {
-      res.code(400).send({ message: 'Input is not valid', errors: getYupErrors(e) });
+    const [data, error] = ivalidate(schema, payload);
+    if (error) {
+      res.code(400).send(error);
+    } else {
+      req[`vl${capitalize(payloadType)}`] = data;
     }
   };
 
 export const sessionName = 'session';
-const composeValue = (value, signature) => `${value}.${signature}`;
-const decomposeValue = compositValue => {
+export const composeValue = (value, signature) => `${value}.${signature}`;
+export const decomposeValue = compositValue => {
   const values = compositValue.split('.');
   if (values.length !== 2) return [];
   return values;
@@ -116,36 +125,37 @@ export const objectionPlugin = fp(async (app, { models }) => {
   });
 });
 
+export const authenticate: IAuthenticate = async (rawCookies, keygrip, fetchUser) => {
+  if (!isString(rawCookies)) return [guestUser, false];
+
+  const cookies = cookie.parse(rawCookies);
+  const sessionValue = cookies[sessionName];
+  if (!sessionValue) return [guestUser, false];
+
+  const [userId, signature] = decomposeValue(sessionValue);
+  if (!userId || !signature) return [guestUser, true];
+
+  const isSignatureCorrect = keygrip.verify(userId, signature);
+  if (!isSignatureCorrect) return [guestUser, true];
+
+  const user = await fetchUser(userId);
+  if (!user) return [guestUser, true];
+
+  return [user, false];
+};
+
 export const currentUserPlugin = fp(async app => {
   const { keygrip } = app;
   const { User } = app.objection;
+  const fetchUser = async userId => User.query().findById(userId);
 
   app.addHook('onRequest', async (req, res) => {
     const rawCookies = req.headers.cookie;
-    if (!isString(rawCookies)) {
-      req.currentUser = guestUser;
-    } else {
-      const cookies = cookie.parse(rawCookies);
-      const sessionValue = cookies[sessionName];
-      if (!sessionValue) {
-        req.currentUser = guestUser;
-      } else {
-        const [userId, signature] = decomposeValue(sessionValue);
-        if (!userId || !signature) {
-          removeSessionCookie(res);
-          req.currentUser = guestUser;
-        } else {
-          const isSignatureCorrect = keygrip.verify(userId, signature);
-          const user = await User.query().findById(userId);
-          if (user) {
-            req.currentUser = user;
-          } else {
-            removeSessionCookie(res);
-            req.currentUser = guestUser;
-          }
-        }
-      }
-    }
+    const [currentUser, shouldRemoveSession] = await authenticate(rawCookies, keygrip, fetchUser);
+
+    if (shouldRemoveSession) removeSessionCookie(res);
+
+    req.currentUser = currentUser;
   });
 });
 
@@ -158,6 +168,6 @@ export const leftJoin = (mainEntities, joinedEntities, mainKey, joinedKey, joinP
   });
 
 export const paginationSchema = y.object({
-  size: y.number(),
-  page: y.number(),
+  size: y.number().min(1),
+  page: y.number().min(0),
 });

@@ -1,12 +1,19 @@
 import cn from 'classnames';
 import { useFormikContext } from 'formik';
 import produce from 'immer';
-import { isFunction, omit } from 'lodash-es';
+import { get, isEmpty, isFunction, isNumber, omit, orderBy } from 'lodash-es';
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
-import { roles } from '../../lib/sharedUtils.js';
-import { IApiErrors, IContext, IUser, IUseSubmit } from '../../lib/types.js';
+import { filterTypes, roles } from '../../lib/sharedUtils.js';
+import {
+  IApiErrors,
+  IContext,
+  IUseImmerState,
+  IUser,
+  IUseSubmit,
+  IUseTable,
+} from '../../lib/types.js';
 import Context from './context.js';
 
 export * from '../../lib/sharedUtils.js';
@@ -14,10 +21,10 @@ export { Context };
 
 export const useContext = () => React.useContext<IContext>(Context);
 
-export function useImmerState<T = any>(initialState) {
-  const [state, setState] = React.useState<T>(initialState);
+export const useImmerState: IUseImmerState = initialState => {
+  const [state, setState] = React.useState(initialState);
 
-  const setImmerState = React.useRef(fnOrObject => {
+  const setImmerState = React.useCallback(fnOrObject => {
     if (isFunction(fnOrObject)) {
       const fn = fnOrObject;
       setState(curState => produce(curState, fn));
@@ -25,10 +32,10 @@ export function useImmerState<T = any>(initialState) {
       const newState = fnOrObject;
       setState(curState => ({ ...curState, ...newState }));
     }
-  });
+  }, []);
 
-  return [state, setImmerState.current] as const;
-}
+  return [state, setImmerState];
+};
 
 export const NavLink = ({ to, children }) => {
   const { pathname } = useLocation();
@@ -62,9 +69,9 @@ export const WithApiErrors = (Component: React.ComponentType<IApiErrors>) => pro
 export const useSubmit: IUseSubmit = onSubmit => {
   const { setApiErrors } = React.useContext(FormContext);
 
-  const wrappedSubmit = async values => {
+  const wrappedSubmit = async (values, actions) => {
     try {
-      await onSubmit(values);
+      await onSubmit(values, actions);
     } catch (e: any) {
       setApiErrors(e.errors);
     }
@@ -133,4 +140,41 @@ export const thunk = asyncFn => async (arg, thunkAPI) => {
   } catch (e) {
     return thunkAPI.rejectWithValue(e);
   }
+};
+
+export const makeCaseInsensitiveRegex = str =>
+  new RegExp(str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'), 'i');
+
+export const useTable: IUseTable = props => {
+  const { rows: originalRows, page, size, sortBy, sortOrder, filters } = props;
+
+  const data = React.useMemo(() => {
+    let filtered;
+    if (isEmpty(filters)) {
+      filtered = originalRows;
+    } else {
+      filtered = originalRows.filter(todo =>
+        filters.every(filterObj => {
+          if (isEmpty(filterObj.filter)) return true;
+
+          const todoValueOfField = get(todo, filterObj.filterBy);
+          if (filterObj.filterType === filterTypes.search) {
+            const regex = makeCaseInsensitiveRegex(filterObj.filter);
+            return todoValueOfField.match(regex);
+          } else if (filterObj.filterType === filterTypes.select) {
+            return filterObj.filter.some(selectFilter => selectFilter.value === todoValueOfField);
+          }
+        })
+      );
+    }
+
+    const sorted = sortBy && sortOrder ? orderBy(filtered, sortBy, sortOrder) : filtered;
+
+    const paginated =
+      size && isNumber(page) ? sorted.slice(page * size, page * size + size) : sorted;
+
+    return { rows: paginated, totalRows: sorted.length };
+  }, [originalRows, page, size, sortBy, sortOrder, filters]);
+
+  return data;
 };
