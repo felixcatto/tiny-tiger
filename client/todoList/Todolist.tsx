@@ -25,7 +25,7 @@ import {
 } from '../lib/utils.js';
 import s from './styles.module.css';
 
-type IFilters = Map<
+type IFiltersMap = Map<
   string,
   {
     filterBy: string;
@@ -40,12 +40,12 @@ type IState = {
   size: number;
   sortBy: string | null;
   sortOrder: ISortOrder;
-  filters: IFilters;
+  filters: IFiltersMap;
 };
 
 const defaultFilters = new Map();
-defaultFilters.set('name', {
-  filterBy: 'name',
+defaultFilters.set('author.name', {
+  filterBy: 'author.name',
   filterType: filterTypes.search,
   filter: '',
 });
@@ -54,8 +54,8 @@ defaultFilters.set('text', {
   filterType: filterTypes.search,
   filter: '',
 });
-defaultFilters.set('status', {
-  filterBy: 'status',
+defaultFilters.set('is_completed', {
+  filterBy: 'is_completed',
   filterType: filterTypes.select,
   filter: [],
 });
@@ -176,11 +176,11 @@ const TodoList = WithApiErrors(() => {
             <thead>
               <tr>
                 <HeaderCell
-                  name="name"
-                  sortOrder={sortBy === 'name' ? sortOrder : sortOrders.none}
+                  name="author.name"
+                  sortOrder={sortBy === 'author.name' ? sortOrder : sortOrders.none}
                   onSort={onSortChange}
-                  filterType={filters.get('name')!.filterType}
-                  filter={filters.get('name')!.filter}
+                  filterType={filters.get('author.name')!.filterType}
+                  filter={filters.get('author.name')!.filter}
                   onFilter={onFilterChange}
                 >
                   <div>Name</div>
@@ -203,12 +203,12 @@ const TodoList = WithApiErrors(() => {
                   <div>Text</div>
                 </HeaderCell>
                 <HeaderCell
-                  name="status"
+                  name="is_completed"
                   className="w-32"
-                  sortOrder={sortBy === 'status' ? sortOrder : sortOrders.none}
+                  sortOrder={sortBy === 'is_completed' ? sortOrder : sortOrders.none}
                   onSort={onSortChange}
-                  filterType={filters.get('status')!.filterType}
-                  filter={filters.get('status')!.filter}
+                  filterType={filters.get('is_completed')!.filterType}
+                  filter={filters.get('is_completed')!.filter}
                   onFilter={onFilterChange}
                   selectFilterOptions={[
                     { label: 'Completed', value: true },
@@ -225,7 +225,7 @@ const TodoList = WithApiErrors(() => {
                 <tr key={todo.id} className={todoRowClass(todo)}>
                   <td>{todo.author?.name}</td>
                   <td>{todo.author?.email}</td>
-                  <td>{todo.text}</td>
+                  <td className="text-justify">{todo.text}</td>
                   <td>
                     <i
                       className={todoClass(todo)}

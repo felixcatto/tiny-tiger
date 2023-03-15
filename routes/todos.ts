@@ -1,19 +1,30 @@
 import { FastifyInstance } from 'fastify';
-import { isNumber } from 'lodash-es';
-import { IPaginationSchema, ITodoSchema, ITodoSortSchema } from '../lib/types.js';
+import { isArray, isNumber, isString } from 'lodash-es';
+import { IFiltersSchema, IPaginationSchema, ISortSchema, ITodoSchema } from '../lib/types.js';
 import { checkAdmin, paginationSchema, validate } from '../lib/utils.js';
-import { todoSchema, todoSortSchema } from '../models/Todo.js';
+import { todoFilterSchema, todoSchema, todoSortSchema } from '../models/Todo.js';
 
-type IQuerySchema = IPaginationSchema & ITodoSortSchema;
+type IQuerySchema = IPaginationSchema & ISortSchema & IFiltersSchema;
 
 export default async (app: FastifyInstance) => {
   const { User, Todo, knex } = app.objection;
-  const querySchema = paginationSchema.concat(todoSortSchema);
+  const querySchema = paginationSchema.concat(todoSortSchema).concat(todoFilterSchema);
 
   app.get('/todos', { preHandler: validate(querySchema, 'query') }, async (req, res) => {
-    const { sortOrder, sortBy, page, size } = req.vlQuery as IQuerySchema;
+    const { sortOrder, sortBy, page, size, filters } = req.vlQuery as IQuerySchema;
+
     let totalRows = 0;
-    let todoQuery = Todo.query();
+    let todoQuery = Todo.query().withGraphJoined('author');
+
+    if (filters) {
+      filters.forEach(el => {
+        if (isArray(el.filter)) {
+          todoQuery.whereIn(el.filterBy, el.filter);
+        } else if (isString(el.filter)) {
+          todoQuery.where(el.filterBy, 'ilike', `%${el.filter}%`);
+        }
+      });
+    }
 
     if (sortOrder && sortBy) {
       todoQuery.orderBy(sortBy, sortOrder);
@@ -26,7 +37,8 @@ export default async (app: FastifyInstance) => {
       totalRows = await Todo.query().resultSize();
     }
 
-    const todos = await todoQuery.withGraphFetched('author');
+    const todos = await todoQuery;
+
     res.code(200).send({ rows: todos, totalRows });
   });
 

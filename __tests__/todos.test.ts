@@ -1,6 +1,6 @@
-import { orderBy } from 'lodash-es';
-import { ITodoClass, IUserClass } from '../lib/types.js';
-import { getApiUrl } from '../lib/utils.js';
+import { omit, orderBy } from 'lodash-es';
+import { ITodo, ITodoClass, IUserClass } from '../lib/types.js';
+import { getApiUrl, leftJoin } from '../lib/utils.js';
 import getApp from '../main/index.js';
 import todosFixture, { extraTodos, fullTodos } from './fixtures/todos.js';
 import usersFixture from './fixtures/users.js';
@@ -34,15 +34,61 @@ describe('todos', () => {
     expect(rows).toMatchObject(todosFixture);
   });
 
-  it('GET /api/todos - sort', async () => {
+  it('GET /api/todos - filter', async () => {
+    const [vasa] = usersFixture;
+    const filters = [
+      { filterBy: 'author.name', filter: vasa.name },
+      { filterBy: 'is_completed', filter: [true] },
+    ];
+
     await Todo.query().insertGraph(extraTodos);
     const res = await server.inject({
       method: 'get',
-      url: getApiUrl('todos', {}, { sortOrder: 'desc', sortBy: 'author_id' }),
+      url: getApiUrl('todos', {}, { filters: JSON.stringify(filters) }),
     });
 
-    const received = JSON.parse(res.body).rows.map(el => el.author_id);
-    const expected = orderBy(fullTodos, 'author_id', 'desc').map(el => el.author_id);
+    const received = JSON.parse(res.body).rows;
+
+    const authorNameFilter = filters[0].filter;
+    const isCompletedFilter = filters[1].filter as any[];
+    const users = usersFixture.map(user => omit(user, 'password'));
+    const todosWithAuthor: ITodo[] = leftJoin(fullTodos, users, 'author_id', 'id', 'author');
+
+    const expected = todosWithAuthor.filter(
+      todo =>
+        todo.author?.name === authorNameFilter && isCompletedFilter.includes(todo.is_completed)
+    );
+
+    expect(res.statusCode).toBe(200);
+    expect(received).toMatchObject(expected);
+  });
+
+  it('GET /api/todos - sort', async () => {
+    await Todo.query().insertGraph(extraTodos);
+    const sortOrder = 'desc';
+    const sortBy = 'is_completed';
+    const res = await server.inject({
+      method: 'get',
+      url: getApiUrl('todos', {}, { sortOrder, sortBy }),
+    });
+
+    const received = JSON.parse(res.body).rows.map(el => el[sortBy]);
+    const expected = orderBy(fullTodos, sortBy, sortOrder).map(el => el[sortBy]);
+    expect(res.statusCode).toBe(200);
+    expect(received).toMatchObject(expected);
+  });
+
+  it('GET /api/todos - sort complex field', async () => {
+    await Todo.query().insertGraph(extraTodos);
+    const res = await server.inject({
+      method: 'get',
+      url: getApiUrl('todos', {}, { sortOrder: 'desc', sortBy: 'author.name' }),
+    });
+
+    const received = JSON.parse(res.body).rows.map(el => el.author.name);
+    const todosWithAuthor = leftJoin(fullTodos, usersFixture, 'author_id', 'id', 'author');
+    const expected = orderBy(todosWithAuthor, 'author.name', 'desc').map(el => el.author.name);
+
     expect(res.statusCode).toBe(200);
     expect(received).toMatchObject(expected);
   });
@@ -62,6 +108,44 @@ describe('todos', () => {
     expect(res.statusCode).toBe(200);
     expect(rows).toMatchObject(expected);
     expect(totalRows).toEqual(fullTodos.length);
+  });
+
+  it('GET /api/todos - filter & sort & pagination', async () => {
+    const [vasa] = usersFixture;
+    const filters = [
+      { filterBy: 'text', filter: 's' },
+      { filterBy: 'is_completed', filter: [false] },
+    ];
+    const sortOrder = 'desc';
+    const sortBy = 'author.name';
+    const page = 1;
+    const size = 2;
+
+    await Todo.query().insertGraph(extraTodos);
+    const res = await server.inject({
+      method: 'get',
+      url: getApiUrl(
+        'todos',
+        {},
+        { filters: JSON.stringify(filters), sortBy, sortOrder, page, size }
+      ),
+    });
+
+    const received = JSON.parse(res.body).rows;
+
+    const stringFilter = filters[0].filter as any;
+    const arrayFilter = filters[1].filter as any[];
+    const users = usersFixture.map(user => omit(user, 'password'));
+    const todosWithAuthor: ITodo[] = leftJoin(fullTodos, users, 'author_id', 'id', 'author');
+
+    const filtered = todosWithAuthor.filter(
+      todo => todo.text.includes(stringFilter) && arrayFilter.includes(todo.is_completed)
+    );
+    const sorted = orderBy(filtered, sortBy, sortOrder);
+    const expected = sorted.slice(page * size, page * size + size);
+
+    expect(res.statusCode).toBe(200);
+    expect(received).toMatchObject(expected);
   });
 
   it('POST /api/todos', async () => {

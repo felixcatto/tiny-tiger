@@ -21,6 +21,17 @@ export type IAsyncState = keyof typeof asyncStates;
 export type IMode = 'test' | 'development' | 'production';
 
 export type IPaginationSchema = y.InferType<typeof paginationSchema>;
+export type ISortSchema = {
+  sortOrder: Exclude<ISortOrder, 'none'>;
+  sortBy: string;
+};
+export type IFilterSchema = {
+  filterBy: string;
+  filter: string | any[];
+};
+export type IFiltersSchema = {
+  filters: IFilterSchema[];
+};
 
 export type IUser = {
   id: number;
@@ -49,7 +60,6 @@ export type ITodo = {
 };
 export type ITodoClass = typeof Todo;
 export type ITodoSchema = y.InferType<typeof todoSchema>;
-export type ITodoSortSchema = y.InferType<typeof todoSortSchema>;
 
 type IModels = {
   [Property in keyof typeof models]: (typeof models)[Property];
@@ -134,6 +144,19 @@ export type IFilterTypes = typeof filterTypes;
 
 export type ISelectFilter = ISelectOption[];
 export type ISearchFilter = string;
+
+export type IFilters = (
+  | {
+      filterBy: string;
+      filterType: IFilterTypes['select'];
+      filter: ISelectFilter;
+    }
+  | {
+      filterBy: string;
+      filterType: IFilterTypes['search'];
+      filter: ISearchFilter;
+    }
+)[];
 
 export type IMixedOnFilter = (filter: ISearchFilter | ISelectFilter, filterBy: string) => void;
 

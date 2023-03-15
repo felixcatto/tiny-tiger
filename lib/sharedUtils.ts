@@ -22,7 +22,7 @@ export const guestUser = {
   is_signed_in: false,
 } as const;
 
-const qs = {
+export const qs = {
   stringify: (obj = {}) => {
     if (isEmpty(obj)) return '';
     return Object.keys(obj)

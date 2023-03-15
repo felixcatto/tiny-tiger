@@ -15,7 +15,7 @@ export * from './sharedUtils.js';
 
 export const dirname = url => fileURLToPath(path.dirname(url));
 
-export const yupToJson = value => (isString(value) ? JSON.parse(value) : value);
+export const yupFromJson = value => (isString(value) ? JSON.parse(value) : value);
 
 export const getYupErrors = e => {
   if (e.inner) {
@@ -148,6 +148,14 @@ export const currentUserPlugin = fp(async app => {
     }
   });
 });
+
+export const leftJoin = (mainEntities, joinedEntities, mainKey, joinedKey, joinProp) =>
+  mainEntities.map(mainEntity => {
+    const result = joinedEntities.find(
+      joinedEntity => mainEntity[mainKey] === joinedEntity[joinedKey]
+    );
+    return { ...mainEntity, [joinProp]: result };
+  });
 
 export const paginationSchema = y.object({
   size: y.number(),
