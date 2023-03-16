@@ -63,3 +63,4 @@ test-once:
 
 lint:
 	npx eslint .
+	npx tsc

@@ -2,8 +2,8 @@ import { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { FormikHelpers } from 'formik';
 import { Knex } from 'knex';
 import * as y from 'yup';
-import { makeThunks, reduxActions } from '../client/common/reduxActions.js';
-import { makeCurUserReducer } from '../client/common/reduxReducers.js';
+import { makeThunks, reduxActions } from '../client/lib/reduxActions.js';
+import { makeCurUserReducer } from '../client/lib/reduxReducers.js';
 import * as models from '../models/index.js';
 import {
   Todo,
@@ -47,7 +47,6 @@ export type IUser = {
   role: IRole;
   email: string;
   password_digest: string;
-  is_signed_in: boolean;
   todos?: ITodo[];
 };
 export type IUserClass = typeof User;

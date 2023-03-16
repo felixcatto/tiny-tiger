@@ -1,6 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { IAxiosInstance, IUser, IUserLoginCreds } from '../../lib/types.js';
-import { getApiUrl, thunk } from '../lib/utils.js';
+import { getApiUrl, thunk } from './utils.js';
 
 export const reduxActions = {};
 

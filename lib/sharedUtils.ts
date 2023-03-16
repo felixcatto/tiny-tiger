@@ -19,7 +19,6 @@ export const guestUser = {
   role: roles.guest,
   email: '',
   password_digest: '',
-  is_signed_in: false,
 } as const;
 
 export const qs = {

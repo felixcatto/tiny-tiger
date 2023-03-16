@@ -10,7 +10,7 @@ import {
   userRolesToIcons,
 } from '../lib/utils.js';
 import s from './layout.module.css';
-import { selectSession } from './reduxReducers.js';
+import { selectSession } from '../lib/reduxReducers.js';
 
 const Layout = ({ children }: any) => {
   const { actions } = useContext();

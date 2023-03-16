@@ -5,7 +5,6 @@ export const up = async knex => {
     table.string('role').notNullable();
     table.string('email').unique().notNullable();
     table.string('password_digest');
-    table.boolean('is_signed_in').defaultTo(false);
   });
 };
 
