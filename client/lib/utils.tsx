@@ -9,7 +9,9 @@ import { filterTypes, roles } from '../../lib/sharedUtils.js';
 import {
   IApiErrors,
   IContext,
+  IFilter,
   IUseImmerState,
+  IUseQuery,
   IUser,
   IUseSubmit,
   IUseTable,
@@ -148,13 +150,15 @@ export const makeCaseInsensitiveRegex = str =>
 export const useTable: IUseTable = props => {
   const { rows: originalRows, page, size, sortBy, sortOrder, filters } = props;
 
-  const data = React.useMemo(() => {
+  return React.useMemo(() => {
+    const filtersList = Array.from(filters.values());
     let filtered;
-    if (isEmpty(filters)) {
+
+    if (isEmpty(filtersList)) {
       filtered = originalRows;
     } else {
       filtered = originalRows.filter(todo =>
-        filters.every(filterObj => {
+        filtersList.every(filterObj => {
           if (isEmpty(filterObj.filter)) return true;
 
           const todoValueOfField = get(todo, filterObj.filterBy);
@@ -175,6 +179,41 @@ export const useTable: IUseTable = props => {
 
     return { rows: paginated, totalRows: sorted.length };
   }, [originalRows, page, size, sortBy, sortOrder, filters]);
+};
 
-  return data;
+export const stripEmptyFilters = (filters: IFilter[]) =>
+  filters.filter(el => isNumber(el.filter) || !isEmpty(el.filter));
+
+export const transformFiltersForApi = (filters: IFilter[]) => {
+  const tmpFilters = stripEmptyFilters(filters);
+  return tmpFilters.map(el =>
+    el.filterType === filterTypes.search
+      ? { filterBy: el.filterBy, filter: el.filter }
+      : { filterBy: el.filterBy, filter: el.filter.map(selectOption => selectOption.value) }
+  );
+};
+
+export const useQuery: IUseQuery = props => {
+  const { filters, page, size, sortBy, sortOrder } = props;
+
+  return React.useMemo(() => {
+    const queryStr = {};
+    const filtersList = Array.from(filters.values());
+    const filtersForApi = transformFiltersForApi(filtersList);
+    if (!isEmpty(filtersForApi)) {
+      queryStr['filters'] = JSON.stringify(filtersForApi);
+    }
+
+    if (size && isNumber(page)) {
+      queryStr['size'] = size;
+      queryStr['page'] = page;
+    }
+
+    if (sortBy && sortOrder) {
+      queryStr['sortBy'] = sortBy;
+      queryStr['sortOrder'] = sortOrder;
+    }
+
+    return queryStr;
+  }, [filters, page, size, sortBy, sortOrder]);
 };

@@ -26,6 +26,7 @@ export const qs = {
   stringify: (obj = {}) => {
     if (isEmpty(obj)) return '';
     return Object.keys(obj)
+      .sort()
       .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(obj[key])}`)
       .join('&');
   },

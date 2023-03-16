@@ -34,8 +34,8 @@ export default async (app: FastifyInstance) => {
   app.get('/todos', { preHandler: validate(querySchema, 'query') }, async (req, res) => {
     const { sortOrder, sortBy, page, size, filters } = req.vlQuery as IQuerySchema;
 
-    let totalRows = 0;
-    const todoQuery = Todo.query().withGraphJoined('author');
+    let totalRowsQuery;
+    const todoQuery = Todo.query();
 
     if (filters) {
       filters.forEach(el => {
@@ -54,13 +54,19 @@ export default async (app: FastifyInstance) => {
     }
 
     if (size && isNumber(page)) {
+      totalRowsQuery = todoQuery.clone().joinRelated('author').resultSize();
       todoQuery.offset(page * size).limit(size);
-      totalRows = await Todo.query().resultSize();
     }
 
-    const todos = await todoQuery;
+    todoQuery.withGraphJoined('author');
 
-    res.code(200).send({ rows: todos, totalRows });
+    if (totalRowsQuery) {
+      const [todos, totalRows] = await Promise.all([todoQuery, totalRowsQuery]);
+      res.code(200).send({ rows: todos, totalRows });
+    } else {
+      const todos = await todoQuery;
+      res.code(200).send({ rows: todos, totalRows: todos.length });
+    }
   });
 
   app.post('/todos', async (req, res) => {

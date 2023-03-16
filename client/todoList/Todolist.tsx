@@ -22,8 +22,8 @@ import {
   SubmitBtn,
   useContext,
   useImmerState,
+  useQuery,
   useSubmit,
-  useTable,
   WithApiErrors,
 } from '../lib/utils.js';
 import s from './styles.module.css';
@@ -66,8 +66,6 @@ defaultFilters.set('is_completed', {
 const TodoList = () => {
   const { isSignedIn } = useSelector(selectSession);
   const { axios } = useContext();
-  const { data, mutate } = useSWR<IGetTodosResponse>(getApiUrl('todos'));
-  const todos = data?.rows || [];
 
   const [state, setState] = useImmerState<IState>({
     editingTodo: null,
@@ -79,15 +77,12 @@ const TodoList = () => {
   });
   const { editingTodo, page, size, sortBy, sortOrder, filters } = state;
 
-  const filtersList = React.useMemo(() => Array.from(filters.values()), [filters]);
-  const { rows, totalRows } = useTable({
-    rows: todos,
-    filters: filtersList,
-    page,
-    size,
-    sortBy,
-    sortOrder,
-  });
+  const query = useQuery({ page, size, sortBy, sortOrder, filters });
+  const { data, mutate } = useSWR<IGetTodosResponse>(getApiUrl('todos', {}, query));
+  useSWR<IGetTodosResponse>(getApiUrl('todos', {}, { ...query, page: page + 1 }));
+
+  const rows = data?.rows || [];
+  const totalRows = data?.totalRows || 0;
 
   const initialValues = editingTodo
     ? { name: editingTodo.author?.name, email: editingTodo.author?.email, text: editingTodo.text }
@@ -132,7 +127,7 @@ const TodoList = () => {
   const onFilterChange: IMixedOnFilter = (filter, filterBy) => {
     const filterOpts = filters.get(filterBy)!;
     filters.set(filterBy, { ...filterOpts, filter });
-    setState({ filters: new Map(filters) });
+    setState({ filters: new Map(filters), page: 0 });
   };
 
   const todoClass = todo =>

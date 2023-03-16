@@ -165,7 +165,7 @@ export type IFilterTypes = typeof filterTypes;
 export type ISelectFilter = ISelectOption[];
 export type ISearchFilter = string;
 
-export type IFilters = (
+export type IFilter =
   | {
       filterBy: string;
       filterType: IFilterTypes['select'];
@@ -175,8 +175,7 @@ export type IFilters = (
       filterBy: string;
       filterType: IFilterTypes['search'];
       filter: ISearchFilter;
-    }
-)[];
+    };
 
 export type IMixedOnFilter = (filter: ISearchFilter | ISelectFilter, filterBy: string) => void;
 
@@ -226,12 +225,28 @@ export type IUseTableProps<T> = {
   size: number;
   sortBy: string | null;
   sortOrder: ISortOrder;
-  filters: IFilters;
+  filters: Map<string, IFilter>;
 };
 
 export type IUseTable = <T extends any[]>(
   props: IUseTableProps<T>
 ) => { rows: T; totalRows: number };
+
+export type IUseQueryProps = {
+  page: number;
+  size: number;
+  sortBy: string | null;
+  sortOrder: ISortOrder;
+  filters: Map<string, IFilter>;
+};
+
+export type IUseQuery = (props: IUseQueryProps) => {
+  page?: number;
+  size?: number;
+  sortBy?: string;
+  sortOrder?: ISortOrder;
+  filters?: IFilter[];
+}
 
 type IProduceFn<T> = (draftState: T) => any;
 type ISetState<T> = (fnOrObject: Partial<T> | IProduceFn<T>) => void;
