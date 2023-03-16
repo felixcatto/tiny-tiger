@@ -62,4 +62,4 @@ test-once:
 	NODE_OPTIONS=--experimental-vm-modules npx jest --runInBand
 
 lint:
-	npx tsc
+	npx eslint .

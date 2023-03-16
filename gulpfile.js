@@ -6,10 +6,8 @@ import babel from 'gulp-babel';
 import waitOn from 'wait-on';
 import webpack from 'webpack';
 import babelConfig from './babelconfig.js';
-import { dirname } from './lib/devUtils.js';
 import webpackConfig from './webpack.config.js';
 
-const __dirname = dirname(import.meta.url);
 const { series, parallel } = gulp;
 
 const paths = {
@@ -108,4 +106,4 @@ export const dev = series(
   watch
 );
 
-export const build = series(clean, copyPublicDev, transpileServerJs, bundleClient);
+export const build = series(clean, copyPublic, transpileServerJs, bundleClient);

@@ -9,7 +9,7 @@ import { fileURLToPath } from 'url';
 import * as y from 'yup';
 import knexConfig from '../knexfile.js';
 import { guestUser, isAdmin, isSignedIn } from './sharedUtils.js';
-import { IAuthenticate, IUser, IValidate, IValidateMW } from './types.js';
+import { IAuthenticate, IValidate, IValidateMW } from './types.js';
 
 export * from './sharedUtils.js';
 

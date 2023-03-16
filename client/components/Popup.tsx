@@ -24,7 +24,6 @@ type IUsePopupProps = {
 
 type IPopupProps = {
   children: any;
-  isOpen: boolean;
   strategy: any;
   x: number | null;
   y: number | null;
@@ -49,7 +48,7 @@ export const usePopup = (props: IUsePopupProps) => {
   const dismiss = useDismiss(context);
   const { getReferenceProps, getFloatingProps } = useInteractions([click, dismiss]);
 
-  const popupProps = { isOpen, x, y, strategy, refs, getFloatingProps, context };
+  const popupProps = { x, y, strategy, refs, getFloatingProps, context };
 
   return { refs, getReferenceProps, popupProps };
 };
@@ -58,7 +57,6 @@ export const Popup = (props: IPopupProps) => {
   const tooltipRootSelector = '#popoverRoot';
   const {
     children,
-    isOpen,
     x,
     y,
     strategy,

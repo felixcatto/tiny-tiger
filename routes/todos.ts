@@ -35,7 +35,7 @@ export default async (app: FastifyInstance) => {
     const { sortOrder, sortBy, page, size, filters } = req.vlQuery as IQuerySchema;
 
     let totalRows = 0;
-    let todoQuery = Todo.query().withGraphJoined('author');
+    const todoQuery = Todo.query().withGraphJoined('author');
 
     if (filters) {
       filters.forEach(el => {
