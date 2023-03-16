@@ -1,6 +1,6 @@
 import { createReducer, createSelector } from '@reduxjs/toolkit';
 import { IActions, IReduxState, IUser } from '../../lib/types.js';
-import { guestUser, isAdmin, isSignedIn } from '../lib/utils.js';
+import { guestUser, isAdmin, isSignedIn } from './utils.js';
 
 export const makeCurUserReducer = (actions: IActions, initialState: IUser = guestUser) =>
   createReducer(initialState, builder => {

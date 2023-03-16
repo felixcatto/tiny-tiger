@@ -75,7 +75,7 @@ export const useSubmit: IUseSubmit = onSubmit => {
     try {
       await onSubmit(values, actions);
     } catch (e: any) {
-      setApiErrors(e.errors);
+      if (e.errors) setApiErrors(e.errors);
     }
   };
 

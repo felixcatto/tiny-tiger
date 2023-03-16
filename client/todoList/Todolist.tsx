@@ -10,8 +10,8 @@ import {
   ISortOrder,
   ITodo,
 } from '../../lib/types.js';
-import Layout from '../common/layout.js';
-import { selectSession } from '../common/reduxReducers.js';
+import Layout from '../components/layout.js';
+import { selectSession } from '../lib/reduxReducers.js';
 import { HeaderCell } from '../components/HeaderCell.js';
 import { Pagination } from '../components/Pagination.js';
 import {

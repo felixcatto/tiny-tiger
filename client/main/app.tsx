@@ -4,10 +4,10 @@ import React from 'react';
 import { Provider } from 'react-redux';
 import { SWRConfig } from 'swr';
 import { IBindedActions, IContext } from '../../lib/types.js';
-import { makeThunks, reduxActions } from '../common/reduxActions.js';
-import { makeCurUserReducer } from '../common/reduxReducers.js';
 import Context from '../lib/context.js';
-import { restoreUser } from '../lib/utils.js';
+import { makeThunks, reduxActions } from '../lib/reduxActions.js';
+import { makeCurUserReducer } from '../lib/reduxReducers.js';
+import { getUrl, restoreUser } from '../lib/utils.js';
 
 type IAppProps = {
   Component: (props) => JSX.Element;
@@ -22,6 +22,10 @@ const App = (props: IAppProps) => {
       response => response.data,
       error => {
         console.log(error.response);
+        const { status } = error.response;
+        if ([401, 403].includes(status)) {
+          window.location.href = getUrl('newSession');
+        }
         return Promise.reject(error.response.data);
       }
     );
@@ -32,6 +36,18 @@ const App = (props: IAppProps) => {
     };
 
     const reduxThunks = makeThunks({ axios });
+    const actions = { ...reduxActions, ...reduxThunks };
+
+    const initialUserState = restoreUser();
+
+    const reduxStore = configureStore({
+      reducer: {
+        [makeCurUserReducer.key]: initialUserState
+          ? makeCurUserReducer(actions, initialUserState)
+          : makeCurUserReducer(actions),
+      },
+    });
+
     const bindedReduxActions = Object.keys(reduxActions).reduce(
       (acc, actionType) => ({
         ...acc,
@@ -46,18 +62,7 @@ const App = (props: IAppProps) => {
       }),
       {}
     );
-    const actions = { ...reduxActions, ...reduxThunks };
     const bindedActions = { ...bindedReduxActions, ...bindedThunks } as IBindedActions;
-
-    const initialUserState = restoreUser();
-
-    const reduxStore = configureStore({
-      reducer: {
-        [makeCurUserReducer.key]: initialUserState
-          ? makeCurUserReducer(actions, initialUserState)
-          : makeCurUserReducer(actions),
-      },
-    });
 
     const contextStore: IContext = {
       axios,

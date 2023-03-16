@@ -1,7 +1,7 @@
 import { Form, Formik } from 'formik';
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Layout from '../common/layout.js';
+import Layout from '../components/layout.js';
 import {
   ErrorMessage,
   Field,

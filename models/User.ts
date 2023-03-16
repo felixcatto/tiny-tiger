@@ -10,7 +10,6 @@ export class User extends Model {
   role: IRole;
   email: string;
   password_digest: string;
-  is_signed_in: boolean;
   todos?: ITodo[];
 
   static get tableName() {
