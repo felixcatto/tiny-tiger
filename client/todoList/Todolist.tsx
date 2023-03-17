@@ -7,75 +7,31 @@ import {
   IGetTodosResponse,
   IHeaderCellProps,
   IMixedOnFilter,
-  ISortOrder,
-  ITodo,
+  IReduxState,
 } from '../../lib/types.js';
 import Layout from '../common/layout.js';
-import { selectSession } from '../lib/reduxReducers.js';
 import { HeaderCell } from '../components/HeaderCell.js';
 import { Pagination } from '../components/Pagination.js';
+import { selectSession } from '../lib/reduxReducers.js';
 import {
   ErrorMessage,
   Field,
-  filterTypes,
   getApiUrl,
   SubmitBtn,
   useContext,
-  useImmerState,
   useQuery,
   useSubmit,
   WithApiErrors,
 } from '../lib/utils.js';
 import s from './styles.module.css';
 
-type IFiltersMap = Map<
-  string,
-  {
-    filterBy: string;
-    filterType: any;
-    filter: any;
-  }
->;
-
-type IState = {
-  editingTodo: ITodo | null;
-  page: number;
-  size: number;
-  sortBy: string | null;
-  sortOrder: ISortOrder;
-  filters: IFiltersMap;
-};
-
-const defaultFilters = new Map();
-defaultFilters.set('author.name', {
-  filterBy: 'author.name',
-  filterType: filterTypes.search,
-  filter: '',
-});
-defaultFilters.set('text', {
-  filterBy: 'text',
-  filterType: filterTypes.search,
-  filter: '',
-});
-defaultFilters.set('is_completed', {
-  filterBy: 'is_completed',
-  filterType: filterTypes.select,
-  filter: [],
-});
-
 const TodoList = () => {
+  const todolist = useSelector((state: IReduxState) => state.todolist);
   const { isSignedIn } = useSelector(selectSession);
-  const { axios } = useContext();
+  const { axios, actions } = useContext();
 
-  const [state, setState] = useImmerState<IState>({
-    editingTodo: null,
-    page: 0,
-    size: 3,
-    sortBy: null,
-    sortOrder: null,
-    filters: defaultFilters,
-  });
-  const { editingTodo, page, size, sortBy, sortOrder, filters } = state;
+  const { editingTodo, page, size, sortBy, sortOrder } = todolist;
+  const filters = new Map(Object.entries(todolist.filters)) as any;
 
   const query = useQuery({ page, size, sortBy, sortOrder, filters });
   const { data, mutate } = useSWR<IGetTodosResponse>(getApiUrl('todos', {}, query));
@@ -88,19 +44,19 @@ const TodoList = () => {
     ? { name: editingTodo.author?.name, email: editingTodo.author?.email, text: editingTodo.text }
     : { name: '', email: '', text: '' };
 
-  const onSubmit = useSubmit(async (values, actions) => {
+  const onSubmit = useSubmit(async (values, fmActions) => {
     if (editingTodo) {
       await axios.put(getApiUrl('todo', { id: editingTodo.id }), { text: values.text });
     } else {
       await axios.post(getApiUrl('todos'), values);
     }
-    actions.resetForm();
+    fmActions.resetForm();
     mutate();
-    setState({ editingTodo: null });
+    actions.setTodolist({ editingTodo: null });
   });
 
   const editTodo = todo => async () => {
-    setState({ editingTodo: todo });
+    actions.setTodolist({ editingTodo: todo });
   };
   const changeTodoStatus = todo => async () => {
     await axios.put(getApiUrl('todo', { id: todo.id }), {
@@ -110,24 +66,24 @@ const TodoList = () => {
     mutate();
   };
   const cancelEdit = () => {
-    setState({ editingTodo: null });
+    actions.setTodolist({ editingTodo: null });
   };
   const deleteTodo = id => async () => {
     await axios.delete(getApiUrl('todo', { id }));
     mutate();
   };
 
-  const onPageChange = newPage => setState({ page: newPage - 1 });
-  const onSizeChange = newSize => setState({ size: newSize, page: 0 });
+  const onPageChange = newPage => actions.setTodolist({ page: newPage - 1 });
+  const onSizeChange = newSize => actions.setTodolist({ size: newSize, page: 0 });
 
   const onSortChange: IHeaderCellProps['onSort'] = (sortOrder, sortBy) => {
-    setState({ sortBy, sortOrder });
+    actions.setTodolist({ sortBy, sortOrder });
   };
 
   const onFilterChange: IMixedOnFilter = (filter, filterBy) => {
     const filterOpts = filters.get(filterBy)!;
     filters.set(filterBy, { ...filterOpts, filter });
-    setState({ filters: new Map(filters), page: 0 });
+    actions.setTodolist({ filters: Object.fromEntries(filters), page: 0 });
   };
 
   const todoClass = todo =>

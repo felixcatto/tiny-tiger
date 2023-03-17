@@ -5,7 +5,7 @@ import { Provider } from 'react-redux';
 import { SWRConfig } from 'swr';
 import { IBindedActions, IContext } from '../../lib/types.js';
 import { makeThunks, reduxActions } from '../lib/reduxActions.js';
-import { makeCurUserReducer } from '../lib/reduxReducers.js';
+import { makeCurUserReducer, makeTodolistReducer } from '../lib/reduxReducers.js';
 import Context from '../lib/context.js';
 import { getUrl, restoreUser } from '../lib/utils.js';
 
@@ -36,6 +36,19 @@ const App = (props: IAppProps) => {
     };
 
     const reduxThunks = makeThunks({ axios });
+    const actions = { ...reduxActions, ...reduxThunks };
+
+    const initialUserState = restoreUser();
+
+    const reduxStore = configureStore({
+      reducer: {
+        [makeCurUserReducer.key]: initialUserState
+          ? makeCurUserReducer(actions, initialUserState)
+          : makeCurUserReducer(actions),
+        [makeTodolistReducer.key]: makeTodolistReducer(actions),
+      },
+    });
+
     const bindedReduxActions = Object.keys(reduxActions).reduce(
       (acc, actionType) => ({
         ...acc,
@@ -50,18 +63,7 @@ const App = (props: IAppProps) => {
       }),
       {}
     );
-    const actions = { ...reduxActions, ...reduxThunks };
     const bindedActions = { ...bindedReduxActions, ...bindedThunks } as IBindedActions;
-
-    const initialUserState = restoreUser();
-
-    const reduxStore = configureStore({
-      reducer: {
-        [makeCurUserReducer.key]: initialUserState
-          ? makeCurUserReducer(actions, initialUserState)
-          : makeCurUserReducer(actions),
-      },
-    });
 
     const contextStore: IContext = {
       axios,

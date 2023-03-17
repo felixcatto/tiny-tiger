@@ -3,7 +3,7 @@ import { FormikHelpers } from 'formik';
 import { Knex } from 'knex';
 import * as y from 'yup';
 import { makeThunks, reduxActions } from '../client/lib/reduxActions.js';
-import { makeCurUserReducer } from '../client/lib/reduxReducers.js';
+import { makeCurUserReducer, makeTodolistReducer } from '../client/lib/reduxReducers.js';
 import * as models from '../models/index.js';
 import {
   Todo,
@@ -136,7 +136,8 @@ export type IBindedThunks = {
 export type IActions = IReduxActions & IReduxThunks;
 export type IBindedActions = IReduxActions & IBindedThunks;
 
-export type IReduxState = IReduxRecord<typeof makeCurUserReducer>;
+export type IReduxState = IReduxRecord<typeof makeCurUserReducer> &
+  IReduxRecord<typeof makeTodolistReducer>;
 
 export type IContext = {
   axios: IAxiosInstance;
@@ -245,8 +246,17 @@ export type IUseQuery = (props: IUseQueryProps) => {
   sortBy?: string;
   sortOrder?: ISortOrder;
   filters?: IFilter[];
-}
+};
 
 type IProduceFn<T> = (draftState: T) => any;
 type ISetState<T> = (fnOrObject: Partial<T> | IProduceFn<T>) => void;
 export type IUseImmerState = <T>(initialState: T) => [state: T, setState: ISetState<T>];
+
+export type ITodolistState = {
+  editingTodo: ITodo | null;
+  page: number;
+  size: number;
+  sortBy: string | null;
+  sortOrder: ISortOrder;
+  filters: Record<string, IFilter>;
+};

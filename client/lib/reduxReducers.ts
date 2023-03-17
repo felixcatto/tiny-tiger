@@ -1,5 +1,6 @@
 import { createReducer, createSelector } from '@reduxjs/toolkit';
-import { IActions, IReduxState, IUser } from '../../lib/types.js';
+import { IActions, IReduxState, ITodolistState, IUser } from '../../lib/types.js';
+import { defaultFilters } from '../todoList/utils.js';
 import { guestUser, isAdmin, isSignedIn } from './utils.js';
 
 export const makeCurUserReducer = (actions: IActions, initialState: IUser = guestUser) =>
@@ -19,3 +20,22 @@ export const selectSession = createSelector(
     isAdmin: isAdmin(currentUser),
   })
 );
+
+const todolistInitialState = {
+  editingTodo: null,
+  page: 0,
+  size: 3,
+  sortBy: null,
+  sortOrder: null,
+  filters: defaultFilters,
+};
+
+export const makeTodolistReducer = (
+  actions: IActions,
+  initialState: ITodolistState = todolistInitialState
+) =>
+  createReducer(initialState, builder => {
+    builder.addCase(actions.setTodolist, (state, action) => ({ ...state, ...action.payload }));
+  });
+
+makeTodolistReducer.key = 'todolist' as const;
