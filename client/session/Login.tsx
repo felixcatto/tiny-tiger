@@ -1,6 +1,6 @@
 import { Form, Formik } from 'formik';
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'wouter';
 import Layout from '../components/layout.js';
 import {
   ErrorMessage,
@@ -15,7 +15,7 @@ import {
 
 const Login = () => {
   const { actions } = useContext();
-  const navigate = useNavigate();
+  const [_, navigate] = useLocation();
   const onSubmit = useSubmit(async values => {
     const user = await actions.signIn(values);
     persistUser(user);

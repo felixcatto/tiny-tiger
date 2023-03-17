@@ -4,7 +4,7 @@ import produce from 'immer';
 import { get, isEmpty, isFunction, isNumber, omit, orderBy } from 'lodash-es';
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'wouter';
 import { filterTypes, roles } from '../../lib/sharedUtils.js';
 import {
   IApiErrors,
@@ -40,7 +40,8 @@ export const useImmerState: IUseImmerState = initialState => {
 };
 
 export const NavLink = ({ to, children }) => {
-  const { pathname } = useLocation();
+  const [pathname] = useLocation();
+
   const className = cn('nav-link', {
     'nav-link_active': (to !== '/' && pathname.startsWith(to)) || (to === '/' && pathname === '/'),
   });

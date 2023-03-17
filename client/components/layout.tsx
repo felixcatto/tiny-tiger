@@ -1,7 +1,7 @@
 import cn from 'classnames';
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link } from 'wouter';
 import {
   getUrl,
   NavLink,
