@@ -1,8 +1,9 @@
 import '../css/index.css'; // Import FIRST
 import React from 'react';
-import { createRoot } from 'react-dom/client';
-import App from './app';
+import { hydrateRoot } from 'react-dom/client';
+import { App } from './app';
 import '../css/tailwind.css'; // Import LAST
 
-const root = createRoot(document.getElementById('root')!);
-root.render(<App />);
+const initialState = (window as any).INITIAL_STATE;
+
+hydrateRoot(document.getElementById('root')!, <App initialState={initialState} />);

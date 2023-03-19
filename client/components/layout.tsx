@@ -2,23 +2,13 @@ import cn from 'classnames';
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'wouter';
-import {
-  getUrl,
-  NavLink,
-  removePersistedUser,
-  useContext,
-  userRolesToIcons,
-} from '../lib/utils.js';
-import s from './layout.module.css';
 import { selectSession } from '../lib/reduxReducers.js';
+import { getUrl, NavLink, useContext, userRolesToIcons } from '../lib/utils.js';
+import s from './layout.module.css';
 
 const Layout = ({ children }: any) => {
   const { actions } = useContext();
   const { currentUser, isSignedIn } = useSelector(selectSession);
-  const onSignOut = async () => {
-    await actions.signOut();
-    removePersistedUser();
-  };
 
   const userIconClass = role => cn(s.userRoleIcon, 'mr-1', userRolesToIcons[role]);
 
@@ -41,7 +31,7 @@ const Layout = ({ children }: any) => {
               <i
                 className={cn('fa fa-sign-out-alt', s.signIcon)}
                 title="Sign out"
-                onClick={onSignOut}
+                onClick={actions.signOut}
               ></i>
             </div>
           ) : (

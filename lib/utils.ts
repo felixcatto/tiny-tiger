@@ -171,3 +171,11 @@ export const paginationSchema = y.object({
   size: y.number().min(1),
   page: y.number().min(0),
 });
+
+export const supressConsoleLog = fn => {
+  const consoleLog = console.log;
+  console.log = () => {};
+  const result = fn();
+  console.log = consoleLog;
+  return result;
+};

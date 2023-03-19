@@ -20,16 +20,16 @@ const getApp = () => {
   app.decorate('objection', null);
   app.decorate('mode', mode);
   app.decorate('keygrip', keygrip);
+  app.decorate('template', template);
   app.decorateRequest('vlBody', null);
   app.decorateRequest('vlQuery', null);
   app.decorateRequest('currentUser', null);
 
   app.register(objectionPlugin, { models });
   app.register(fastifyStatic, { root: pathPublic, wildcard: false });
+  app.register(fastifyStatic, { root: `${pathPublic}/js`, prefix: '/js/', decorateReply: false });
+  app.register(fastifyStatic, { root: `${pathPublic}/css`, prefix: '/css/', decorateReply: false });
   app.register(routes);
-  app.register(async app => {
-    app.get('/*', async (req, reply) => reply.type('html').send(template));
-  });
 
   return app;
 };

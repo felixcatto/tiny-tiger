@@ -6,7 +6,6 @@ import {
   ErrorMessage,
   Field,
   getUrl,
-  persistUser,
   SubmitBtn,
   useContext,
   useSubmit,
@@ -17,8 +16,7 @@ const Login = () => {
   const { actions } = useContext();
   const [_, navigate] = useLocation();
   const onSubmit = useSubmit(async values => {
-    const user = await actions.signIn(values);
-    persistUser(user);
+    await actions.signIn(values);
     navigate(getUrl('home'));
   });
 

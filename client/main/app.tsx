@@ -4,16 +4,24 @@ import React from 'react';
 import { Provider } from 'react-redux';
 import { SWRConfig } from 'swr';
 import { Route, Switch } from 'wouter';
-import { IBindedActions, IContext } from '../../lib/types.js';
+import { IBindedActions, IContext, IUser } from '../../lib/types.js';
 import Context from '../lib/context.js';
 import { makeThunks, reduxActions } from '../lib/reduxActions.js';
 import { makeCurUserReducer } from '../lib/reduxReducers.js';
-import { getUrl, restoreUser } from '../lib/utils.js';
-import { routes } from '../lib/utils.jsx';
-import Login from '../session/Login.jsx';
-import TodoList from '../todoList/Todolist.jsx';
+import { getUrl, routes } from '../lib/utils.js';
+import Login from '../session/Login.js';
+import TodoList from '../todoList/Todolist.js';
 
-const App = () => {
+type IAppProps = {
+  initialState: {
+    currentUser: IUser;
+  };
+};
+
+export const App = (props: IAppProps) => {
+  console.log(props);
+  const { currentUser } = props.initialState;
+
   const axios = originalAxios.create();
   axios.interceptors.response.use(
     response => response.data,
@@ -35,13 +43,9 @@ const App = () => {
   const reduxThunks = makeThunks({ axios });
   const actions = { ...reduxActions, ...reduxThunks };
 
-  const initialUserState = restoreUser();
-
   const reduxStore = configureStore({
     reducer: {
-      [makeCurUserReducer.key]: initialUserState
-        ? makeCurUserReducer(actions, initialUserState)
-        : makeCurUserReducer(actions),
+      [makeCurUserReducer.key]: makeCurUserReducer(actions, currentUser),
     },
   });
 
@@ -79,5 +83,3 @@ const App = () => {
     </Provider>
   );
 };
-
-export default App;

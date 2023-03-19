@@ -12,7 +12,6 @@ import {
   IFilter,
   IUseImmerState,
   IUseQuery,
-  IUser,
   IUseSubmit,
   IUseTable,
 } from '../../lib/types.js';
@@ -122,18 +121,6 @@ export const Portal = ({ children, selector }) => {
   }, [selector]);
 
   return mounted ? createPortal(children, ref.current) : null;
-};
-
-export const localStorageUserKey = 'currentUser';
-export const persistUser = (user: IUser) => {
-  localStorage.setItem(localStorageUserKey, JSON.stringify(user));
-};
-export const removePersistedUser = () => {
-  localStorage.removeItem(localStorageUserKey);
-};
-export const restoreUser = (): IUser | null => {
-  const serializedUser = localStorage.getItem(localStorageUserKey);
-  return serializedUser ? JSON.parse(serializedUser) : null;
 };
 
 export const thunk = asyncFn => async (arg, thunkAPI) => {

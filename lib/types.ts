@@ -91,6 +91,7 @@ declare module 'fastify' {
     objection: IObjection;
     mode: IMode;
     keygrip: any;
+    template: string;
   }
   interface FastifyRequest {
     vlBody: any;
