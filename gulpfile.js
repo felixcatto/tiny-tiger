@@ -1,4 +1,4 @@
-import { listen, makeBackClient, makeLrServer } from 'blunt-livereload';
+import { listen, backClient, makeLrServer } from 'blunt-livereload';
 import { spawn } from 'child_process';
 import { deleteAsync } from 'del';
 import gulp from 'gulp';
@@ -33,10 +33,10 @@ const paths = {
 };
 
 const startLrServer = async () => {
+  backClient.start();
   const lrServer = makeLrServer();
   return listen(lrServer);
 };
-const backClient = makeBackClient();
 const reloadBrowser = async () => backClient.notifyWindowReload();
 
 const compileActor = makeCompileActor(reloadBrowser);

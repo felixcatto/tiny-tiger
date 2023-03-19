@@ -9,6 +9,7 @@ export const roles = makeEnum('user', 'admin', 'guest');
 export const asyncStates = makeEnum('idle', 'pending', 'resolved', 'rejected');
 export const sortOrders = makeEnum('asc', 'desc');
 export const filterTypes = makeEnum('search', 'select');
+export const modes = makeEnum('test', 'development', 'production');
 
 export const isSignedIn = currentUser => currentUser.role !== roles.guest;
 export const isAdmin = currentUser => currentUser.role === roles.admin;

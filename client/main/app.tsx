@@ -15,12 +15,12 @@ import TodoList from '../todoList/Todolist.js';
 type IAppProps = {
   initialState: {
     currentUser: IUser;
+    fallback: any;
   };
 };
 
 export const App = (props: IAppProps) => {
-  console.log(props);
-  const { currentUser } = props.initialState;
+  const { currentUser, fallback = {} } = props.initialState;
 
   const axios = originalAxios.create();
   axios.interceptors.response.use(
@@ -38,6 +38,7 @@ export const App = (props: IAppProps) => {
   const swrConfig = {
     fetcher: axios.get,
     revalidateOnFocus: false,
+    fallback,
   };
 
   const reduxThunks = makeThunks({ axios });

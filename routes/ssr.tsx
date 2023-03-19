@@ -4,14 +4,22 @@ import { renderToString } from 'react-dom/server';
 import { Router } from 'wouter';
 import staticLocationHook from 'wouter/static-location';
 import { App } from '../client/main/app.js';
+import { ssrRoutes } from '../lib/ssrRoutes.js';
 import { supressConsoleLog } from '../lib/utils.js';
 
 export const ssrRender = async (app: FastifyInstance) => {
-  const { template } = app;
+  const { template, objection } = app;
 
   app.get('/*', async (req, reply) => {
-    const { currentUser } = req;
-    const initialState = { currentUser }; // TODO: ssrData
+    const { currentUser, url } = req;
+
+    let ssrData = {};
+    const ssrRoute = ssrRoutes[url];
+    if (ssrRoute) {
+      ssrData = await ssrRoute({ objection });
+    }
+
+    const initialState = { currentUser, fallback: ssrData };
 
     const renderedComponent = supressConsoleLog(() =>
       renderToString(
@@ -21,10 +29,10 @@ export const ssrRender = async (app: FastifyInstance) => {
       )
     );
 
-    const tmpHtml = template
+    const html = template
       .replace('{{content}}', renderedComponent)
       .replace('{{initialState}}', JSON.stringify(initialState));
 
-    reply.type('html').send(tmpHtml);
+    reply.type('html').send(html);
   });
 };

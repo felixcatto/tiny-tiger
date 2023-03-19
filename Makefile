@@ -4,8 +4,8 @@ install:
 start:
 	npx gulp dev
 
-start-production: build
-	NODE_ENV=production node dist/main/index.js
+start-production:
+	NODE_ENV=production node dist/bin/server.js
 
 build:
 	NODE_ENV=production npx gulp build
