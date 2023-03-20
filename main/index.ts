@@ -3,12 +3,21 @@ import fastify from 'fastify';
 import fs from 'fs';
 import makeKeygrip from 'keygrip';
 import path from 'path';
-import { dirname, modes, objectionPlugin } from '../lib/utils.js';
+import { dirname, loggerPlugin, modes, objectionPlugin } from '../lib/utils.js';
 import * as models from '../models/index.js';
 import routes from '../routes/index.js';
 
 const getApp = () => {
-  const app = fastify();
+  const app = fastify({
+    disableRequestLogging: true,
+    logger: {
+      level: 'debug',
+      transport: {
+        target: 'pino-pretty',
+        options: { translateTime: 'HH:MM:ss', ignore: 'reqId,pid,hostname' },
+      },
+    },
+  });
 
   const mode = process.env.NODE_ENV || 'development';
   const keys = process.env.KEYS!.split(',');
@@ -36,6 +45,7 @@ const getApp = () => {
   app.decorateRequest('vlQuery', null);
   app.decorateRequest('currentUser', null);
 
+  app.register(loggerPlugin);
   app.register(objectionPlugin, { models });
   app.register(fastifyStatic, { root: pathPublic, wildcard: false });
   app.register(fastifyStatic, { root: `${pathPublic}/js`, prefix: '/js/', decorateReply: false });

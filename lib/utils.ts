@@ -2,6 +2,7 @@ import cookie from 'cookie';
 import crypto from 'crypto';
 import fp from 'fastify-plugin';
 import knexConnect from 'knex';
+import * as color from 'kolorist';
 import { capitalize, isString } from 'lodash-es';
 import { Model } from 'objection';
 import path from 'path';
@@ -179,3 +180,31 @@ export const supressConsoleLog = fn => {
   console.log = consoleLog;
   return result;
 };
+
+export const loggerPlugin = fp(async app => {
+  const supportsArt = color.options.supportLevel === 2;
+  const icons = { req: supportsArt ? '←' : '<', res: supportsArt ? '→' : '>' };
+  const logResponseTime = true;
+
+  app.addHook('onRequest', async request => {
+    request.log.info(
+      `${color.bold(color.blue(icons.req))}${color.blue(request.method)}:${color.green(
+        request.url
+      )} ${color.white('from ip')} ${color.blue(request.ip)}`
+    );
+  });
+
+  app.addHook('onResponse', async (request, reply) => {
+    request.log.info(
+      `${color.bold(color.magenta(icons.res))}${color.magenta(request.method)}:${color.green(
+        request.url
+      )} ${color.white('status')} ${color.magenta(reply.statusCode)}${
+        logResponseTime
+          ? `${color.white(', took')} ${color.magenta(
+              Math.round(reply.getResponseTime())
+            )}${color.magenta('ms')}`
+          : ''
+      }`
+    );
+  });
+});
