@@ -64,3 +64,24 @@ test-once:
 lint:
 	npx eslint .
 	npx tsc
+
+caddy-reload-config:
+	docker compose exec caddy caddy reload --config="/etc/caddy/Caddyfile"
+
+compose-build:
+	docker compose build
+
+compose-up:
+	docker compose up -d
+
+compose-down:
+	docker compose down
+
+compose-log:
+	docker compose logs -f
+
+compose-migrate:
+	docker compose exec app make migrate
+
+compose-seed:
+	docker compose exec app make database-seed

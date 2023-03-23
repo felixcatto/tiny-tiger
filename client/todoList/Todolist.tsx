@@ -192,11 +192,12 @@ const TodoList = () => {
         <div className="col-9">
           <h3 className="mb-4">List of todos</h3>
 
-          <table>
+          <table className="table-fixed">
             <thead>
               <tr>
                 <HeaderCell
                   name="author.name"
+                  className="w-32"
                   sortOrder={sortBy === 'author.name' ? sortOrder : null}
                   onSort={onSortChange}
                   filterType={filters.get('author.name')!.filterType}
@@ -207,6 +208,7 @@ const TodoList = () => {
                 </HeaderCell>
                 <HeaderCell
                   name="author.email"
+                  className="w-44"
                   sortOrder={sortBy === 'author.email' ? sortOrder : null}
                   onSort={onSortChange}
                 >
@@ -244,7 +246,7 @@ const TodoList = () => {
               {rows.map(todo => (
                 <tr key={todo.id} className={todoRowClass(todo)}>
                   <td>{todo.author?.name}</td>
-                  <td>{todo.author?.email}</td>
+                  <td className="truncate">{todo.author?.email}</td>
                   <td className="text-justify">{todo.text}</td>
                   <td>
                     <i

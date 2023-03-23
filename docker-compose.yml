@@ -1,0 +1,53 @@
+services:
+  app:
+    image: tiger-app
+    build: .
+    depends_on:
+      - database
+    environment:
+      - PORT=3000
+      - POSTGRES_HOST=database
+  app2:
+    image: tiger-app
+    depends_on:
+      - app
+      - database
+    environment:
+      - POSTGRES_HOST=database
+  app3:
+    image: tiger-app
+    depends_on:
+      - app
+      - database
+    environment:
+      - POSTGRES_HOST=database
+
+  database:
+    image: tiger-database
+    build: services/database
+    volumes:
+      - database:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=1
+
+  caddy:
+    image: tiger-caddy
+    build: services/caddy
+    depends_on:
+      - app
+    ports:
+      - 80:80
+      - 443:443
+      - 443:443/udp
+    volumes:
+      - caddy_data:/data
+      - $PWD/services/caddy/Caddyfile:/etc/caddy/Caddyfile
+    environment:
+      - APP_PORT=3000
+      - APP_HOST=app
+      - APP_HOST2=app2
+      - APP_HOST3=app3
+
+volumes:
+  database:
+  caddy_data:

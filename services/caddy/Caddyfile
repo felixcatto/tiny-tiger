@@ -1,0 +1,14 @@
+localhost {
+  @public {
+    file {path}
+  }
+  root * /srv
+  encode gzip
+  header @public Cache-Control "public, max-age=604800"
+  route {
+    file_server {
+      pass_thru
+    }
+    reverse_proxy {$APP_HOST}:{$APP_PORT} {$APP_HOST2}:{$APP_PORT} {$APP_HOST3}:{$APP_PORT}
+  }
+}
