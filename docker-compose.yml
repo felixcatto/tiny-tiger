@@ -10,14 +10,12 @@ services:
   app2:
     image: tiger-app
     depends_on:
-      - app
       - database
     environment:
       - POSTGRES_HOST=database
   app3:
     image: tiger-app
     depends_on:
-      - app
       - database
     environment:
       - POSTGRES_HOST=database

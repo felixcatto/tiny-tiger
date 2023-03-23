@@ -1,6 +1,7 @@
 import cookie from 'cookie';
 import crypto from 'crypto';
 import fp from 'fastify-plugin';
+import fs from 'fs';
 import knexConnect from 'knex';
 import * as color from 'kolorist';
 import { capitalize, isString } from 'lodash-es';
@@ -208,3 +209,17 @@ export const loggerPlugin = fp(async app => {
     );
   });
 });
+
+export const importFresh = async modulePath => {
+  const filepath = path.resolve(modulePath);
+  const fileContent = await fs.promises.readFile(filepath, 'utf8');
+  const ext = path.extname(filepath);
+  const extRegex = new RegExp(`\\${ext}$`);
+  const newFilepath = `${filepath.replace(extRegex, '')}${Date.now()}${ext}`;
+
+  await fs.promises.writeFile(newFilepath, fileContent);
+  const module = await import(newFilepath);
+  fs.unlink(newFilepath, () => {});
+
+  return module;
+};

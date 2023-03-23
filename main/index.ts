@@ -41,6 +41,7 @@ const getApp = () => {
   app.decorate('mode', mode);
   app.decorate('keygrip', keygrip);
   app.decorate('template', template);
+  app.decorate('pathPublic', pathPublic);
   app.decorateRequest('vlBody', null);
   app.decorateRequest('vlQuery', null);
   app.decorateRequest('currentUser', null);

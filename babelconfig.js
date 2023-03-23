@@ -1,5 +1,3 @@
-import { generateScopedName, processPostcss } from './lib/devUtils.js';
-
 export default {
   client: {
     presets: [
@@ -15,16 +13,6 @@ export default {
     ],
   },
   server: {
-    presets: ['@babel/preset-react', '@babel/preset-typescript'],
-    plugins: [
-      [
-        '@dr.pogodin/react-css-modules',
-        {
-          replaceImport: true,
-          generateScopedName,
-          transform: processPostcss,
-        },
-      ],
-    ],
+    presets: ['@babel/preset-typescript'],
   },
 };

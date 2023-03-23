@@ -1,4 +1,4 @@
-import { listen, backClient, makeLrServer } from 'blunt-livereload';
+import { backClient, listen, makeLrServer } from 'blunt-livereload';
 import { spawn } from 'child_process';
 import { deleteAsync } from 'del';
 import gulp from 'gulp';
@@ -6,8 +6,9 @@ import babel from 'gulp-babel';
 import waitOn from 'wait-on';
 import webpack from 'webpack';
 import babelConfig from './babelconfig.js';
-import { makeCompileActor, makeWrapSeries, events } from './lib/devUtils.js';
+import { events, makeCompileActor, makeWrapSeries } from './lib/devUtils.js';
 import webpackConfig from './webpack.config.js';
+import webpackConfigSsr from './webpack.ssr.config.js';
 
 const { series, parallel } = gulp;
 
@@ -28,8 +29,6 @@ const paths = {
       '!services/**',
     ],
   },
-  client: { src: ['client/**/*.{js,ts,tsx}', '!client/**/*.d.ts'] },
-  cssModules: { src: 'client/**/*.module.css' },
 };
 
 const startLrServer = async () => {
@@ -73,20 +72,9 @@ const copyPublicDev = () =>
     .src(paths.public.src, { since: gulp.lastRun(copyPublicDev) })
     .pipe(gulp.symlink(paths.public.dest, { overwrite: false }));
 
-const copyCssModules = () =>
-  gulp
-    .src(paths.cssModules.src, { base: '.', since: gulp.lastRun(copyCssModules) })
-    .pipe(gulp.dest(paths.dest));
-
 const transpileServerJs = () =>
   gulp
     .src(paths.serverJs.src, { base: '.', since: gulp.lastRun(transpileServerJs) })
-    .pipe(babel(babelConfig.server))
-    .pipe(gulp.dest(paths.dest));
-
-const transpileClientJs = () =>
-  gulp
-    .src(paths.client.src, { base: '.', since: gulp.lastRun(transpileClientJs) })
     .pipe(babel(babelConfig.server))
     .pipe(gulp.dest(paths.dest));
 
@@ -97,6 +85,14 @@ const startWebpack = done => {
   compiler.watch({}, () => done());
 };
 const bundleClient = done => compiler.run(done);
+
+const compilerSsr = webpack(webpackConfigSsr);
+const startWebpackSsr = done => {
+  // TODO: it must finish compilation before original compiler, or you'll get hydration mismatch
+  // TODO: maybe somehow add another two events  - WEBPACK_SSR_START... , to fix this
+  compilerSsr.watch({}, () => done());
+};
+const bundleClientSsr = done => compilerSsr.run(done);
 
 const trackChangesInDist = () => {
   const watcher = gulp.watch('dist/**/*');
@@ -109,20 +105,17 @@ const trackChangesInDist = () => {
 const watch = async () => {
   gulp.watch(paths.public.src, wrapSeries(copyPublicDev, restartServer));
   gulp.watch(paths.serverJs.src, wrapSeries(transpileServerJs, restartServer));
-  gulp.watch(paths.client.src, wrapSeries(transpileClientJs, restartServer));
-  gulp.watch(paths.cssModules.src, wrapSeries(copyCssModules, restartServer));
-
   trackChangesInDist();
 };
 
 export const dev = wrapSeries(
   parallel(clean, startLrServer),
-  parallel(copyPublicDev, copyCssModules, transpileServerJs, transpileClientJs),
-  parallel(startWebpack, startServer),
+  parallel(startWebpack, startWebpackSsr, copyPublicDev, transpileServerJs),
+  startServer,
   watch
 );
 
 export const build = series(
   clean,
-  parallel(copyPublic, copyCssModules, transpileServerJs, transpileClientJs, bundleClient)
+  parallel(bundleClient, bundleClientSsr, copyPublic, transpileServerJs)
 );

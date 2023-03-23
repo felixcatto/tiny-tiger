@@ -1,14 +1,10 @@
 import { FastifyInstance } from 'fastify';
-import React from 'react';
-import { renderToString } from 'react-dom/server';
-import { Router } from 'wouter';
-import staticLocationHook from 'wouter/static-location';
-import { App } from '../client/main/app.js';
+import path from 'path';
 import { ssrRoutes } from '../lib/ssrRoutes.js';
-import { supressConsoleLog } from '../lib/utils.js';
+import { importFresh, modes, supressConsoleLog } from '../lib/utils.js';
 
 export const ssrRender = async (app: FastifyInstance) => {
-  const { template, objection } = app;
+  const { template, objection, pathPublic, mode } = app;
 
   app.get('/*', async (req, reply) => {
     const { currentUser, url } = req;
@@ -19,15 +15,15 @@ export const ssrRender = async (app: FastifyInstance) => {
       ssrData = await ssrRoute({ objection });
     }
 
-    const initialState = { currentUser, fallback: ssrData };
+    let app;
+    if (mode === modes.development) {
+      app = await importFresh(path.resolve(pathPublic, 'js/appSSR.js'));
+    } else {
+      app = await import(path.resolve(pathPublic, 'js/appSSR.js'));
+    }
 
-    const renderedComponent = supressConsoleLog(() =>
-      renderToString(
-        <Router hook={staticLocationHook(req.url)}>
-          <App initialState={initialState} />
-        </Router>
-      )
-    );
+    const initialState = { currentUser, fallback: ssrData };
+    const renderedComponent = supressConsoleLog(() => app.renderToString(req.url, initialState));
 
     const html = template
       .replace('{{content}}', renderedComponent)

@@ -92,6 +92,7 @@ declare module 'fastify' {
     mode: IMode;
     keygrip: any;
     template: string;
+    pathPublic: string;
   }
   interface FastifyRequest {
     vlBody: any;

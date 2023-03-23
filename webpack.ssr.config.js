@@ -1,21 +1,18 @@
-import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import path from 'path';
 import webpack from 'webpack';
 import babelConfig from './babelconfig.js';
 import { dirname, generateScopedName } from './lib/devUtils.js';
-import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
-import { WebpackManifestPlugin } from 'webpack-manifest-plugin';
 
 const isProduction = process.env.NODE_ENV === 'production';
 const __dirname = dirname(import.meta.url);
 
 const common = {
-  entry: {
-    index: path.resolve(__dirname, 'client/main/index.tsx'),
-  },
+  entry: { appSSR: path.resolve(__dirname, 'client/main/appSSR.tsx') },
+  experiments: { outputModule: true },
   output: {
-    filename: isProduction ? 'js/[name].[contenthash:6].js' : 'js/[name].js',
+    library: { type: 'module' },
+    filename: 'js/[name].js',
     path: path.resolve(__dirname, 'dist/public'),
   },
   resolve: {
@@ -35,8 +32,7 @@ const common = {
       {
         test: /\.css$/,
         use: [
-          MiniCssExtractPlugin.loader,
-          { loader: 'css-modules-typescript-loader' },
+          { loader: MiniCssExtractPlugin.loader, options: { emit: false } },
           {
             loader: 'css-loader',
             options: {
@@ -54,47 +50,23 @@ const common = {
     ],
   },
   plugins: [
-    new MiniCssExtractPlugin({
-      filename: isProduction ? 'css/index.[contenthash:6].css' : 'css/index.css',
-    }),
+    new MiniCssExtractPlugin(),
     new webpack.DefinePlugin({ __REACT_DEVTOOLS_GLOBAL_HOOK__: '({ isDisabled: true })' }),
   ],
-  optimization: {
-    minimizer: ['...', new CssMinimizerPlugin()],
-    splitChunks: {
-      cacheGroups: {
-        vendor: {
-          test: /[\\/](react|react-dom|lodash.*|formik|@redux.*|axios)[\\/]/,
-          name: 'vendors',
-          chunks: 'all',
-        },
-      },
-    },
-  },
   stats: { warnings: false, children: false, modules: false },
 };
 
 let config;
-if (process.env.ANALYZE) {
-  const plugins = [new BundleAnalyzerPlugin()].concat(common.plugins);
+if (isProduction) {
   config = {
     ...common,
     mode: 'production',
-    plugins,
-  };
-} else if (isProduction) {
-  const plugins = [new WebpackManifestPlugin({ publicPath: '/' })].concat(common.plugins);
-  config = {
-    ...common,
-    mode: 'production',
-    plugins,
   };
 } else {
-  common.entry.index = ['blunt-livereload/dist/frontClient', common.entry.index];
   config = {
     ...common,
     mode: 'development',
-    devtool: 'eval-cheap-module-source-map',
+    devtool: false,
   };
 }
 

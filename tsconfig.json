@@ -16,8 +16,7 @@
     "incremental": true,
     "noImplicitAny": false,
     "strictPropertyInitialization": false,
-    "useUnknownInCatchVariables": false,
-    "declaration": true
+    "useUnknownInCatchVariables": false
   },
   "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]
