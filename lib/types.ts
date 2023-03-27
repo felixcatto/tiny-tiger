@@ -90,9 +90,11 @@ declare module 'fastify' {
   interface FastifyInstance {
     objection: IObjection;
     mode: IMode;
+    isProduction: boolean;
     keygrip: any;
     template: string;
     pathPublic: string;
+    vite: any;
   }
   interface FastifyRequest {
     vlBody: any;
@@ -247,7 +249,7 @@ export type IUseQuery = (props: IUseQueryProps) => {
   sortBy?: string;
   sortOrder?: ISortOrder;
   filters?: IFilter[];
-}
+};
 
 type IProduceFn<T> = (draftState: T) => any;
 type ISetState<T> = (fnOrObject: Partial<T> | IProduceFn<T>) => void;

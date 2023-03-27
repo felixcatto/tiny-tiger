@@ -1,32 +1,41 @@
 import { FastifyInstance } from 'fastify';
-import path from 'path';
 import { ssrRoutes } from '../lib/ssrRoutes.js';
-import { importFresh, modes, supressConsoleLog } from '../lib/utils.js';
+import { supressConsoleLog } from '../lib/utils.js';
 
 export const ssrRender = async (app: FastifyInstance) => {
-  const { template, objection, pathPublic, mode } = app;
+  const { vite, objection, isProduction, template: rawTemplate } = app;
 
   app.get('/*', async (req, reply) => {
     const { currentUser, url } = req;
 
+    let template = rawTemplate;
+    let appHtml;
     let ssrData = {};
     const ssrRoute = ssrRoutes[url];
     if (ssrRoute) {
       ssrData = await ssrRoute({ objection });
     }
 
-    let app;
-    if (mode === modes.development) {
-      app = await importFresh(path.resolve(pathPublic, 'js/appSSR.js'));
+    const initialState = { currentUser, fallback: ssrData };
+    if (isProduction) {
+      // @ts-ignore
+      const { render } = await import('../server/entry-server.js');
+      appHtml = supressConsoleLog(() => render(url, initialState));
     } else {
-      app = await import(path.resolve(pathPublic, 'js/appSSR.js'));
+      template = await vite.transformIndexHtml(url, template);
+      template = template.replace('<body>', '<body style="display: none">'); // avoid FOUC in dev mode
+      const { render } = await vite.ssrLoadModule('/client/main/entry-server.tsx');
+      try {
+        appHtml = supressConsoleLog(() => render(url, initialState));
+      } catch (e) {
+        vite.ssrFixStacktrace(e);
+        console.log(e.stack);
+        return reply.code(500).send(e.stack);
+      }
     }
 
-    const initialState = { currentUser, fallback: ssrData };
-    const renderedComponent = supressConsoleLog(() => app.renderToString(req.url, initialState));
-
     const html = template
-      .replace('{{content}}', renderedComponent)
+      .replace('{{content}}', appHtml)
       .replace('{{initialState}}', JSON.stringify(initialState));
 
     reply.type('html').send(html);

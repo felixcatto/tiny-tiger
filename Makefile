@@ -8,10 +8,14 @@ start-production:
 	NODE_ENV=production node dist/bin/server.js
 
 build:
-	NODE_ENV=production npx gulp build
+	rm -rf dist
+	npx gulp build &
+	npx vite build --outDir dist/public
+	npx vite build --outDir dist/server --ssr client/main/entry-server.tsx
 
 analyze-bundle:
-	ANALYZE=true npx webpack
+	ANALYZE=true npx vite build
+	google-chrome dist/stats.html
 
 migrate:
 	npx knex migrate:latest

@@ -1,10 +1,17 @@
 localhost {
-  @public {
-    file {path}
+  @publicAssets {
+    path *.woff *.woff2 *.ttf *.jpg *.jpeg *.png *.gif *.ico *.webp *.svg
   }
+  @publicCssJs {
+    path *.css *.js
+  }
+
   root * /srv
+
   encode gzip
-  header @public Cache-Control "public, max-age=604800"
+  header @publicAssets Cache-Control "public, max-age=2419200"
+  header @publicCssJs Cache-Control "immutable, max-age=31536000"
+
   route {
     file_server {
       pass_thru

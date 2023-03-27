@@ -1,13 +1,14 @@
+import middie from '@fastify/middie';
 import cookie from 'cookie';
 import crypto from 'crypto';
 import fp from 'fastify-plugin';
-import fs from 'fs';
 import knexConnect from 'knex';
 import * as color from 'kolorist';
 import { capitalize, isString } from 'lodash-es';
 import { Model } from 'objection';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { createServer } from 'vite';
 import * as y from 'yup';
 import knexConfig from '../knexfile.js';
 import { guestUser, isAdmin, isSignedIn } from './sharedUtils.js';
@@ -210,16 +211,12 @@ export const loggerPlugin = fp(async app => {
   });
 });
 
-export const importFresh = async modulePath => {
-  const filepath = path.resolve(modulePath);
-  const fileContent = await fs.promises.readFile(filepath, 'utf8');
-  const ext = path.extname(filepath);
-  const extRegex = new RegExp(`\\${ext}$`);
-  const newFilepath = `${filepath.replace(extRegex, '')}${Date.now()}${ext}`;
-
-  await fs.promises.writeFile(newFilepath, fileContent);
-  const module = await import(newFilepath);
-  fs.unlink(newFilepath, () => {});
-
-  return module;
-};
+export const vitePlugin = fp(async app => {
+  const vite = await createServer({
+    server: { middlewareMode: true },
+    appType: 'custom',
+  });
+  await app.register(middie, { hook: 'onRequest' });
+  app.use(vite.middlewares);
+  app.vite = vite;
+});
