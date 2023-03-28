@@ -90,7 +90,6 @@ declare module 'fastify' {
   interface FastifyInstance {
     objection: IObjection;
     mode: IMode;
-    isProduction: boolean;
     keygrip: any;
     template: string;
     pathPublic: string;

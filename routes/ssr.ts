@@ -1,9 +1,9 @@
 import { FastifyInstance } from 'fastify';
 import { ssrRoutes } from '../lib/ssrRoutes.js';
-import { supressConsoleLog } from '../lib/utils.js';
+import { isDevelopment, isProduction, supressConsoleLog } from '../lib/utils.js';
 
 export const ssrRender = async (app: FastifyInstance) => {
-  const { vite, objection, isProduction, template: rawTemplate } = app;
+  const { mode, vite, objection, template: rawTemplate } = app;
 
   app.get('/*', async (req, reply) => {
     const { currentUser, url } = req;
@@ -17,11 +17,11 @@ export const ssrRender = async (app: FastifyInstance) => {
     }
 
     const initialState = { currentUser, fallback: ssrData };
-    if (isProduction) {
+    if (isProduction(mode)) {
       // @ts-ignore
       const { render } = await import('../server/entry-server.js');
       appHtml = supressConsoleLog(() => render(url, initialState));
-    } else {
+    } else if (isDevelopment(mode)) {
       template = await vite.transformIndexHtml(url, template);
       template = template.replace('<body>', '<body style="display: none">'); // avoid FOUC in dev mode
       const { render } = await vite.ssrLoadModule('/client/main/entry-server.tsx');
