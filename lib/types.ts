@@ -172,6 +172,7 @@ export type IFilter =
       filterBy: string;
       filterType: IFilterTypes['select'];
       filter: ISelectFilter;
+      filterOptions: ISelectFilter;
     }
   | {
       filterBy: string;
@@ -227,7 +228,7 @@ export type IUseTableProps<T> = {
   size: number;
   sortBy: string | null;
   sortOrder: ISortOrder;
-  filters: Map<string, IFilter>;
+  filters: IFilter[];
 };
 
 export type IUseTable = <T extends any[]>(
@@ -239,7 +240,7 @@ export type IUseQueryProps = {
   size: number;
   sortBy: string | null;
   sortOrder: ISortOrder;
-  filters: Map<string, IFilter>;
+  filters: IFilter[];
 };
 
 export type IUseQuery = (props: IUseQueryProps) => {

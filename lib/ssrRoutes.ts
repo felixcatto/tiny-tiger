@@ -23,4 +23,10 @@ export const ssrRoutes = {
       },
     };
   },
+  [getUrl('users')]: async opts => {
+    const { objection } = opts;
+    const { User } = objection as IObjection;
+    const users = await User.query();
+    return { [getApiUrl('users')]: users };
+  },
 };

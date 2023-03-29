@@ -54,7 +54,7 @@ export const todoPostUserSchema = y.object({
 
 export const todoPutSchema = y.object({
   text: y.string().required('required'),
-  is_completed: y.boolean().default(false),
+  is_completed: y.boolean(),
 });
 
 export const todoSortSchema = y.object({

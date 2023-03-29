@@ -11,6 +11,7 @@ import { makeCurUserReducer } from '../lib/reduxReducers.js';
 import { getUrl, routes } from '../lib/utils.js';
 import Login from '../session/Login.js';
 import TodoList from '../todoList/Todolist.js';
+import { Users } from '../users/Users.js';
 
 type IAppProps = {
   initialState: {
@@ -78,6 +79,7 @@ export const App = (props: IAppProps) => {
           <Switch>
             <Route path={routes.home} component={TodoList} />
             <Route path={routes.newSession} component={Login} />
+            <Route path={routes.users} component={Users} />
           </Switch>
         </SWRConfig>
       </Context.Provider>

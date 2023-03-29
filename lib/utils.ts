@@ -112,10 +112,7 @@ export const checkSignedIn = async (req, res) => {
   }
 };
 
-export const encrypt = value => {
-  const [key] = process.env.KEYS!.split(',');
-  return crypto.createHmac('sha256', key).update(value).digest('hex');
-};
+export const encrypt = value => crypto.createHash('sha256').update(value).digest('hex');
 
 export const objectionPlugin = fp(async (app, { models }) => {
   const knex = knexConnect(knexConfig[app.mode]);

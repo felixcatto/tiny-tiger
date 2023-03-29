@@ -19,7 +19,8 @@ const Layout = ({ children }: any) => {
           <div className="flex items-center">
             <img src="/img/tiger3.webp" className={cn('mr-7', s.logo)} />
             <div className="flex">
-              <NavLink to={getUrl('home')}>Home</NavLink>
+              <NavLink to={getUrl('home')}>Todolist</NavLink>
+              <NavLink to={getUrl('users')}>Users</NavLink>
             </div>
           </div>
           {isSignedIn ? (

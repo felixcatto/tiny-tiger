@@ -40,7 +40,10 @@ export const SearchFilter = (props: ISearchFilterProps) => {
         value={filter}
       />
       <div className="flex items-center justify-between">
-        <div className={cn('link text-sm', { link_disabled: !filter })} onClick={onResetOwnFilter}>
+        <div
+          className={cn('link text-sm mr-5', { link_disabled: !filter })}
+          onClick={onResetOwnFilter}
+        >
           Reset
         </div>
         <button className="btn btn_primary btn_sm rounded-md" onClick={onFilterChange}>
@@ -94,7 +97,7 @@ export const SelectFilter = (props: ISelectFilterProps) => {
 
       <div className="flex items-center justify-between">
         <div
-          className={cn('link text-sm', { link_disabled: isEmpty(filter) })}
+          className={cn('link text-sm mr-5', { link_disabled: isEmpty(filter) })}
           onClick={onResetOwnFilter}
         >
           Reset

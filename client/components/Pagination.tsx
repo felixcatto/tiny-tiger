@@ -13,12 +13,22 @@ type IPaginationProps = {
   siblings?: number;
   slots?: number;
   className?: string;
+  availableSizes?: number[];
 };
 
 const states = makeEnum('full', 'start', 'mid', 'end');
 
 export const Pagination = (props: IPaginationProps) => {
-  const { page, size, totalRows, onPageChange, onSizeChange, siblings = 2, className = '' } = props;
+  const {
+    page,
+    size,
+    totalRows,
+    onPageChange,
+    onSizeChange,
+    siblings = 2,
+    className = '',
+    availableSizes = [3, 10, 25, 50],
+  } = props;
   const slots = props.slots || 5 + siblings * 2;
   if (page === 0) throw new Error('page must be in range 1...n');
 
@@ -109,12 +119,7 @@ export const Pagination = (props: IPaginationProps) => {
 
       <div className="ml-4">
         <Select
-          options={[
-            { label: '3 / page', value: 3 },
-            { label: '10 / page', value: 10 },
-            { label: '25 / page', value: 25 },
-            { label: '50 / page', value: 50 },
-          ]}
+          options={availableSizes.map(el => ({ label: `${el} / page`, value: el }))}
           selectedOption={{ label: `${size} / page`, value: size }}
           searchable={false}
           placeholder=""

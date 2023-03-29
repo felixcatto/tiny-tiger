@@ -139,22 +139,21 @@ export const useTable: IUseTable = props => {
   const { rows: originalRows, page, size, sortBy, sortOrder, filters } = props;
 
   return React.useMemo(() => {
-    const filtersList = Array.from(filters.values());
     let filtered;
 
-    if (isEmpty(filtersList)) {
+    if (isEmpty(filters)) {
       filtered = originalRows;
     } else {
-      filtered = originalRows.filter(todo =>
-        filtersList.every(filterObj => {
+      filtered = originalRows.filter(row =>
+        filters.every(filterObj => {
           if (isEmpty(filterObj.filter)) return true;
 
-          const todoValueOfField = get(todo, filterObj.filterBy);
+          const rowValueOfField = get(row, filterObj.filterBy);
           if (filterObj.filterType === filterTypes.search) {
             const regex = makeCaseInsensitiveRegex(filterObj.filter);
-            return todoValueOfField.match(regex);
+            return rowValueOfField.match(regex);
           } else if (filterObj.filterType === filterTypes.select) {
-            return filterObj.filter.some(selectFilter => selectFilter.value === todoValueOfField);
+            return filterObj.filter.some(selectFilter => selectFilter.value === rowValueOfField);
           }
         })
       );
@@ -186,8 +185,7 @@ export const useQuery: IUseQuery = props => {
 
   return React.useMemo(() => {
     const queryStr = {};
-    const filtersList = Array.from(filters.values());
-    const filtersForApi = transformFiltersForApi(filtersList);
+    const filtersForApi = transformFiltersForApi(filters);
     if (!isEmpty(filtersForApi)) {
       queryStr['filters'] = JSON.stringify(filtersForApi);
     }

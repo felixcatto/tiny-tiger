@@ -1,5 +1,6 @@
 import cn from 'classnames';
 import { Form, Formik } from 'formik';
+import produce from 'immer';
 import React from 'react';
 import { useSelector } from 'react-redux';
 import useSWR from 'swr';
@@ -10,10 +11,10 @@ import {
   ISortOrder,
   ITodo,
 } from '../../lib/types.js';
-import Layout from '../components/layout.js';
-import { selectSession } from '../lib/reduxReducers.js';
 import { HeaderCell } from '../components/HeaderCell.js';
+import Layout from '../components/layout.js';
 import { Pagination } from '../components/Pagination.js';
+import { selectSession } from '../lib/reduxReducers.js';
 import {
   ErrorMessage,
   Field,
@@ -28,12 +29,13 @@ import {
 } from '../lib/utils.js';
 import s from './styles.module.css';
 
-type IFiltersMap = Map<
+type IFiltersMap = Record<
   string,
   {
     filterBy: string;
     filterType: any;
     filter: any;
+    filterOptions?: any;
   }
 >;
 
@@ -46,22 +48,27 @@ type IState = {
   filters: IFiltersMap;
 };
 
-const defaultFilters = new Map();
-defaultFilters.set('author.name', {
-  filterBy: 'author.name',
-  filterType: filterTypes.search,
-  filter: '',
-});
-defaultFilters.set('text', {
-  filterBy: 'text',
-  filterType: filterTypes.search,
-  filter: '',
-});
-defaultFilters.set('is_completed', {
-  filterBy: 'is_completed',
-  filterType: filterTypes.select,
-  filter: [],
-});
+const defaultFilters = {
+  'author.name': {
+    filterBy: 'author.name',
+    filterType: filterTypes.search,
+    filter: '',
+  },
+  text: {
+    filterBy: 'text',
+    filterType: filterTypes.search,
+    filter: '',
+  },
+  is_completed: {
+    filterBy: 'is_completed',
+    filterType: filterTypes.select,
+    filter: [],
+    filterOptions: [
+      { label: 'Completed', value: true },
+      { label: 'Incomplete', value: false },
+    ],
+  },
+};
 
 const TodoList = () => {
   const { isSignedIn } = useSelector(selectSession);
@@ -77,7 +84,9 @@ const TodoList = () => {
   });
   const { editingTodo, page, size, sortBy, sortOrder, filters } = state;
 
-  const query = useQuery({ page, size, sortBy, sortOrder, filters });
+  const filtersList = React.useMemo(() => Object.values(filters), [filters]);
+  const query = useQuery({ page, size, sortBy, sortOrder, filters: filtersList });
+
   const { data, mutate } = useSWR<IGetTodosResponse>(getApiUrl('todos', {}, query));
   useSWR<IGetTodosResponse>(getApiUrl('todos', {}, { ...query, page: page + 1 }));
 
@@ -120,15 +129,16 @@ const TodoList = () => {
   const onPageChange = newPage => setState({ page: newPage - 1 });
   const onSizeChange = newSize => setState({ size: newSize, page: 0 });
 
-  const onSortChange: IHeaderCellProps['onSort'] = (sortOrder, sortBy) => {
+  const onSortChange: IHeaderCellProps['onSort'] = (sortOrder, sortBy) =>
     setState({ sortBy, sortOrder });
-  };
 
-  const onFilterChange: IMixedOnFilter = (filter, filterBy) => {
-    const filterOpts = filters.get(filterBy)!;
-    filters.set(filterBy, { ...filterOpts, filter });
-    setState({ filters: new Map(filters), page: 0 });
-  };
+  const onFilterChange: IMixedOnFilter = (filter, filterBy) =>
+    setState({
+      filters: produce(filters, draft => {
+        draft[filterBy].filter = filter;
+      }),
+      page: 0,
+    });
 
   const todoClass = todo =>
     cn('fa', {
@@ -200,8 +210,8 @@ const TodoList = () => {
                   className="w-32"
                   sortOrder={sortBy === 'author.name' ? sortOrder : null}
                   onSort={onSortChange}
-                  filterType={filters.get('author.name')!.filterType}
-                  filter={filters.get('author.name')!.filter}
+                  filterType={filters['author.name'].filterType}
+                  filter={filters['author.name'].filter}
                   onFilter={onFilterChange}
                 >
                   <div>Name</div>
@@ -218,8 +228,8 @@ const TodoList = () => {
                   name="text"
                   sortOrder={sortBy === 'text' ? sortOrder : null}
                   onSort={onSortChange}
-                  filterType={filters.get('text')!.filterType}
-                  filter={filters.get('text')!.filter}
+                  filterType={filters.text.filterType}
+                  filter={filters.text.filter}
                   onFilter={onFilterChange}
                 >
                   <div>Text</div>
@@ -229,13 +239,10 @@ const TodoList = () => {
                   className="w-32"
                   sortOrder={sortBy === 'is_completed' ? sortOrder : null}
                   onSort={onSortChange}
-                  filterType={filters.get('is_completed')!.filterType}
-                  filter={filters.get('is_completed')!.filter}
+                  filterType={filters.is_completed.filterType}
+                  filter={filters.is_completed.filter}
                   onFilter={onFilterChange}
-                  selectFilterOptions={[
-                    { label: 'Completed', value: true },
-                    { label: 'Incomplete', value: false },
-                  ]}
+                  selectFilterOptions={filters.is_completed.filterOptions}
                 >
                   <div>Status</div>
                 </HeaderCell>
