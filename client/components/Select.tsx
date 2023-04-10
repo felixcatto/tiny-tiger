@@ -3,7 +3,7 @@ import cn from 'classnames';
 import { isEmpty, isFunction, isNull, isString } from 'lodash-es';
 import React from 'react';
 import { ISelectOption } from '../../lib/types.js';
-import { makeCaseInsensitiveRegex, useImmerState } from '../lib/utils.js';
+import { makeCaseInsensitiveRegex, useMergeState } from '../lib/utils.js';
 import { Popup, usePopup } from './Popup.js';
 import s from './Select.module.css';
 
@@ -51,7 +51,7 @@ export const Select = (props: ISelectProps) => {
   } = props;
 
   const [isOpen, setIsOpen] = React.useState(false);
-  const [state, setState] = useImmerState<IState>(defaultState);
+  const [state, setState] = useMergeState<IState>(defaultState);
   const { ownInputValue, hasChanges, ownKeyboardChoosenIndex } = state;
 
   const { refs, getReferenceProps, popupProps } = usePopup({

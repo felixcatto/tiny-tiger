@@ -1,8 +1,7 @@
 import cn from 'classnames';
-import React from 'react';
 import { makeEnum } from '../lib/utils.js';
-import { Select } from './Select.js';
 import s from './Pagination.module.css';
+import { Select } from './Select.js';
 
 type IPaginationProps = {
   page: number;
@@ -20,17 +19,19 @@ const states = makeEnum('full', 'start', 'mid', 'end');
 
 export const Pagination = (props: IPaginationProps) => {
   const {
-    page,
-    size,
     totalRows,
+    page: rawPage,
+    size,
     onPageChange,
     onSizeChange,
     siblings = 2,
     className = '',
     availableSizes = [3, 10, 25, 50],
   } = props;
+
+  const pageOffset = 1;
+  const page = rawPage + pageOffset; // page must be in range '1...n'
   const slots = props.slots || 5 + siblings * 2;
-  if (page === 0) throw new Error('page must be in range 1...n');
 
   const totalPages = Math.ceil(totalRows / size);
   const pages = new Array(totalPages).fill(0).map((el, i) => i + 1);
@@ -53,18 +54,18 @@ export const Pagination = (props: IPaginationProps) => {
 
   const prevPage = () => {
     if (!isPrevPageAvailable) return;
-    onPageChange(page - 1);
+    onPageChange(page - 1 - pageOffset);
   };
   const nextPage = () => {
     if (!isNextPageAvailable) return;
-    onPageChange(page + 1);
+    onPageChange(page + 1 - pageOffset);
   };
-  const onSelectPage = curPage => () => onPageChange(curPage);
+  const onSelectPage = curPage => () => onPageChange(curPage - pageOffset);
 
   const renderPage = (curPage, i) => (
     <div
       key={i}
-      className={cn('btn btn_light btn_textSm', { btn_lightActive: curPage === page })}
+      className={cn('btn-light btn-light_sm', { 'btn-light_active': curPage === page })}
       onClick={onSelectPage(curPage)}
     >
       {curPage}
@@ -75,7 +76,10 @@ export const Pagination = (props: IPaginationProps) => {
     <div className={cn('flex items-center', className)}>
       <div className="flex gap-x-2">
         <div
-          className={cn('btn btn_light btn_textSm', { btn_lightDisabled: !isPrevPageAvailable })}
+          className={cn('btn-light btn-light_sm', {
+            'btn-light_disabled': !isPrevPageAvailable,
+            'text-secondary': isPrevPageAvailable,
+          })}
           onClick={prevPage}
         >
           <i className="fa fa-angle-left fa_noColor"></i>
@@ -110,7 +114,10 @@ export const Pagination = (props: IPaginationProps) => {
         )}
 
         <div
-          className={cn('btn btn_light btn_textSm', { btn_lightDisabled: !isNextPageAvailable })}
+          className={cn('btn-light btn-light_sm', {
+            'btn-light_disabled': !isNextPageAvailable,
+            'text-secondary': isNextPageAvailable,
+          })}
           onClick={nextPage}
         >
           <i className="fa fa-angle-right fa_noColor"></i>

@@ -2,7 +2,7 @@ import cn from 'classnames';
 import { isEmpty } from 'lodash-es';
 import React from 'react';
 import { ISearchFilterProps, ISelectFilterProps, ISelectOption } from '../../lib/types.js';
-import { useImmerState } from '../lib/utils.js';
+import { useMergeState } from '../lib/utils.js';
 import { Checkbox } from './Checkbox.js';
 
 type ISearchFilterState = {
@@ -12,7 +12,7 @@ type ISearchFilterState = {
 
 export const SearchFilter = (props: ISearchFilterProps) => {
   const { filter: parentFilter, onFilter, name, setIsOpen } = props;
-  const [state, setState] = useImmerState<ISearchFilterState>({ ownFilter: '', hasChanges: false });
+  const [state, setState] = useMergeState<ISearchFilterState>({ ownFilter: '', hasChanges: false });
   const { ownFilter, hasChanges } = state;
 
   const filter = hasChanges ? ownFilter : parentFilter;
@@ -60,8 +60,8 @@ type ISelectFilterState = {
 };
 
 export const SelectFilter = (props: ISelectFilterProps) => {
-  const { filter: parentFilter, onFilter, name, setIsOpen, selectFilterOptions } = props;
-  const [state, setState] = useImmerState<ISelectFilterState>({ ownFilter: [], hasChanges: false });
+  const { filter: parentFilter, onFilter, name, setIsOpen, filterOptions } = props;
+  const [state, setState] = useMergeState<ISelectFilterState>({ ownFilter: [], hasChanges: false });
   const { ownFilter, hasChanges } = state;
 
   const filter = hasChanges ? ownFilter : parentFilter;
@@ -84,7 +84,7 @@ export const SelectFilter = (props: ISelectFilterProps) => {
   return (
     <>
       <div className="mb-3">
-        {selectFilterOptions.map(el => (
+        {filterOptions.map(el => (
           <div key={el.value}>
             <Checkbox
               label={el.label}

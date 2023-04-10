@@ -1,19 +1,22 @@
 import cn from 'classnames';
 import { useFormikContext } from 'formik';
 import produce from 'immer';
-import { get, isEmpty, isFunction, isNumber, omit, orderBy } from 'lodash-es';
+import { get, isEmpty, isFunction, isNull, isNumber, omit, orderBy } from 'lodash-es';
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'wouter';
-import { filterTypes, roles } from '../../lib/sharedUtils.js';
+import { filterTypes, roles, sortOrders } from '../../lib/sharedUtils.js';
 import {
   IApiErrors,
   IContext,
   IFilter,
-  IUseImmerState,
+  IMixedFilter,
+  ISortOrder,
+  IUseMergeState,
   IUseQuery,
   IUseSubmit,
   IUseTable,
+  IUseTableState,
 } from '../../lib/types.js';
 import Context from './context.js';
 
@@ -22,13 +25,16 @@ export { Context };
 
 export const useContext = () => React.useContext<IContext>(Context);
 
-export const useImmerState: IUseImmerState = initialState => {
+export const useMergeState: IUseMergeState = initialState => {
   const [state, setState] = React.useState(initialState);
 
   const setImmerState = React.useCallback(fnOrObject => {
     if (isFunction(fnOrObject)) {
       const fn = fnOrObject;
-      setState(curState => produce(curState, fn));
+      setState(curState => {
+        const newState = fn(curState);
+        return { ...curState, ...newState };
+      });
     } else {
       const newState = fnOrObject;
       setState(curState => ({ ...curState, ...newState }));
@@ -136,24 +142,63 @@ export const makeCaseInsensitiveRegex = str =>
   new RegExp(str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'), 'i');
 
 export const useTable: IUseTable = props => {
-  const { rows: originalRows, page, size, sortBy, sortOrder, filters } = props;
+  const { rows: originalRows } = props;
 
-  return React.useMemo(() => {
+  const [state, setState] = useMergeState<IUseTableState>({
+    page: props.page,
+    size: props.size,
+    sortBy: props.sortBy,
+    sortOrder: props.sortOrder,
+    filters: props.filters,
+  });
+  const { page, size, sortBy, sortOrder, filters } = state;
+
+  const filtersList = React.useMemo(() => Object.values(filters), [filters]);
+
+  const onPageChange = newPage => setState({ page: newPage });
+  const onSizeChange = newSize => setState({ size: newSize, page: 0 });
+
+  const onSortChange = (sortOrder, sortBy) => {
+    let newSortOrder: ISortOrder = null;
+    if (isNull(sortOrder)) newSortOrder = sortOrders.asc;
+    if (sortOrders.asc === sortOrder) newSortOrder = sortOrders.desc;
+
+    setState({ sortBy, sortOrder: newSortOrder });
+  };
+
+  const onFilterChange = (filter: IMixedFilter, filterBy) =>
+    setState({
+      filters: produce(filters, draft => {
+        draft[filterBy].filter = filter;
+      }),
+      page: 0,
+    });
+
+  const { rows, totalRows } = React.useMemo(() => {
+    if (!originalRows) return { rows: [], totalRows: 0 };
+
     let filtered;
 
-    if (isEmpty(filters)) {
+    if (isEmpty(filtersList)) {
       filtered = originalRows;
     } else {
       filtered = originalRows.filter(row =>
-        filters.every(filterObj => {
-          if (isEmpty(filterObj.filter)) return true;
+        filtersList.every(filterObj => {
+          const { filter, filterBy, filterType, customFilterFn } = filterObj;
+          if (isEmpty(filter)) return true;
 
-          const rowValueOfField = get(row, filterObj.filterBy);
-          if (filterObj.filterType === filterTypes.search) {
-            const regex = makeCaseInsensitiveRegex(filterObj.filter);
+          const rowValueOfField = get(row, filterBy);
+          if (customFilterFn) {
+            return customFilterFn(rowValueOfField, filter);
+          }
+
+          if (filterType === filterTypes.search) {
+            const regex = makeCaseInsensitiveRegex(filter);
             return rowValueOfField.match(regex);
-          } else if (filterObj.filterType === filterTypes.select) {
-            return filterObj.filter.some(selectFilter => selectFilter.value === rowValueOfField);
+          }
+
+          if (filterType === filterTypes.select) {
+            return filter.some(selectFilter => selectFilter.value === rowValueOfField);
           }
         })
       );
@@ -166,6 +211,21 @@ export const useTable: IUseTable = props => {
 
     return { rows: paginated, totalRows: sorted.length };
   }, [originalRows, page, size, sortBy, sortOrder, filters]);
+
+  const paginationProps = { totalRows, page, size, onPageChange, onSizeChange };
+  const headerCellProps = { sortBy, sortOrder, filters, onSortChange, onFilterChange };
+
+  return {
+    rows,
+    totalRows,
+    page,
+    size,
+    sortBy,
+    sortOrder,
+    filters,
+    paginationProps,
+    headerCellProps,
+  };
 };
 
 export const stripEmptyFilters = (filters: IFilter[]) =>

@@ -1,5 +1,5 @@
 import cn from 'classnames';
-import { isEmpty, isNull } from 'lodash-es';
+import { isEmpty } from 'lodash-es';
 import React from 'react';
 import { IHeaderCellProps, ISortOrder } from '../../lib/types.js';
 import { filterTypes, sortOrders } from '../lib/utils.js';
@@ -19,7 +19,21 @@ const getSortOrderIcon = (sortOrder: ISortOrder) => {
 };
 
 export const HeaderCell = (props: IHeaderCellProps) => {
-  const { children, onSort, name, sortOrder = null, className = '', filterType } = props;
+  const {
+    children,
+    name,
+    onSortChange,
+    onFilterChange,
+    filters,
+    sortable = false,
+    sortBy,
+    sortOrder: parentSortOrder = null,
+    className = '',
+  } = props;
+
+  const sortOrder = sortBy === name ? parentSortOrder : null;
+  const filterObj = filters[name];
+  const filterType = filterObj?.filterType;
 
   const [isOpen, setIsOpen] = React.useState(false);
 
@@ -36,16 +50,15 @@ export const HeaderCell = (props: IHeaderCellProps) => {
     onReferenceClick(e);
   };
 
-  const onSortChange = () => {
-    if (isNull(sortOrder)) return onSort(sortOrders.asc, name);
-    if (sortOrders.asc === sortOrder) return onSort(sortOrders.desc, name);
-    return onSort(null, name);
+  const ownOnSortChange = () => {
+    if (!sortable) return;
+    onSortChange(sortOrder, name);
   };
 
   return (
     <th
-      className={cn(s.headCell, className)}
-      onClick={onSortChange}
+      className={cn(s.headCell, className, { [s.headCell_sortable]: sortable })}
+      onClick={ownOnSortChange}
       ref={refs.setPositionReference}
     >
       <div className="flex items-center justify-between p-2">
@@ -54,14 +67,15 @@ export const HeaderCell = (props: IHeaderCellProps) => {
           {filterType && (
             <i
               className={cn('fa fa-filter', s.filterIcon, {
-                [s.filterIcon_active]: !isEmpty(props.filter),
+                [s.filterIcon_active]: !isEmpty(filterObj.filter),
               })}
               ref={refs.setReference}
               {...restReferenceProps}
               onClick={onFilterIconClick}
             ></i>
           )}
-          <img src={getSortOrderIcon(sortOrder)} className={s.sortIcon} />
+
+          {sortable && <img src={getSortOrderIcon(sortOrder)} className={s.sortIcon} />}
         </div>
       </div>
 
@@ -74,18 +88,18 @@ export const HeaderCell = (props: IHeaderCellProps) => {
             {filterType === filterTypes.search && (
               <SearchFilter
                 name={name}
-                filter={props.filter}
-                onFilter={props.onFilter}
+                filter={filterObj.filter}
+                onFilter={onFilterChange}
                 setIsOpen={setIsOpen}
               />
             )}
             {filterType === filterTypes.select && (
               <SelectFilter
                 name={name}
-                filter={props.filter}
-                onFilter={props.onFilter}
+                filter={filterObj.filter}
+                onFilter={onFilterChange}
                 setIsOpen={setIsOpen}
-                selectFilterOptions={props.selectFilterOptions}
+                filterOptions={filterObj.filterOptions}
               />
             )}
           </div>

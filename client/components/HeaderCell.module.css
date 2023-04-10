@@ -1,21 +1,26 @@
 .headCell {
   padding: 0;
-  cursor: pointer;
-  user-select: none;
-  transition: 0.15s;
 
-  &:hover {
+  &_sortable {
+    cursor: pointer;
+    user-select: none;
+    transition: 0.15s;
+  }
+  &_sortable:hover {
     @apply bg-slate-100;
   }
 }
 
 .sortIcon {
   width: 16px;
+  height: 16px;
 }
 
 .filterIcon {
   @apply ml-2 text-sm text-slate-500 rounded-md;
   padding: 2px 8px;
+  cursor: pointer;
+  user-select: none;
   transition: 0.2s;
   &:hover {
     @apply bg-slate-300;

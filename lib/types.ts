@@ -154,6 +154,8 @@ export type IGetTodosResponse = {
 export type IOnSubmit = (values, actions: FormikHelpers<any>) => Promise<any>;
 export type IUseSubmit = (onSubmit: IOnSubmit) => IOnSubmit;
 
+type Anyify<T> = { [K in keyof T]: any };
+
 export type ISelectOption = {
   value: any;
   label: string;
@@ -167,25 +169,30 @@ export type IFilterTypes = typeof filterTypes;
 export type ISelectFilter = ISelectOption[];
 export type ISearchFilter = string;
 
-export type IFilter =
-  | {
-      filterBy: string;
-      filterType: IFilterTypes['select'];
-      filter: ISelectFilter;
-      filterOptions: ISelectFilter;
-    }
-  | {
-      filterBy: string;
-      filterType: IFilterTypes['search'];
-      filter: ISearchFilter;
-    };
+type ISelectFilterObj = {
+  filterBy: string;
+  filterType: IFilterTypes['select'];
+  filter: ISelectFilter;
+  filterOptions: ISelectFilter;
+  customFilterFn?: (rowValue, filter: IMixedFilter) => boolean;
+};
 
-export type IMixedOnFilter = (filter: ISearchFilter | ISelectFilter, filterBy: string) => void;
+type ISearchFilterObj = {
+  filterBy: string;
+  filterType: IFilterTypes['search'];
+  filter: ISearchFilter;
+  customFilterFn?: (rowValue, filter: IMixedFilter) => boolean;
+};
+
+export type IFilter = ISelectFilterObj | ISearchFilterObj;
+
+export type IMixedFilter = ISearchFilter | ISelectFilter;
+export type IFiltersMap = Record<string, Anyify<IFilter> & { filterOptions?: any }>;
 
 export type ISelectFilterProps = {
   name: string;
   setIsOpen: any;
-  selectFilterOptions: ISelectFilter;
+  filterOptions: ISelectFilter;
   filter: ISelectFilter;
   onFilter: (filter: ISelectFilter, filterBy: string) => void;
 };
@@ -197,43 +204,51 @@ export type ISearchFilterProps = {
   onFilter: (filter: ISearchFilter, filterBy: string) => void;
 };
 
-export type INonFilterableOpts = {
-  filterType?: undefined;
-};
-
-export type ISelectFilterOpts = {
-  filterType: typeof filterTypes.select;
-  filter: ISelectFilterProps['filter'];
-  onFilter: ISelectFilterProps['onFilter'];
-  selectFilterOptions: ISelectFilterProps['selectFilterOptions'];
-};
-
-export type ISearchFilterOpts = {
-  filterType: typeof filterTypes.search;
-  filter: ISearchFilterProps['filter'];
-  onFilter: ISearchFilterProps['onFilter'];
-};
-
 export type IHeaderCellProps = {
   children: any;
-  onSort: (sortOrder: ISortOrder, sortBy: string) => void;
   name: string;
+  onSortChange: (sortOrder: ISortOrder, sortBy: string) => void;
+  onFilterChange: (filter: IMixedFilter, filterBy: string) => void;
+  filters: IFiltersMap;
+  sortable?: boolean;
+  sortBy?: string;
   sortOrder?: ISortOrder;
   className?: string;
-} & (ISearchFilterOpts | ISelectFilterOpts | INonFilterableOpts);
+};
 
-export type IUseTableProps<T> = {
-  rows: T;
+type IUseTableCommonProps = {
   page: number;
   size: number;
   sortBy: string | null;
   sortOrder: ISortOrder;
-  filters: IFilter[];
+  filters: IFiltersMap;
 };
+
+export type IUseTableProps<T = any> = IUseTableCommonProps & {
+  rows?: T;
+};
+
+export type IUseTableState = IUseTableCommonProps;
 
 export type IUseTable = <T extends any[]>(
   props: IUseTableProps<T>
-) => { rows: T; totalRows: number };
+) => IUseTableCommonProps & {
+  rows: T;
+  totalRows: number;
+  paginationProps: {
+    page;
+    size;
+    onPageChange;
+    onSizeChange;
+  };
+  headerCellProps: {
+    sortBy;
+    sortOrder;
+    filters;
+    onSortChange;
+    onFilterChange;
+  };
+};
 
 export type IUseQueryProps = {
   page: number;
@@ -251,6 +266,6 @@ export type IUseQuery = (props: IUseQueryProps) => {
   filters?: IFilter[];
 };
 
-type IProduceFn<T> = (draftState: T) => any;
-type ISetState<T> = (fnOrObject: Partial<T> | IProduceFn<T>) => void;
-export type IUseImmerState = <T>(initialState: T) => [state: T, setState: ISetState<T>];
+type IFn<T> = (freshState: T) => Partial<T>;
+type ISetState<T> = (fnOrObject: Partial<T> | IFn<T>) => void;
+export type IUseMergeState = <T>(initialState: T) => [state: T, setState: ISetState<T>];

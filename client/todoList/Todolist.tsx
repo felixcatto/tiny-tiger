@@ -1,16 +1,9 @@
 import cn from 'classnames';
 import { Form, Formik } from 'formik';
-import produce from 'immer';
 import React from 'react';
 import { useSelector } from 'react-redux';
 import useSWR from 'swr';
-import {
-  IGetTodosResponse,
-  IHeaderCellProps,
-  IMixedOnFilter,
-  ISortOrder,
-  ITodo,
-} from '../../lib/types.js';
+import { IGetTodosResponse, ITodo } from '../../lib/types.js';
 import { HeaderCell } from '../components/HeaderCell.js';
 import Layout from '../components/layout.js';
 import { Pagination } from '../components/Pagination.js';
@@ -22,31 +15,12 @@ import {
   getApiUrl,
   SubmitBtn,
   useContext,
-  useImmerState,
   useQuery,
   useSubmit,
+  useTable,
   WithApiErrors,
 } from '../lib/utils.js';
 import s from './styles.module.css';
-
-type IFiltersMap = Record<
-  string,
-  {
-    filterBy: string;
-    filterType: any;
-    filter: any;
-    filterOptions?: any;
-  }
->;
-
-type IState = {
-  editingTodo: ITodo | null;
-  page: number;
-  size: number;
-  sortBy: string | null;
-  sortOrder: ISortOrder;
-  filters: IFiltersMap;
-};
 
 const defaultFilters = {
   'author.name': {
@@ -74,15 +48,15 @@ const TodoList = () => {
   const { isSignedIn } = useSelector(selectSession);
   const { axios } = useContext();
 
-  const [state, setState] = useImmerState<IState>({
-    editingTodo: null,
+  const { page, size, sortBy, sortOrder, filters, paginationProps, headerCellProps } = useTable({
     page: 0,
     size: 3,
     sortBy: null,
     sortOrder: null,
     filters: defaultFilters,
   });
-  const { editingTodo, page, size, sortBy, sortOrder, filters } = state;
+
+  const [editingTodo, setEditingTodo] = React.useState<ITodo | null>(null);
 
   const filtersList = React.useMemo(() => Object.values(filters), [filters]);
   const query = useQuery({ page, size, sortBy, sortOrder, filters: filtersList });
@@ -105,12 +79,13 @@ const TodoList = () => {
     }
     actions.resetForm();
     mutate();
-    setState({ editingTodo: null });
+    setEditingTodo(null);
   });
 
   const editTodo = todo => async () => {
-    setState({ editingTodo: todo });
+    setEditingTodo(todo);
   };
+
   const changeTodoStatus = todo => async () => {
     await axios.put(getApiUrl('todo', { id: todo.id }), {
       ...todo,
@@ -118,27 +93,15 @@ const TodoList = () => {
     });
     mutate();
   };
+
   const cancelEdit = () => {
-    setState({ editingTodo: null });
+    setEditingTodo(null);
   };
+
   const deleteTodo = id => async () => {
     await axios.delete(getApiUrl('todo', { id }));
     mutate();
   };
-
-  const onPageChange = newPage => setState({ page: newPage - 1 });
-  const onSizeChange = newSize => setState({ size: newSize, page: 0 });
-
-  const onSortChange: IHeaderCellProps['onSort'] = (sortOrder, sortBy) =>
-    setState({ sortBy, sortOrder });
-
-  const onFilterChange: IMixedOnFilter = (filter, filterBy) =>
-    setState({
-      filters: produce(filters, draft => {
-        draft[filterBy].filter = filter;
-      }),
-      page: 0,
-    });
 
   const todoClass = todo =>
     cn('fa', {
@@ -202,48 +165,19 @@ const TodoList = () => {
         <div className="col-9">
           <h3 className="mb-4">List of todos</h3>
 
-          <table className="table-fixed">
+          <table className="table table-fixed">
             <thead>
               <tr>
-                <HeaderCell
-                  name="author.name"
-                  className="w-32"
-                  sortOrder={sortBy === 'author.name' ? sortOrder : null}
-                  onSort={onSortChange}
-                  filterType={filters['author.name'].filterType}
-                  filter={filters['author.name'].filter}
-                  onFilter={onFilterChange}
-                >
+                <HeaderCell {...headerCellProps} name="author.name" className="w-32" sortable>
                   <div>Name</div>
                 </HeaderCell>
-                <HeaderCell
-                  name="author.email"
-                  className="w-44"
-                  sortOrder={sortBy === 'author.email' ? sortOrder : null}
-                  onSort={onSortChange}
-                >
+                <HeaderCell {...headerCellProps} name="author.email" className="w-44" sortable>
                   <div>Email</div>
                 </HeaderCell>
-                <HeaderCell
-                  name="text"
-                  sortOrder={sortBy === 'text' ? sortOrder : null}
-                  onSort={onSortChange}
-                  filterType={filters.text.filterType}
-                  filter={filters.text.filter}
-                  onFilter={onFilterChange}
-                >
+                <HeaderCell {...headerCellProps} name="text" sortable>
                   <div>Text</div>
                 </HeaderCell>
-                <HeaderCell
-                  name="is_completed"
-                  className="w-32"
-                  sortOrder={sortBy === 'is_completed' ? sortOrder : null}
-                  onSort={onSortChange}
-                  filterType={filters.is_completed.filterType}
-                  filter={filters.is_completed.filter}
-                  onFilter={onFilterChange}
-                  selectFilterOptions={filters.is_completed.filterOptions}
-                >
+                <HeaderCell {...headerCellProps} name="is_completed" className="w-32" sortable>
                   <div>Status</div>
                 </HeaderCell>
                 {isSignedIn && <th className="w-32"></th>}
@@ -288,16 +222,7 @@ const TodoList = () => {
             </tbody>
           </table>
 
-          {rows && (
-            <Pagination
-              className="mt-3"
-              page={page + 1}
-              size={size}
-              totalRows={totalRows}
-              onPageChange={onPageChange}
-              onSizeChange={onSizeChange}
-            />
-          )}
+          {rows && <Pagination {...paginationProps} className="mt-3" totalRows={totalRows} />}
         </div>
       </div>
     </Layout>
