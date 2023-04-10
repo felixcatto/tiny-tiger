@@ -1,9 +1,8 @@
 import { spawn } from 'child_process';
 import { deleteAsync } from 'del';
 import gulp from 'gulp';
-import babel from 'gulp-babel';
+import swc from 'gulp-swc';
 import waitOn from 'wait-on';
-import babelConfig from './babelconfig.js';
 
 const { series } = gulp;
 
@@ -53,7 +52,7 @@ const clean = async () => deleteAsync(['dist']);
 const transpileServerJs = () =>
   gulp
     .src(paths.serverJs.src, { base: '.', since: gulp.lastRun(transpileServerJs) })
-    .pipe(babel(babelConfig.server))
+    .pipe(swc({ jsc: { target: 'es2022' } }))
     .pipe(gulp.dest(paths.dest));
 
 const trackChangesInDist = () => {
