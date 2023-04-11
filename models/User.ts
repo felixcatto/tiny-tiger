@@ -35,6 +35,6 @@ export class User extends Model {
 }
 
 export const userLoginSchema = y.object({
-  email: y.string().email().required('required'),
+  name: y.string().required('required'),
   password: y.string().required('required'),
 });

@@ -24,12 +24,12 @@ const Login = () => {
     <Layout>
       <div className="row">
         <div className="col-4">
-          <Formik initialValues={{ email: '', password: '' }} onSubmit={onSubmit}>
+          <Formik initialValues={{ name: '', password: '' }} onSubmit={onSubmit}>
             <Form>
               <div className="mb-4">
-                <label className="text-sm">Email</label>
-                <Field className="input" name="email" />
-                <ErrorMessage name="email" />
+                <label className="text-sm">Login</label>
+                <Field className="input" name="name" />
+                <ErrorMessage name="name" />
               </div>
               <div className="mb-4">
                 <label className="text-sm">Password</label>

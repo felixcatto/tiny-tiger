@@ -86,10 +86,10 @@ export default async (app: FastifyInstance) => {
     }
 
     const { email, name, ...todoFields } = data as ITodoPostGuestSchema;
-    const user = await User.query().findOne({ email });
+    const user = await User.query().findOne({ name });
     if (user) {
       if (user.role !== roles.guest) {
-        return res.code(400).send(makeErrors({ email: 'email already exist' }));
+        return res.code(400).send(makeErrors({ name: 'name already exist' }));
       }
 
       const todo = await Todo.query().insert({ ...todoFields, author_id: user.id });

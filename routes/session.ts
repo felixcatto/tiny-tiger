@@ -14,10 +14,10 @@ export default async (app: FastifyInstance) => {
 
   app.post('/session', { preHandler: validate(userLoginSchema) }, async (req, res) => {
     const data: IUserLoginSchema = req.vlBody;
-    const user = await User.query().findOne({ email: data.email });
+    const user = await User.query().findOne({ name: data.name });
 
     if (!user) {
-      return res.code(400).send(makeErrors({ email: 'User with such email not found' }));
+      return res.code(400).send(makeErrors({ name: 'User with such name not found' }));
     }
 
     if (user.password_digest !== encrypt(data.password)) {

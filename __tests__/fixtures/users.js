@@ -27,4 +27,11 @@ export default [
     email: 'sarahD@gmail.com',
     password: '1',
   },
+  {
+    id: -5,
+    name: 'admin',
+    role: 'admin',
+    email: 'admin@gmail.com',
+    password: '123',
+  },
 ];
