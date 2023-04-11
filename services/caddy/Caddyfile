@@ -1,4 +1,5 @@
-localhost {
+# localhost
+tiny-tiger.rainoffire.ru {
   @publicAssets {
     path *.woff *.woff2 *.ttf *.jpg *.jpeg *.png *.gif *.ico *.webp *.svg
   }
@@ -16,6 +17,7 @@ localhost {
     file_server {
       pass_thru
     }
-    reverse_proxy {$APP_HOST}:{$APP_PORT} {$APP_HOST2}:{$APP_PORT} {$APP_HOST3}:{$APP_PORT}
+    reverse_proxy {$APP_HOST}:{$APP_PORT}
+    # reverse_proxy {$APP_HOST}:{$APP_PORT} {$APP_HOST2}:{$APP_PORT} {$APP_HOST3}:{$APP_PORT}
   }
 }
