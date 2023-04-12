@@ -1,13 +1,17 @@
 import { configureStore } from '@reduxjs/toolkit';
 import originalAxios from 'axios';
-import React from 'react';
 import { Provider } from 'react-redux';
 import { SWRConfig } from 'swr';
 import { Route, Switch } from 'wouter';
 import { IBindedActions, IContext, IUser } from '../../lib/types.js';
 import Context from '../lib/context.js';
-import { makeThunks, reduxActions } from '../lib/reduxActions.js';
-import { makeCurUserReducer } from '../lib/reduxReducers.js';
+import {
+  makeCurUserReducer,
+  makeNotificationAnimationDuration,
+  makeNotificationsReducer,
+  makeThunks,
+  reduxActions,
+} from '../lib/reduxStore.js';
 import { getUrl, routes } from '../lib/utils.js';
 import Login from '../session/Login.js';
 import TodoList from '../todoList/Todolist.js';
@@ -42,12 +46,14 @@ export const App = (props: IAppProps) => {
     fallback,
   };
 
-  const reduxThunks = makeThunks({ axios });
+  const reduxThunks = makeThunks({ axios, actions: reduxActions });
   const actions = { ...reduxActions, ...reduxThunks };
 
   const reduxStore = configureStore({
     reducer: {
       [makeCurUserReducer.key]: makeCurUserReducer(actions, currentUser),
+      [makeNotificationAnimationDuration.key]: makeNotificationAnimationDuration(actions),
+      [makeNotificationsReducer.key]: makeNotificationsReducer(actions),
     },
   });
 

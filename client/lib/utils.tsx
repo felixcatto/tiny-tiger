@@ -1,14 +1,17 @@
+import { createAsyncThunk } from '@reduxjs/toolkit';
 import cn from 'classnames';
 import { useFormikContext } from 'formik';
 import produce from 'immer';
 import { get, isEmpty, isFunction, isNull, isNumber, omit, orderBy } from 'lodash-es';
 import React from 'react';
 import { createPortal } from 'react-dom';
+import stringMath from 'string-math';
 import { Link, useLocation } from 'wouter';
 import { filterTypes, roles, sortOrders } from '../../lib/sharedUtils.js';
 import {
   IApiErrors,
   IContext,
+  ICreateAsyncThunk,
   IFilter,
   IMixedFilter,
   ISortOrder,
@@ -129,7 +132,7 @@ export const Portal = ({ children, selector }) => {
   return mounted ? createPortal(children, ref.current) : null;
 };
 
-export const thunk = asyncFn => async (arg, thunkAPI) => {
+export const thunk: any = asyncFn => async (arg, thunkAPI) => {
   try {
     const response = await asyncFn(arg, thunkAPI);
     return response;
@@ -137,6 +140,9 @@ export const thunk = asyncFn => async (arg, thunkAPI) => {
     return thunkAPI.rejectWithValue(e);
   }
 };
+
+export const iCreateAsyncThunk: ICreateAsyncThunk = (thunkName, asyncThunkFn) =>
+  createAsyncThunk(thunkName, thunk(asyncThunkFn));
 
 export const makeCaseInsensitiveRegex = str =>
   new RegExp(str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'), 'i');
@@ -263,3 +269,6 @@ export const useQuery: IUseQuery = props => {
     return queryStr;
   }, [filters, page, size, sortBy, sortOrder]);
 };
+
+export const getCssValue = (cssValue: string) =>
+  stringMath(cssValue.trim().replaceAll('calc', '').replaceAll('s', ''));

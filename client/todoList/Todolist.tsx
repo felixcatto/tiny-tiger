@@ -6,8 +6,9 @@ import useSWR from 'swr';
 import { IGetTodosResponse, ITodo } from '../../lib/types.js';
 import { HeaderCell } from '../components/HeaderCell.js';
 import Layout from '../components/layout.js';
+import { makeNotification } from '../components/Notifications.jsx';
 import { Pagination } from '../components/Pagination.js';
-import { selectSession } from '../lib/reduxReducers.js';
+import { selectSession } from '../lib/reduxStore.js';
 import {
   ErrorMessage,
   Field,
@@ -46,7 +47,7 @@ const defaultFilters = {
 
 const TodoList = () => {
   const { isSignedIn } = useSelector(selectSession);
-  const { axios } = useContext();
+  const { axios, actions } = useContext();
 
   const { page, size, sortBy, sortOrder, filters, paginationProps, headerCellProps } = useTable({
     page: 0,
@@ -71,13 +72,15 @@ const TodoList = () => {
     ? { name: editingTodo.author?.name, email: editingTodo.author?.email, text: editingTodo.text }
     : { name: '', email: '', text: '' };
 
-  const onSubmit = useSubmit(async (values, actions) => {
+  const onSubmit = useSubmit(async (values, fmActions) => {
     if (editingTodo) {
       await axios.put(getApiUrl('todo', { id: editingTodo.id }), { text: values.text });
+      actions.addNotification(makeNotification({ title: 'Todo', text: 'Edited successfully' }));
     } else {
       await axios.post(getApiUrl('todos'), values);
+      actions.addNotification(makeNotification({ title: 'Todo', text: 'Created successfully' }));
     }
-    actions.resetForm();
+    fmActions.resetForm();
     mutate();
     setEditingTodo(null);
   });

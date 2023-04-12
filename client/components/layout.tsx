@@ -2,9 +2,10 @@ import cn from 'classnames';
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'wouter';
-import { selectSession } from '../lib/reduxReducers.js';
+import { selectSession } from '../lib/reduxStore.js';
 import { getUrl, NavLink, useContext, userRolesToIcons } from '../lib/utils.js';
 import s from './layout.module.css';
+import { Notifications } from './Notifications.jsx';
 
 const Layout = ({ children }: any) => {
   const { actions } = useContext();
@@ -44,6 +45,8 @@ const Layout = ({ children }: any) => {
         </div>
       </div>
       <div className={cn('container', s.content)}>{children}</div>
+      <div id="popoverRoot"></div>
+      <Notifications />
     </div>
   );
 };

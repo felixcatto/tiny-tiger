@@ -1,9 +1,15 @@
+import { createAsyncThunk, Dispatch } from '@reduxjs/toolkit';
 import { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { FormikHelpers } from 'formik';
 import { Knex } from 'knex';
 import * as y from 'yup';
-import { makeThunks, reduxActions } from '../client/lib/reduxActions.js';
-import { makeCurUserReducer } from '../client/lib/reduxReducers.js';
+import {
+  makeThunks,
+  reduxActions,
+  makeCurUserReducer,
+  makeNotificationAnimationDuration,
+  makeNotificationsReducer,
+} from '../client/lib/reduxStore.js';
 import * as models from '../models/index.js';
 import {
   Todo,
@@ -139,7 +145,26 @@ export type IBindedThunks = {
 export type IActions = IReduxActions & IReduxThunks;
 export type IBindedActions = IReduxActions & IBindedThunks;
 
-export type IReduxState = IReduxRecord<typeof makeCurUserReducer>;
+export type IReduxState = IReduxRecord<typeof makeCurUserReducer> &
+  IReduxRecord<typeof makeNotificationAnimationDuration> &
+  IReduxRecord<typeof makeNotificationsReducer>;
+
+type BaseThunkAPI<S, E, D extends Dispatch = Dispatch> = {
+  dispatch: D;
+  getState: () => S;
+  extra: E;
+  requestId: string;
+  signal: AbortSignal;
+  abort: (reason?: string) => void;
+  rejectWithValue: any;
+  fulfillWithValue: any;
+};
+
+type IThunkAsyncFn<T> = (arg: T, thunkAPI: BaseThunkAPI<any, any>) => Promise<any>;
+export type ICreateAsyncThunk = <ThunkReturnType = void, ThunkArg = void>(
+  thunkName: string,
+  thunkFn: IThunkAsyncFn<ThunkArg>
+) => ReturnType<typeof createAsyncThunk<ThunkReturnType, ThunkArg>>;
 
 export type IContext = {
   axios: IAxiosInstance;
@@ -269,3 +294,19 @@ export type IUseQuery = (props: IUseQueryProps) => {
 type IFn<T> = (freshState: T) => Partial<T>;
 type ISetState<T> = (fnOrObject: Partial<T> | IFn<T>) => void;
 export type IUseMergeState = <T>(initialState: T) => [state: T, setState: ISetState<T>];
+
+type INotificationText = { text: string; component?: undefined };
+type INotificationComponent = { text?: undefined; component: () => JSX.Element };
+export type INotification = {
+  id: string;
+  title: string;
+  isHidden: boolean;
+  isInverseAnimation: boolean;
+  autoremoveTimeout: number | null;
+} & (INotificationText | INotificationComponent);
+
+type IMakeNotificationOpts = {
+  title: INotification['title'];
+  autoremoveTimeout?: INotification['autoremoveTimeout'];
+} & (INotificationText | INotificationComponent);
+export type IMakeNotification = (opts: IMakeNotificationOpts) => INotification;
