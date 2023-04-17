@@ -59,3 +59,5 @@ export const routes = {
 export const getUrl = makeUrlFor(routes);
 export const getApiUrl = (name: keyof typeof routes, routeParams?, query?) =>
   `/api${getUrl(name, routeParams, query)}`;
+
+export const isBrowser = () => typeof window !== 'undefined';

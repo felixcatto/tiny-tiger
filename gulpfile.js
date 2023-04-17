@@ -4,7 +4,7 @@ import gulp from 'gulp';
 import swc from 'gulp-swc';
 import waitOn from 'wait-on';
 
-const { series } = gulp;
+const { series, parallel } = gulp;
 
 const paths = {
   dest: 'dist',
@@ -22,6 +22,8 @@ const paths = {
       '!services/**',
     ],
   },
+  dest: 'dist',
+  misc: '.env*',
 };
 
 let server;
@@ -55,6 +57,8 @@ const transpileServerJs = () =>
     .pipe(swc({ jsc: { target: 'es2022' } }))
     .pipe(gulp.dest(paths.dest));
 
+const copyMisc = () => gulp.src(paths.misc).pipe(gulp.dest(paths.dest));
+
 const trackChangesInDist = () => {
   const watcher = gulp.watch('dist/**/*');
   watcher
@@ -69,6 +73,6 @@ const watch = async () => {
   trackChangesInDist();
 };
 
-export const dev = series(clean, transpileServerJs, startServer, watch);
+export const dev = series(clean, parallel(transpileServerJs, copyMisc), startServer, watch);
 
-export const build = transpileServerJs;
+export const build = parallel(transpileServerJs, copyMisc);
