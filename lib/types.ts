@@ -1,14 +1,13 @@
-import { createAsyncThunk, Dispatch } from '@reduxjs/toolkit';
 import { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { FormikHelpers } from 'formik';
 import { Knex } from 'knex';
 import * as y from 'yup';
 import {
-  makeThunks,
-  reduxActions,
   makeCurUserReducer,
   makeNotificationAnimationDuration,
   makeNotificationsReducer,
+  makeThunks,
+  reduxActions,
 } from '../client/lib/reduxStore.js';
 import * as models from '../models/index.js';
 import {
@@ -148,23 +147,6 @@ export type IBindedActions = IReduxActions & IBindedThunks;
 export type IReduxState = IReduxRecord<typeof makeCurUserReducer> &
   IReduxRecord<typeof makeNotificationAnimationDuration> &
   IReduxRecord<typeof makeNotificationsReducer>;
-
-type BaseThunkAPI<S, E, D extends Dispatch = Dispatch> = {
-  dispatch: D;
-  getState: () => S;
-  extra: E;
-  requestId: string;
-  signal: AbortSignal;
-  abort: (reason?: string) => void;
-  rejectWithValue: any;
-  fulfillWithValue: any;
-};
-
-type IThunkAsyncFn<T> = (arg: T, thunkAPI: BaseThunkAPI<any, any>) => Promise<any>;
-export type ICreateAsyncThunk = <ThunkReturnType = void, ThunkArg = void>(
-  thunkName: string,
-  thunkFn: IThunkAsyncFn<ThunkArg>
-) => ReturnType<typeof createAsyncThunk<ThunkReturnType, ThunkArg>>;
 
 export type IContext = {
   axios: IAxiosInstance;
@@ -310,3 +292,9 @@ type IMakeNotificationOpts = {
   autoremoveTimeout?: INotification['autoremoveTimeout'];
 } & (INotificationText | INotificationComponent);
 export type IMakeNotification = (opts: IMakeNotificationOpts) => INotification;
+
+declare global {
+  interface ImportMeta {
+    env: { [key: string]: any };
+  }
+}

@@ -5,18 +5,22 @@ import Layout from '../components/layout.js';
 import {
   ErrorMessage,
   Field,
+  getApiUrl,
   getUrl,
   SubmitBtn,
   useContext,
   useSubmit,
   WithApiErrors,
 } from '../lib/utils.js';
+import { IUser, IUserLoginCreds } from '../../lib/types.js';
 
 const Login = () => {
-  const { actions } = useContext();
+  const { actions, axios } = useContext();
   const [_, navigate] = useLocation();
-  const onSubmit = useSubmit(async values => {
-    await actions.signIn(values);
+
+  const onSubmit = useSubmit(async (userCreds: IUserLoginCreds) => {
+    const user = await axios.post<IUser>(getApiUrl('session'), userCreds);
+    actions.signIn(user);
     navigate(getUrl('home'));
   });
 

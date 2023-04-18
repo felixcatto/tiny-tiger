@@ -3,13 +3,18 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'wouter';
 import { selectSession } from '../lib/reduxStore.js';
-import { getUrl, NavLink, useContext, userRolesToIcons } from '../lib/utils.js';
+import { getApiUrl, getUrl, NavLink, useContext, userRolesToIcons } from '../lib/utils.js';
 import s from './layout.module.css';
 import { Notifications } from './Notifications.jsx';
 
 const Layout = ({ children }: any) => {
-  const { actions } = useContext();
+  const { actions, axios } = useContext();
   const { currentUser, isSignedIn } = useSelector(selectSession);
+
+  const signOut = async () => {
+    const user = await axios.delete(getApiUrl('session'));
+    actions.signOut(user);
+  };
 
   const userIconClass = role => cn(s.userRoleIcon, 'mr-1', userRolesToIcons[role]);
 
@@ -33,7 +38,7 @@ const Layout = ({ children }: any) => {
               <i
                 className={cn('fa fa-sign-out-alt', s.signIcon)}
                 title="Sign out"
-                onClick={actions.signOut}
+                onClick={signOut}
               ></i>
             </div>
           ) : (

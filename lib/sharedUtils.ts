@@ -61,3 +61,7 @@ export const getApiUrl = (name: keyof typeof routes, routeParams?, query?) =>
   `/api${getUrl(name, routeParams, query)}`;
 
 export const isBrowser = () => typeof window !== 'undefined';
+
+export const isProduction = mode => mode === modes.production;
+export const isDevelopment = mode => mode === modes.development;
+export const isTest = mode => mode === modes.test;

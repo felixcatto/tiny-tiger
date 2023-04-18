@@ -11,7 +11,7 @@ import { fileURLToPath } from 'url';
 import { createServer } from 'vite';
 import * as y from 'yup';
 import knexConfig from '../knexfile.js';
-import { guestUser, isAdmin, isSignedIn, modes } from './sharedUtils.js';
+import { guestUser, isAdmin, isSignedIn } from './sharedUtils.js';
 import { IAuthenticate, IValidate, IValidateMW } from './types.js';
 
 export { loadEnv } from './devUtils.js';
@@ -218,7 +218,3 @@ export const vitePlugin = fp(async app => {
   app.use(vite.middlewares);
   app.vite = vite;
 });
-
-export const isProduction = mode => mode === modes.production;
-export const isDevelopment = mode => mode === modes.development;
-export const isTest = mode => mode === modes.test;

@@ -1,17 +1,34 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import { visualizer } from 'rollup-plugin-visualizer';
-import { generateScopedName } from './lib/devUtils.js';
+import { generateScopedName, loadEnv } from './lib/devUtils.js';
+import { sentryVitePlugin } from '@sentry/vite-plugin';
+
+loadEnv();
 
 let config = defineConfig({
-  plugins: [react()],
+  build: { sourcemap: true },
+  plugins: [
+    react(),
+    sentryVitePlugin({
+      include: './dist/public',
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+    }),
+  ],
   css: { modules: { generateScopedName } },
+  define: { __SENTRY_DEBUG__: false },
 });
 
 if (process.env.ANALYZE) {
-  config = defineConfig({
-    plugins: [{ ...visualizer({ emitFile: true, open: true }), enforce: 'post', apply: 'build' }],
+  const newPlugins = (config as any).plugins.concat({
+    ...visualizer({ emitFile: true, open: true }),
+    enforce: 'post',
+    apply: 'build',
   });
+
+  config = { ...config, plugins: newPlugins };
 }
 
 export default config;

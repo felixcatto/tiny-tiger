@@ -22,7 +22,6 @@ const paths = {
       '!services/**',
     ],
   },
-  dest: 'dist',
   misc: '.env*',
 };
 

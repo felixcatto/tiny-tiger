@@ -1,4 +1,4 @@
-import { createAction, createReducer, createSelector } from '@reduxjs/toolkit';
+import { createAction, createAsyncThunk, createReducer, createSelector } from '@reduxjs/toolkit';
 import { isNull } from 'lodash-es';
 import {
   IActions,
@@ -7,9 +7,8 @@ import {
   IReduxActions,
   IReduxState,
   IUser,
-  IUserLoginCreds,
 } from '../../lib/types.js';
-import { getApiUrl, guestUser, iCreateAsyncThunk, isAdmin, isSignedIn } from './utils.js';
+import { guestUser, isAdmin, isSignedIn } from './utils.js';
 
 type IMakeThunksOpts = {
   axios: IAxiosInstance;
@@ -17,6 +16,8 @@ type IMakeThunksOpts = {
 };
 
 export const reduxActions = {
+  signIn: createAction<IUser>('signIn'),
+  signOut: createAction<IUser>('signOut'),
   addNotificationMount: createAction<INotification>('addNotificationMount'),
   addNotificationAnimationStart: createAction<INotification>('addNotificationAnimationStart'),
   removeNotificationAnimationStart: createAction<string>('removeNotificationAnimationStart'),
@@ -24,12 +25,8 @@ export const reduxActions = {
   setNotificationAnimationDuration: createAction<number>('setNotificationAnimationDuration'),
 };
 
-export const makeThunks = ({ axios, actions }: IMakeThunksOpts) => ({
-  signIn: iCreateAsyncThunk<IUser, IUserLoginCreds>('signIn', async userCreds =>
-    axios.post(getApiUrl('session'), userCreds)
-  ),
-  signOut: iCreateAsyncThunk<IUser>('signOut', async () => axios.delete(getApiUrl('session'))),
-  addNotification: iCreateAsyncThunk<void, INotification>(
+export const makeThunks = ({ actions }: IMakeThunksOpts) => ({
+  addNotification: createAsyncThunk<void, INotification>(
     'addNotification',
     async (notification, api) => {
       const { autoremoveTimeout } = notification;
@@ -42,15 +39,15 @@ export const makeThunks = ({ axios, actions }: IMakeThunksOpts) => ({
       await new Promise(resolve => setTimeout(resolve, autoremoveTimeout));
       api.dispatch(actions.removeNotificationAnimationStart(notification.id));
 
-      const { notificationAnimationDuration }: IReduxState = api.getState();
+      const { notificationAnimationDuration } = api.getState() as IReduxState;
       await new Promise(resolve => setTimeout(resolve, notificationAnimationDuration));
       api.dispatch(actions.removeNotificationUnmount(notification.id));
     }
   ),
-  removeNotification: iCreateAsyncThunk<void, string>('removeNotification', async (id, api) => {
+  removeNotification: createAsyncThunk<void, string>('removeNotification', async (id, api) => {
     api.dispatch(actions.removeNotificationAnimationStart(id));
 
-    const { notificationAnimationDuration }: IReduxState = api.getState();
+    const { notificationAnimationDuration } = api.getState() as IReduxState;
     await new Promise(resolve => setTimeout(resolve, notificationAnimationDuration));
     api.dispatch(actions.removeNotificationUnmount(id));
   }),
@@ -59,8 +56,8 @@ export const makeThunks = ({ axios, actions }: IMakeThunksOpts) => ({
 export const makeCurUserReducer = (actions: IActions, initialState: IUser = guestUser) =>
   createReducer(initialState, builder => {
     builder
-      .addCase(actions.signIn.fulfilled, (state, action) => action.payload)
-      .addCase(actions.signOut.fulfilled, (state, action) => action.payload);
+      .addCase(actions.signIn, (state, action) => action.payload)
+      .addCase(actions.signOut, (state, action) => action.payload);
   });
 
 makeCurUserReducer.key = 'currentUser' as const;

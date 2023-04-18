@@ -1,4 +1,4 @@
-import { createAsyncThunk } from '@reduxjs/toolkit';
+import { AxiosError } from 'axios';
 import cn from 'classnames';
 import { useFormikContext } from 'formik';
 import produce from 'immer';
@@ -11,7 +11,6 @@ import { filterTypes, roles, sortOrders } from '../../lib/sharedUtils.js';
 import {
   IApiErrors,
   IContext,
-  ICreateAsyncThunk,
   IFilter,
   IMixedFilter,
   ISortOrder,
@@ -77,6 +76,8 @@ export const WithApiErrors = (Component: React.ComponentType<IApiErrors>) => pro
   );
 };
 
+const getAxiosErrorData = (axiosError: AxiosError): any => axiosError.response?.data;
+
 export const useSubmit: IUseSubmit = onSubmit => {
   const { setApiErrors } = React.useContext(FormContext);
 
@@ -84,7 +85,12 @@ export const useSubmit: IUseSubmit = onSubmit => {
     try {
       await onSubmit(values, actions);
     } catch (e: any) {
-      if (e.errors) setApiErrors(e.errors);
+      const { errors } = getAxiosErrorData(e);
+      if (errors) {
+        setApiErrors(errors);
+      } else {
+        throw e;
+      }
     }
   };
 
@@ -112,9 +118,17 @@ export const Field = props => {
 };
 
 export const SubmitBtn = ({ children, ...props }) => {
-  const { isSubmitting } = useFormikContext();
+  const { isSubmitting, submitForm } = useFormikContext();
   return (
-    <button type="submit" disabled={isSubmitting} {...props}>
+    <button
+      type="submit"
+      disabled={isSubmitting}
+      {...props}
+      onClick={e => {
+        e.preventDefault();
+        submitForm(); // needed because original Formik submit suppress Error's
+      }}
+    >
       {children}
     </button>
   );
@@ -131,18 +145,6 @@ export const Portal = ({ children, selector }) => {
 
   return mounted ? createPortal(children, ref.current) : null;
 };
-
-export const thunk: any = asyncFn => async (arg, thunkAPI) => {
-  try {
-    const response = await asyncFn(arg, thunkAPI);
-    return response;
-  } catch (e) {
-    return thunkAPI.rejectWithValue(e);
-  }
-};
-
-export const iCreateAsyncThunk: ICreateAsyncThunk = (thunkName, asyncThunkFn) =>
-  createAsyncThunk(thunkName, thunk(asyncThunkFn));
 
 export const makeCaseInsensitiveRegex = str =>
   new RegExp(str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'), 'i');

@@ -36,7 +36,7 @@ export const App = (props: IAppProps) => {
       if ([401, 403].includes(status)) {
         window.location.href = getUrl('newSession');
       }
-      return Promise.reject(error.response.data);
+      return Promise.reject(error);
     }
   );
 
