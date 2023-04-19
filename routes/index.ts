@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { currentUserPlugin, loggerPlugin } from '../lib/utils.js';
+import { currentUserPlugin, loggerPlugin, sentryPlugin } from '../lib/utils.js';
 import session from './session.js';
 import { ssrRender } from './ssr.js';
 import todos from './todos.js';
@@ -8,6 +8,7 @@ import users from './users.js';
 export default async (app: FastifyInstance) => {
   app.register(currentUserPlugin);
   app.register(loggerPlugin);
+  app.register(sentryPlugin);
 
   const controllers = [session, todos, users];
   controllers.forEach(route => app.register(route, { prefix: '/api' }));

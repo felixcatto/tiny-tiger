@@ -1,10 +1,13 @@
+import spawnAsync from 'await-spawn';
 import { spawn } from 'child_process';
 import { deleteAsync } from 'del';
 import gulp from 'gulp';
+import sourcemaps from 'gulp-sourcemaps';
 import swc from 'gulp-swc';
 import waitOn from 'wait-on';
 
 const { series, parallel } = gulp;
+const spawnNpxAsync = async args => spawnAsync('npx', args, { stdio: 'inherit' });
 
 const paths = {
   dest: 'dist',
@@ -56,7 +59,32 @@ const transpileServerJs = () =>
     .pipe(swc({ jsc: { target: 'es2022' } }))
     .pipe(gulp.dest(paths.dest));
 
+const transpileServerJsWithSourcemaps = () =>
+  gulp
+    .src(paths.serverJs.src, { base: '.', since: gulp.lastRun(transpileServerJs) })
+    .pipe(sourcemaps.init())
+    .pipe(swc({ sourceMaps: true, inlineSourcesContent: true, jsc: { target: 'es2022' } }))
+    .pipe(sourcemaps.write('.'))
+    .pipe(gulp.dest(paths.dest));
+
+const uploadServerSourcemaps = async () => {
+  await spawnNpxAsync(['sentry-cli', 'sourcemaps', 'inject', 'dist']);
+  await spawnNpxAsync(['sentry-cli', 'sourcemaps', 'upload', '--use-artifact-bundle', 'dist']);
+};
+
 const copyMisc = () => gulp.src(paths.misc).pipe(gulp.dest(paths.dest));
+
+const viteBuildClient = async () => spawnNpxAsync(['vite', 'build', '--outDir', 'dist/public']);
+
+const viteBuildSSR = async () =>
+  spawnNpxAsync([
+    'vite',
+    'build',
+    '--outDir',
+    'dist/server',
+    '--ssr',
+    'client/main/entry-server.tsx',
+  ]);
 
 const trackChangesInDist = () => {
   const watcher = gulp.watch('dist/**/*');
@@ -74,4 +102,10 @@ const watch = async () => {
 
 export const dev = series(clean, parallel(transpileServerJs, copyMisc), startServer, watch);
 
-export const build = parallel(transpileServerJs, copyMisc);
+export const build = series(
+  clean,
+  parallel(copyMisc, transpileServerJsWithSourcemaps),
+  uploadServerSourcemaps,
+  viteBuildClient,
+  viteBuildSSR
+);

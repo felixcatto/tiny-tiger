@@ -1,4 +1,5 @@
 import middie from '@fastify/middie';
+import * as Sentry from '@sentry/node';
 import cookie from 'cookie';
 import crypto from 'crypto';
 import fp from 'fastify-plugin';
@@ -195,6 +196,12 @@ export const loggerPlugin = fp(async app => {
   });
 
   app.addHook('onResponse', async (request, reply) => {
+    const secFetchDest = request.headers['sec-fetch-dest'];
+    const resourceType = isString(secFetchDest) ? secFetchDest : 'other';
+    const isUserScript = ['script', 'font', 'image'].includes(resourceType);
+    const isNodeScript = request.url.startsWith('/node_modules/');
+    if (isUserScript || isNodeScript) return;
+
     request.log.info(
       `${color.bold(color.magenta(icons.res))}${color.magenta(request.method)}:${color.green(
         request.url
@@ -217,4 +224,13 @@ export const vitePlugin = fp(async app => {
   await app.register(middie, { hook: 'onRequest' });
   app.use(vite.middlewares);
   app.vite = vite;
+});
+
+export const sentryPlugin = fp(async app => {
+  app.addHook('onError', async (req, res, error) => {
+    Sentry.withScope(scope => {
+      scope.setSDKProcessingMetadata({ request: req.raw });
+      Sentry.captureException(error);
+    });
+  });
 });

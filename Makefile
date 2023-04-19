@@ -8,10 +8,7 @@ start-production:
 	NODE_ENV=production node dist/bin/server.js
 
 build:
-	rm -rf dist
-	npx gulp build &
-	npx vite build --outDir dist/public
-	npx vite build --outDir dist/server --ssr client/main/entry-server.tsx
+	npx gulp build
 
 analyze-bundle:
 	ANALYZE=true npx vite build
