@@ -2,7 +2,7 @@ import cn from 'classnames';
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'wouter';
-import { selectSession } from '../lib/reduxStore.js';
+import { selectSession } from '../redux/reducers.js';
 import { getApiUrl, getUrl, NavLink, useContext, userRolesToIcons } from '../lib/utils.js';
 import s from './layout.module.css';
 import { Notifications } from './Notifications.jsx';

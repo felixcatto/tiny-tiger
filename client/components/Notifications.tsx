@@ -1,14 +1,14 @@
 import cn from 'classnames';
 import { uniqueId } from 'lodash-es';
 import React from 'react';
-import { useSelector } from 'react-redux';
-import { IMakeNotification, IReduxState } from '../../lib/types.js';
+import { IMakeNotification } from '../../lib/types.js';
+import { useSelector } from '../redux/utils.js';
 import { getCssValue, useContext } from '../lib/utils.jsx';
 import s from './Notifications.module.css';
 
 export const Notifications = () => {
   const { actions } = useContext();
-  const notifications = useSelector((state: IReduxState) => state.notifications);
+  const notifications = useSelector(state => state.notifications);
 
   React.useEffect(() => {
     const rootStyles = getComputedStyle(document.querySelector(`.${s.root}`)!);

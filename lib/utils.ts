@@ -188,10 +188,13 @@ export const loggerPlugin = fp(async app => {
   const logResponseTime = true;
 
   app.addHook('onRequest', async request => {
+    const proxyIp = request.headers['x-forwarded-for'];
+    const ip = isString(proxyIp) ? proxyIp : request.ip;
+
     request.log.info(
       `${color.bold(color.blue(icons.req))}${color.blue(request.method)}:${color.green(
         request.url
-      )} ${color.white('from ip')} ${color.blue(request.ip)}`
+      )} ${color.white('from ip')} ${color.blue(ip)}`
     );
   });
 

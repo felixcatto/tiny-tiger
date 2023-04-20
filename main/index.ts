@@ -28,7 +28,7 @@ const getApp = () => {
       level: isTest(mode) ? 'silent' : 'debug',
       transport: {
         target: 'pino-pretty',
-        options: { translateTime: 'HH:MM:ss', ignore: 'reqId,pid,hostname' },
+        options: { translateTime: 'SYS:HH:MM:ss', ignore: 'reqId,pid,hostname' },
       },
     },
   });

@@ -8,7 +8,7 @@ import { HeaderCell } from '../components/HeaderCell.js';
 import Layout from '../components/layout.js';
 import { makeNotification } from '../components/Notifications.jsx';
 import { Pagination } from '../components/Pagination.js';
-import { selectSession } from '../lib/reduxStore.js';
+import { selectSession } from '../redux/reducers.js';
 import {
   ErrorMessage,
   Field,

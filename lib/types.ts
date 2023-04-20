@@ -1,21 +1,21 @@
+import { createAsyncThunk } from '@reduxjs/toolkit';
 import { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { FormikHelpers } from 'formik';
 import { Knex } from 'knex';
 import * as y from 'yup';
+import { makeThunks, reduxActions } from '../client/redux/actions.js';
 import {
   makeCurUserReducer,
   makeNotificationAnimationDuration,
   makeNotificationsReducer,
-  makeThunks,
-  reduxActions,
-} from '../client/lib/reduxStore.js';
+} from '../client/redux/reducers.js';
 import * as models from '../models/index.js';
 import {
   Todo,
+  User,
   todoPostGuestSchema,
   todoPostUserSchema,
   todoPutSchema,
-  User,
   userLoginSchema,
 } from '../models/index.js';
 import { asyncStates, filterTypes, paginationSchema, roles, sortOrders } from './utils.js';
@@ -147,6 +147,21 @@ export type IBindedActions = IReduxActions & IBindedThunks;
 export type IReduxState = IReduxRecord<typeof makeCurUserReducer> &
   IReduxRecord<typeof makeNotificationAnimationDuration> &
   IReduxRecord<typeof makeNotificationsReducer>;
+
+type BaseThunkAPI<S, E> = {
+  dispatch: any;
+  getState: () => S;
+  extra: E;
+  requestId: string;
+  signal: AbortSignal;
+  abort: (reason?: string) => void;
+  rejectWithValue: any;
+  fulfillWithValue: any;
+};
+
+export type ICreateAsyncThunk = <TReturn = void, TThunkArg = void>(
+  thunkFn: (arg: TThunkArg, thunkAPI: BaseThunkAPI<any, any>) => Promise<any>
+) => ReturnType<typeof createAsyncThunk<TReturn, TThunkArg>>;
 
 export type IContext = {
   axios: IAxiosInstance;

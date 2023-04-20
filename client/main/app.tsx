@@ -3,16 +3,16 @@ import originalAxios from 'axios';
 import { Provider } from 'react-redux';
 import { SWRConfig } from 'swr';
 import { Route, Switch } from 'wouter';
-import { IBindedActions, IContext, IUser } from '../../lib/types.js';
+import { IContext, IUser } from '../../lib/types.js';
 import Context from '../lib/context.js';
+import { getUrl, routes } from '../lib/utils.js';
+import { makeThunks, reduxActions } from '../redux/actions.js';
 import {
   makeCurUserReducer,
   makeNotificationAnimationDuration,
   makeNotificationsReducer,
-  makeThunks,
-  reduxActions,
-} from '../lib/reduxStore.js';
-import { getUrl, routes } from '../lib/utils.js';
+} from '../redux/reducers.js';
+import { bindActions } from '../redux/utils.js';
 import Login from '../session/Login.js';
 import TodoList from '../todoList/Todolist.js';
 import { Users } from '../users/Users.js';
@@ -57,25 +57,9 @@ export const App = (props: IAppProps) => {
     },
   });
 
-  const bindedReduxActions = Object.keys(reduxActions).reduce(
-    (acc, actionType) => ({
-      ...acc,
-      [actionType]: arg => reduxStore.dispatch(reduxActions[actionType](arg)),
-    }),
-    {}
-  );
-  const bindedThunks = Object.keys(reduxThunks).reduce(
-    (acc, actionType) => ({
-      ...acc,
-      [actionType]: arg => reduxStore.dispatch(reduxThunks[actionType](arg)).unwrap(),
-    }),
-    {}
-  );
-  const bindedActions = { ...bindedReduxActions, ...bindedThunks } as IBindedActions;
-
   const contextStore: IContext = {
     axios,
-    actions: bindedActions,
+    actions: bindActions(reduxActions, reduxThunks, reduxStore.dispatch),
   };
 
   return (
