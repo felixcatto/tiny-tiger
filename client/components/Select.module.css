@@ -10,6 +10,7 @@
 }
 
 .option {
+  min-height: 40px;
   padding: 8px 12px;
   cursor: pointer;
   user-select: none;

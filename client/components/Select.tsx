@@ -17,6 +17,7 @@ type ISelectProps = {
   className?: string;
   inputClass?: string;
   popupClass?: string;
+  optionClass?: string;
   nothingFound?: string | (() => JSX.Element);
   offset?: number;
   placement?: Placement;
@@ -48,6 +49,7 @@ export const Select = (props: ISelectProps) => {
     className = '',
     inputClass = '',
     popupClass = '',
+    optionClass: parentOptionClass = '',
   } = props;
 
   const [isOpen, setIsOpen] = React.useState(false);
@@ -132,7 +134,7 @@ export const Select = (props: ISelectProps) => {
       case 'Enter':
         e.preventDefault(); // stop form submitting
         if (i !== null) {
-          selectOption(filteredOptions[i || 0])();
+          selectOption(filteredOptions[i])();
         }
         break;
       case 'Escape':
@@ -144,7 +146,7 @@ export const Select = (props: ISelectProps) => {
   const preventFocusLoosing = e => e.preventDefault();
 
   const optionClass = (el, i) =>
-    cn(s.option, {
+    cn(s.option, parentOptionClass, {
       [s.option_selected]: isOptionSelected(el),
       [s.option_keyboardChoosen]: i === keyboardChoosenIndex,
     });
@@ -158,6 +160,7 @@ export const Select = (props: ISelectProps) => {
   return (
     <div className={className}>
       <input
+        data-testid="input"
         type="text"
         className={cn(inputClass || 'input', { 'cursor-pointer': !searchable })}
         placeholder={placeholder}
@@ -170,9 +173,18 @@ export const Select = (props: ISelectProps) => {
       />
 
       <Popup {...popupProps} shouldSkipCloseAnimation={searchable}>
-        <div className={popupClass || s.popup} onMouseDown={preventFocusLoosing}>
+        <div
+          data-testid="popup"
+          className={popupClass || s.popup}
+          onMouseDown={preventFocusLoosing}
+        >
           {filteredOptions.map((el, i) => (
-            <div key={el.value} className={optionClass(el, i)} onClick={selectOption(el)}>
+            <div
+              data-testid="option"
+              key={el.value}
+              className={optionClass(el, i)}
+              onClick={selectOption(el)}
+            >
               {optionComponent
                 ? React.createElement(optionComponent, {
                     option: el,
@@ -184,7 +196,7 @@ export const Select = (props: ISelectProps) => {
           {isEmpty(filteredOptions) && (
             <div className={cn(s.option, s.option_nothingFound)}>
               {isNull(nothingFound) && (
-                <div>
+                <div data-testid="not-found">
                   <span className="text-slate-500">Nothing found</span>
                   <i className="far fa-sad-tear ml-2 text-lg"></i>
                 </div>

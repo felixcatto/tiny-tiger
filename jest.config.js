@@ -6,8 +6,11 @@ export default {
   testEnvironment: 'node',
   extensionsToTreatAsEsm: ['.ts', '.tsx'],
   moduleNameMapper: {
-    '^(\\.{1,2}/.*)\\.js$': '$1',
+    '^(\\.{1,2}/.*)\\.jsx?$': '$1',
     '^.+\\.module\\.css$': 'identity-obj-proxy',
   },
-  transform: { '^.+\\.tsx?$': '@swc/jest' },
+
+  transform: {
+    '^.+\\.tsx?$': ['@swc/jest', { jsc: { transform: { react: { runtime: 'automatic' } } } }],
+  },
 };
