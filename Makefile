@@ -54,13 +54,10 @@ database-seed-new:
 	npx knex seed:make $(arg)
 
 test:
-	NODE_OPTIONS=--experimental-vm-modules npx jest --runInBand --watch
+	NODE_OPTIONS=--experimental-vm-modules npx jest --runInBand
 
 test-file:
 	NODE_OPTIONS=--experimental-vm-modules npx jest --runInBand --watch $(arg)
-
-test-once:
-	NODE_OPTIONS=--experimental-vm-modules npx jest --runInBand
 
 lint:
 	npx eslint .

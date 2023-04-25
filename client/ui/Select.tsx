@@ -160,7 +160,7 @@ export const Select = (props: ISelectProps) => {
   return (
     <div className={className}>
       <input
-        data-testid="input"
+        data-test="input"
         type="text"
         className={cn(inputClass || 'input', { 'cursor-pointer': !searchable })}
         placeholder={placeholder}
@@ -173,14 +173,10 @@ export const Select = (props: ISelectProps) => {
       />
 
       <Popup {...popupProps} shouldSkipCloseAnimation={searchable}>
-        <div
-          data-testid="popup"
-          className={popupClass || s.popup}
-          onMouseDown={preventFocusLoosing}
-        >
+        <div data-test="popup" className={popupClass || s.popup} onMouseDown={preventFocusLoosing}>
           {filteredOptions.map((el, i) => (
             <div
-              data-testid="option"
+              data-test="option"
               key={el.value}
               className={optionClass(el, i)}
               onClick={selectOption(el)}
@@ -196,7 +192,7 @@ export const Select = (props: ISelectProps) => {
           {isEmpty(filteredOptions) && (
             <div className={cn(s.option, s.option_nothingFound)}>
               {isNull(nothingFound) && (
-                <div data-testid="not-found">
+                <div data-test="not-found">
                   <span className="text-slate-500">Nothing found</span>
                   <i className="far fa-sad-tear ml-2 text-lg"></i>
                 </div>

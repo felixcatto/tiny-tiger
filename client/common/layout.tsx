@@ -1,11 +1,17 @@
 import cn from 'classnames';
-import React from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'wouter';
+import {
+  getApiUrl,
+  getUrl,
+  NavLink,
+  popoverRootId,
+  useContext,
+  userRolesToIcons,
+} from '../lib/utils.js';
 import { selectSession } from '../redux/reducers.js';
-import { getApiUrl, getUrl, NavLink, popoverRootId, useContext, userRolesToIcons } from '../lib/utils.js';
+import { Notifications } from '../ui/Notifications.jsx';
 import s from './layout.module.css';
-import { Notifications } from './Notifications.jsx';
 
 const Layout = ({ children }: any) => {
   const { actions, axios } = useContext();

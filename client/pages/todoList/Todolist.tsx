@@ -3,24 +3,24 @@ import { Form, Formik } from 'formik';
 import React from 'react';
 import { useSelector } from 'react-redux';
 import useSWR from 'swr';
-import { IGetTodosResponse, ITodo } from '../../lib/types.js';
-import { HeaderCell } from '../components/HeaderCell.js';
-import Layout from '../components/layout.js';
-import { makeNotification } from '../components/Notifications.jsx';
-import { Pagination } from '../components/Pagination.js';
-import { selectSession } from '../redux/reducers.js';
+import { IGetTodosResponse, ITodo } from '../../../lib/types.js';
+import Layout from '../../common/layout.js';
 import {
   ErrorMessage,
   Field,
+  SubmitBtn,
+  WithApiErrors,
   filterTypes,
   getApiUrl,
-  SubmitBtn,
   useContext,
   useQuery,
   useSubmit,
   useTable,
-  WithApiErrors,
-} from '../lib/utils.js';
+} from '../../lib/utils.js';
+import { selectSession } from '../../redux/reducers.js';
+import { HeaderCell } from '../../ui/HeaderCell.js';
+import { makeNotification } from '../../ui/Notifications.jsx';
+import { Pagination } from '../../ui/Pagination.js';
 import s from './styles.module.css';
 
 const defaultFilters = {

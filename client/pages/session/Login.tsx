@@ -1,18 +1,17 @@
 import { Form, Formik } from 'formik';
-import React from 'react';
 import { Link, useLocation } from 'wouter';
-import Layout from '../components/layout.js';
+import { IUser, IUserLoginCreds } from '../../../lib/types.js';
+import Layout from '../../common/layout.js';
 import {
   ErrorMessage,
   Field,
+  SubmitBtn,
+  WithApiErrors,
   getApiUrl,
   getUrl,
-  SubmitBtn,
   useContext,
   useSubmit,
-  WithApiErrors,
-} from '../lib/utils.js';
-import { IUser, IUserLoginCreds } from '../../lib/types.js';
+} from '../../lib/utils.js';
 
 const Login = () => {
   const { actions, axios } = useContext();

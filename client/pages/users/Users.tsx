@@ -1,9 +1,9 @@
 import useSWR from 'swr';
-import { IFiltersMap, IUser } from '../../lib/types.js';
-import { HeaderCell } from '../components/HeaderCell.js';
-import Layout from '../components/layout.js';
-import { Pagination } from '../components/Pagination.js';
-import { filterTypes, getApiUrl, roles, userRolesToIcons, useTable } from '../lib/utils.js';
+import { IFiltersMap, IUser } from '../../../lib/types.js';
+import Layout from '../../common/layout.js';
+import { filterTypes, getApiUrl, roles, useTable, userRolesToIcons } from '../../lib/utils.js';
+import { HeaderCell } from '../../ui/HeaderCell.js';
+import { Pagination } from '../../ui/Pagination.js';
 
 const defaultFilters: IFiltersMap = {
   name: {

@@ -13,9 +13,9 @@ import {
   makeNotificationsReducer,
 } from '../redux/reducers.js';
 import { bindActions } from '../redux/utils.js';
-import Login from '../session/Login.js';
-import TodoList from '../todoList/Todolist.js';
-import { Users } from '../users/Users.js';
+import Login from '../pages/session/Login.js';
+import TodoList from '../pages/todoList/Todolist.js';
+import { Users } from '../pages/users/Users.js';
 
 type IAppProps = {
   initialState: {
