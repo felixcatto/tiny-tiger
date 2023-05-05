@@ -5,15 +5,15 @@ import crypto from 'crypto';
 import fp from 'fastify-plugin';
 import knexConnect from 'knex';
 import * as color from 'kolorist';
-import { capitalize, isString } from 'lodash-es';
+import { capitalize, isNil, isObject, isString } from 'lodash-es';
 import { Model } from 'objection';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createServer } from 'vite';
 import * as y from 'yup';
 import knexConfig from '../knexfile.js';
-import { guestUser, isAdmin, isSignedIn } from './sharedUtils.js';
-import { IAuthenticate, IValidate, IValidateMW } from './types.js';
+import { apiTypes, guestUser, isAdmin, isSignedIn } from './sharedUtils.js';
+import { IAuthenticate, IGqlCtx, IValidate, IValidateMW } from './types.js';
 
 export { loadEnv } from './devUtils.js';
 export * from './sharedUtils.js';
@@ -38,7 +38,19 @@ export const getYupErrors = e => {
 
 export const makeErrors = errors => ({ errors });
 
-export const ivalidate: IValidate = (schema, payload) => {
+export const makeGqlErrors = error => {
+  const isYupError = isObject(error.errors) && isString(error.message);
+  if (isYupError) {
+    const errors = Object.keys(error.errors).map(key => ({
+      message: `${error.message} - ${[key]}: ${error.errors[key]}`,
+    }));
+    return { errors };
+  }
+
+  return { errors: [error] };
+};
+
+export const ivalidate: IValidate = (schema, payload, apiType = apiTypes.rest) => {
   try {
     const validatedPayload = schema.validateSync(payload, {
       abortEarly: false,
@@ -46,7 +58,12 @@ export const ivalidate: IValidate = (schema, payload) => {
     });
     return [validatedPayload, null];
   } catch (e) {
-    return [null, { message: 'Input is not valid', errors: getYupErrors(e) }];
+    const yupErrors = getYupErrors(e);
+    const error =
+      apiType === apiTypes.rest
+        ? { message: 'Input is not valid', errors: yupErrors }
+        : makeGqlErrors(yupErrors);
+    return [null, error];
   }
 };
 
@@ -62,6 +79,20 @@ export const validate: IValidateMW =
       req[`vl${capitalize(payloadType)}`] = data;
     }
   };
+
+export const validateGql = schema => async (_, args, ctx: IGqlCtx) => {
+  const { reply: res } = ctx;
+  const { request: req } = ctx.reply;
+  const payload = args;
+
+  const [data, error] = ivalidate(schema, payload, apiTypes.graphql);
+  if (error) {
+    res.send(error);
+  } else {
+    req[`vlBody`] = data;
+    return CallNext;
+  }
+};
 
 export const sessionName = 'session';
 export const composeValue = (value, signature) => `${value}.${signature}`;
@@ -90,6 +121,22 @@ export const removeSessionCookie = res => {
   );
 };
 
+export const CallNext = '_CallNextMiddleware_';
+
+export const gqlMiddleware = middlewares => async (_, args, ctx: IGqlCtx) => {
+  const iter = async fnIndex => {
+    if (fnIndex === middlewares.length) return;
+
+    const result = await middlewares[fnIndex](_, args, ctx);
+    if (isNil(result)) return;
+    if (result === CallNext) return iter(fnIndex + 1);
+
+    return result;
+  };
+
+  return iter(0);
+};
+
 export const checkValueUnique = async (Enitity, column, value, excludeId: string | null = null) => {
   const existingEntities = await Enitity.query().select(column).whereNot('id', excludeId);
   if (existingEntities.some(entity => entity[column] === value)) {
@@ -106,6 +153,16 @@ export const checkAdmin = async (req, res) => {
   if (!isAdmin(req.currentUser)) {
     res.code(403).send({ message: 'Forbidden' });
   }
+};
+
+export const checkAdminGql = async (_, __, ctx: IGqlCtx) => {
+  const { reply: res } = ctx;
+  const { request: req } = ctx.reply;
+  if (!isAdmin(req.currentUser)) {
+    return res.send(makeGqlErrors({ message: '403 Forbidden' }));
+  }
+
+  return CallNext;
 };
 
 export const checkSignedIn = async (req, res) => {

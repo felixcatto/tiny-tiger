@@ -1,6 +1,6 @@
 import { isEmpty } from 'lodash-es';
 import { compile } from 'path-to-regexp';
-import { IMakeEnum, IMakeUrlFor } from './types.js';
+import { IGqlApi, IMakeEnum, IMakeUrlFor } from './types.js';
 
 export const makeEnum: IMakeEnum = (...args) =>
   args.reduce((acc, key) => ({ ...acc, [key]: key }), {} as any);
@@ -10,6 +10,7 @@ export const asyncStates = makeEnum('idle', 'pending', 'resolved', 'rejected');
 export const sortOrders = makeEnum('asc', 'desc');
 export const filterTypes = makeEnum('search', 'select');
 export const modes = makeEnum('test', 'development', 'production');
+export const apiTypes = makeEnum('rest', 'graphql');
 
 export const isSignedIn = currentUser => currentUser.role !== roles.guest;
 export const isAdmin = currentUser => currentUser.role === roles.admin;
@@ -65,3 +66,6 @@ export const isBrowser = () => typeof window !== 'undefined';
 export const isProduction = mode => mode === modes.production;
 export const isDevelopment = mode => mode === modes.development;
 export const isTest = mode => mode === modes.test;
+
+export const gqlApi: IGqlApi = { method: 'post', url: 'graphql' };
+export const makeGqlPayload = (query, variables?) => ({ query, variables });

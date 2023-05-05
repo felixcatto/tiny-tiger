@@ -1,9 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { isArray, isNumber, isString } from 'lodash-es';
 import {
-  IFiltersSchema,
-  IPaginationSchema,
-  ISortSchema,
+  IFSPSchema,
   ITodoPostGuestSchema,
   ITodoPostUserSchema,
   ITodoPutSchema,
@@ -25,14 +23,12 @@ import {
   todoSortSchema,
 } from '../models/Todo.js';
 
-type IQuerySchema = IPaginationSchema & ISortSchema & IFiltersSchema;
-
 export default async (app: FastifyInstance) => {
   const { User, Todo } = app.objection;
   const querySchema = paginationSchema.concat(todoSortSchema).concat(todoFilterSchema);
 
   app.get('/todos', { preHandler: validate(querySchema, 'query') }, async (req, res) => {
-    const { sortOrder, sortBy, page, size, filters } = req.vlQuery as IQuerySchema;
+    const { sortOrder, sortBy, page, size, filters } = req.vlQuery as IFSPSchema;
 
     let totalRowsQuery;
     const todoQuery = Todo.query();

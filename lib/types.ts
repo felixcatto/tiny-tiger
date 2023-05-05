@@ -18,7 +18,15 @@ import {
   todoPutSchema,
   userLoginSchema,
 } from '../models/index.js';
-import { asyncStates, filterTypes, paginationSchema, roles, sortOrders } from './utils.js';
+import {
+  apiTypes,
+  asyncStates,
+  filterTypes,
+  paginationSchema,
+  roles,
+  sortOrders,
+} from './utils.js';
+import { FastifyInstance, FastifyReply } from 'fastify';
 
 export type IMakeEnum = <T extends ReadonlyArray<string>>(
   ...args: T
@@ -45,6 +53,8 @@ export type IFilterSchema = {
 export type IFiltersSchema = {
   filters: IFilterSchema[];
 };
+
+export type IFSPSchema = IFiltersSchema & ISortSchema & IPaginationSchema;
 
 export type IUser = {
   id: number;
@@ -120,7 +130,8 @@ export type IAuthenticate = (
 
 export type IValidate = <T = any>(
   schema,
-  payload
+  payload,
+  apiType?: IApiType
 ) => [data: T, error: null] | [data: null, error: object];
 export type IPayloadTypes = 'query' | 'body';
 export type IValidateMW = (schema, payloadType?: IPayloadTypes) => (req, res) => any;
@@ -313,3 +324,12 @@ declare global {
     env: { [key: string]: any };
   }
 }
+
+export type IGqlApi = { method: 'post'; url: string };
+
+export type IGqlCtx = {
+  app: FastifyInstance;
+  reply: FastifyReply;
+};
+
+export type IApiType = keyof typeof apiTypes;
