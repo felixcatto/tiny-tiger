@@ -64,7 +64,7 @@ export const resolvers = {
   Query: {
     getUsers: async (_, args, ctx: IGqlCtx) => {
       const { withTodos } = args;
-      const { User } = ctx.app.objection;
+      const { User } = ctx.app.orm;
       const usersQuery = User.query();
       if (withTodos) {
         usersQuery.withGraphFetched('todos');
@@ -76,7 +76,7 @@ export const resolvers = {
     getTodos: gqlMiddleware([
       validateGql(paginationSchema.concat(todoSortSchema).concat(todoFilterSchema)),
       async (_, args, ctx: IGqlCtx) => {
-        const { Todo } = ctx.app.objection;
+        const { Todo } = ctx.app.orm;
         const { withAuthor } = args;
         const { sortOrder, sortBy, page, size, filters } = ctx.reply.request.vlBody as IFSPSchema;
 
@@ -122,7 +122,7 @@ export const resolvers = {
   Mutation: {
     postTodos: async (_, args, ctx: IGqlCtx) => {
       const { reply: res } = ctx;
-      const { Todo, User } = ctx.app.objection;
+      const { Todo, User } = ctx.app.orm;
       const { currentUser } = res.request;
 
       const isUserSignedIn = isSignedIn(currentUser);
@@ -160,7 +160,7 @@ export const resolvers = {
       async (_, args, ctx: IGqlCtx) => {
         const { reply: res } = ctx;
         const { id, ...data } = args;
-        const { Todo } = ctx.app.objection;
+        const { Todo } = ctx.app.orm;
 
         const oldTodo = await Todo.query().findById(id);
         if (!oldTodo) {
@@ -176,7 +176,7 @@ export const resolvers = {
       checkAdminGql,
       async (_, args, ctx: IGqlCtx) => {
         const { id } = args;
-        const { Todo } = ctx.app.objection;
+        const { Todo } = ctx.app.orm;
         await Todo.query().deleteById(id);
         return id;
       },

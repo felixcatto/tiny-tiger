@@ -1,5 +1,4 @@
 import { omit } from 'lodash-es';
-import { IUserClass } from '../lib/types.js';
 import { authenticate, composeValue, getApiUrl, guestUser, sessionName } from '../lib/utils.js';
 import getApp from '../main/index.js';
 import usersFixture from './fixtures/users.js';
@@ -7,16 +6,15 @@ import { getLoginCookie } from './fixtures/utils.js';
 
 describe('session', () => {
   const server = getApp();
-  let User: IUserClass;
   const { keygrip } = server;
-  const fetchUser = async userId => User.query().findById(userId);
+  const fetchUser = async userId => server.orm.User.query().findById(userId);
 
   beforeAll(async () => {
     await server.ready();
-    User = server.objection.User;
   });
 
   beforeEach(async () => {
+    const { User } = server.orm;
     await User.query().delete();
     await User.query().insertGraph(usersFixture as any);
   });

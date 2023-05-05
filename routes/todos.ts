@@ -24,7 +24,7 @@ import {
 } from '../models/Todo.js';
 
 export default async (app: FastifyInstance) => {
-  const { User, Todo } = app.objection;
+  const { User, Todo } = app.orm;
   const querySchema = paginationSchema.concat(todoSortSchema).concat(todoFilterSchema);
 
   app.get('/todos', { preHandler: validate(querySchema, 'query') }, async (req, res) => {

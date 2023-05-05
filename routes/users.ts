@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
 
 export default async (app: FastifyInstance) => {
-  const { User } = app.objection;
+  const { User } = app.orm;
 
   app.get('/users', async (req, res) => {
     const users = await User.query();

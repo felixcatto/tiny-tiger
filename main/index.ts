@@ -47,7 +47,7 @@ const getApp = () => {
   }
   const template = fs.readFileSync(templatePath, 'utf-8');
 
-  app.decorate('objection', null);
+  app.decorate('orm', null);
   app.decorate('mode', mode);
   app.decorate('keygrip', keygrip);
   app.decorate('template', template);

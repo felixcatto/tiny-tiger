@@ -9,7 +9,7 @@ describe('users', () => {
 
   beforeAll(async () => {
     await server.ready();
-    const { User } = server.objection;
+    const { User } = server.orm;
     await User.query().delete();
     await User.query().insertGraph(usersFixture as any);
   });

@@ -10,7 +10,7 @@ import {
 } from '../lib/utils.js';
 
 export default async (app: FastifyInstance) => {
-  const { User, userLoginSchema } = app.objection;
+  const { User, userLoginSchema } = app.orm;
 
   app.post('/session', { preHandler: validate(userLoginSchema) }, async (req, res) => {
     const data: IUserLoginSchema = req.vlBody;

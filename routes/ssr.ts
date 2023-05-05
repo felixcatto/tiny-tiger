@@ -3,7 +3,7 @@ import { ssrRoutes } from '../lib/ssrRoutes.js';
 import { isDevelopment, isProduction, supressConsoleLog } from '../lib/utils.js';
 
 export const ssrRender = async (app: FastifyInstance) => {
-  const { mode, vite, objection, template: rawTemplate } = app;
+  const { mode, vite, orm, template: rawTemplate } = app;
 
   app.get('/*', async (req, reply) => {
     const { currentUser, url } = req;
@@ -13,7 +13,7 @@ export const ssrRender = async (app: FastifyInstance) => {
     let ssrData = {};
     const ssrRoute = ssrRoutes[url];
     if (ssrRoute) {
-      ssrData = await ssrRoute({ objection });
+      ssrData = await ssrRoute({ orm });
     }
 
     const initialState = { currentUser, fallback: ssrData };

@@ -88,7 +88,7 @@ export type ITodoPutSchema = y.InferType<typeof todoPutSchema>;
 type IModels = {
   [Property in keyof typeof models]: (typeof models)[Property];
 };
-export type IObjection = { knex: Knex<any, any> } & IModels;
+export type IOrm = { knex: Knex<any, any> } & IModels;
 
 export interface IAxiosInstance extends AxiosInstance {
   request<T = any, R = T, D = any>(config: AxiosRequestConfig<D>): Promise<R>;
@@ -103,7 +103,7 @@ export interface IAxiosInstance extends AxiosInstance {
 
 declare module 'fastify' {
   interface FastifyInstance {
-    objection: IObjection;
+    orm: IOrm;
     mode: IMode;
     keygrip: any;
     template: string;

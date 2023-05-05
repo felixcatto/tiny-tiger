@@ -10,7 +10,7 @@ describe('users', () => {
 
   beforeAll(async () => {
     await server.ready();
-    User = server.objection.User;
+    User = server.orm.User;
     await User.query().delete();
     await User.query().insertGraph(usersFixture as any);
   });
@@ -20,7 +20,7 @@ describe('users', () => {
     const expected = usersFixture.map(el => omit(el, 'password'));
 
     expect(res.statusCode).toBe(200);
-    expect(JSON.parse(res.body)).toMatchObject(expected);
+    expect(res.json()).toMatchObject(expected);
   });
 
   afterAll(async () => {

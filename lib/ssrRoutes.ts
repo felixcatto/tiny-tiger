@@ -1,10 +1,10 @@
 import { getApiUrl, getUrl } from './utils.js';
-import { IObjection } from './types.js';
+import { IOrm } from './types.js';
 
 export const ssrRoutes = {
   [getUrl('home')]: async opts => {
-    const { objection } = opts;
-    const { Todo } = objection as IObjection;
+    const { orm } = opts;
+    const { Todo } = orm as IOrm;
     const page = 0;
     const size = 3;
 
@@ -24,8 +24,8 @@ export const ssrRoutes = {
     };
   },
   [getUrl('users')]: async opts => {
-    const { objection } = opts;
-    const { User } = objection as IObjection;
+    const { orm } = opts;
+    const { User } = orm as IOrm;
     const users = await User.query();
     return { [getApiUrl('users')]: users };
   },

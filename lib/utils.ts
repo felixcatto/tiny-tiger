@@ -176,7 +176,7 @@ export const encrypt = value => crypto.createHash('sha256').update(value).digest
 export const objectionPlugin = fp(async (app, { models }) => {
   const knex = knexConnect(knexConfig[app.mode]);
   Model.knex(knex);
-  app.objection = { ...models, knex };
+  app.orm = { ...models, knex };
 
   app.addHook('onClose', async (_, done) => {
     await knex.destroy();
@@ -205,7 +205,7 @@ export const authenticate: IAuthenticate = async (rawCookies, keygrip, fetchUser
 
 export const currentUserPlugin = fp(async app => {
   const { keygrip } = app;
-  const { User } = app.objection;
+  const { User } = app.orm;
   const fetchUser = async userId => User.query().findById(userId);
 
   app.addHook('onRequest', async (req, res) => {
