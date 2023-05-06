@@ -4,6 +4,7 @@ import {
   todoFilterSchema,
   todoPostGuestSchema,
   todoPostUserSchema,
+  todoPutSchema,
   todoSortSchema,
 } from '../../models/Todo.js';
 import { IFSPSchema, IGqlCtx, ITodoPostGuestSchema, ITodoPostUserSchema } from '../types.js';
@@ -12,7 +13,7 @@ import {
   gqlMiddleware,
   isSignedIn,
   ivalidate,
-  makeGqlErrors,
+  makeGqlError,
   paginationSchema,
   roles,
   validateGql,
@@ -131,7 +132,7 @@ export const resolvers = {
         : ivalidate<ITodoPostGuestSchema>(todoPostGuestSchema, args);
 
       if (error) {
-        return res.send(makeGqlErrors(error));
+        throw makeGqlError(error);
       }
 
       if (isUserSignedIn) {
@@ -143,7 +144,7 @@ export const resolvers = {
       const user = await User.query().findOne({ name });
       if (user) {
         if (user.role !== roles.guest) {
-          return res.send(makeGqlErrors({ name: 'name already exist' }));
+          throw makeGqlError({ name: 'name already exist' });
         }
 
         const todo = await Todo.query().insert({ ...todoFields, author_id: user.id });
@@ -157,14 +158,14 @@ export const resolvers = {
 
     putTodos: gqlMiddleware([
       checkAdminGql,
+      validateGql(todoPutSchema),
       async (_, args, ctx: IGqlCtx) => {
-        const { reply: res } = ctx;
         const { id, ...data } = args;
         const { Todo } = ctx.app.orm;
 
         const oldTodo = await Todo.query().findById(id);
         if (!oldTodo) {
-          return res.send(makeGqlErrors({ message: 'Entity does not exist' }));
+          throw makeGqlError('Entity does not exist');
         }
         const newData = oldTodo.text === data.text ? data : { ...data, is_edited_by_admin: true };
         const todo = await Todo.query().updateAndFetchById(id, newData);

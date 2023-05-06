@@ -6,13 +6,14 @@ import fp from 'fastify-plugin';
 import knexConnect from 'knex';
 import * as color from 'kolorist';
 import { capitalize, isNil, isObject, isString } from 'lodash-es';
+import mercurius from 'mercurius';
 import { Model } from 'objection';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createServer } from 'vite';
 import * as y from 'yup';
 import knexConfig from '../knexfile.js';
-import { apiTypes, guestUser, isAdmin, isSignedIn } from './sharedUtils.js';
+import { guestUser, isAdmin, isSignedIn } from './sharedUtils.js';
 import { IAuthenticate, IGqlCtx, IValidate, IValidateMW } from './types.js';
 
 export { loadEnv } from './devUtils.js';
@@ -38,19 +39,21 @@ export const getYupErrors = e => {
 
 export const makeErrors = errors => ({ errors });
 
-export const makeGqlErrors = error => {
-  const isYupError = isObject(error.errors) && isString(error.message);
-  if (isYupError) {
-    const errors = Object.keys(error.errors).map(key => ({
-      message: `${error.message} - ${[key]}: ${error.errors[key]}`,
-    }));
-    return { errors };
-  }
+export const makeGqlError = error => {
+  const isCommonError = isString(error);
+  if (isCommonError) return new mercurius.ErrorWithProps(error);
 
-  return { errors: [error] };
+  const isYupError = isObject(error.errors) && isString(error.message);
+  if (isYupError) return new mercurius.ErrorWithProps(error.message, error);
+
+  const shouldTransformToYupError = isObject(error);
+  if (shouldTransformToYupError) {
+    const errorMsg = 'Something going wrong';
+    return new mercurius.ErrorWithProps(errorMsg, { message: errorMsg, errors: error });
+  }
 };
 
-export const ivalidate: IValidate = (schema, payload, apiType = apiTypes.rest) => {
+export const ivalidate: IValidate = (schema, payload) => {
   try {
     const validatedPayload = schema.validateSync(payload, {
       abortEarly: false,
@@ -58,12 +61,7 @@ export const ivalidate: IValidate = (schema, payload, apiType = apiTypes.rest) =
     });
     return [validatedPayload, null];
   } catch (e) {
-    const yupErrors = getYupErrors(e);
-    const error =
-      apiType === apiTypes.rest
-        ? { message: 'Input is not valid', errors: yupErrors }
-        : makeGqlErrors(yupErrors);
-    return [null, error];
+    return [null, { message: 'Input is not valid', errors: getYupErrors(e) }];
   }
 };
 
@@ -81,13 +79,12 @@ export const validate: IValidateMW =
   };
 
 export const validateGql = schema => async (_, args, ctx: IGqlCtx) => {
-  const { reply: res } = ctx;
-  const { request: req } = ctx.reply;
+  const req = ctx.reply.request;
   const payload = args;
 
-  const [data, error] = ivalidate(schema, payload, apiTypes.graphql);
+  const [data, error] = ivalidate(schema, payload);
   if (error) {
-    res.send(error);
+    throw makeGqlError(error);
   } else {
     req[`vlBody`] = data;
     return CallNext;
@@ -156,10 +153,9 @@ export const checkAdmin = async (req, res) => {
 };
 
 export const checkAdminGql = async (_, __, ctx: IGqlCtx) => {
-  const { reply: res } = ctx;
   const { request: req } = ctx.reply;
   if (!isAdmin(req.currentUser)) {
-    return res.send(makeGqlErrors({ message: '403 Forbidden' }));
+    throw makeGqlError('403 Forbidden');
   }
 
   return CallNext;

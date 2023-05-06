@@ -1,7 +1,8 @@
-import useSWR from 'swr';
-import { IFiltersMap, IUser } from '../../../lib/types.js';
+import { IFiltersMap, IGqlResponse } from '../../../lib/types.js';
 import Layout from '../../common/layout.js';
-import { filterTypes, getApiUrl, roles, useTable, userRolesToIcons } from '../../lib/utils.js';
+import { QueryGetUsersArgs } from '../../gqlTypes/graphql.js';
+import { getUsers } from '../../lib/graphql.js';
+import { filterTypes, roles, useGql, useTable, userRolesToIcons } from '../../lib/utils.js';
 import { HeaderCell } from '../../ui/HeaderCell.js';
 import { Pagination } from '../../ui/Pagination.js';
 
@@ -29,10 +30,13 @@ const defaultFilters: IFiltersMap = {
 };
 
 export const Users = () => {
-  const { data } = useSWR<IUser[]>(getApiUrl('users'));
+  // const { data } = useSWR<IUser[]>(getApiUrl('users'));
+  const { data } = useGql<IGqlResponse<'getUsers'>, QueryGetUsersArgs>(getUsers, {
+    withTodos: true,
+  });
 
   const { rows, totalRows, paginationProps, headerCellProps } = useTable({
-    rows: data || [],
+    rows: data?.getUsers || [],
     page: 0,
     size: 10,
     sortBy: null,

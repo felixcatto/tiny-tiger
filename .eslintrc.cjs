@@ -4,7 +4,7 @@ module.exports = {
   plugins: ['@typescript-eslint'],
   root: true,
 
-  ignorePatterns: ['/dist/*', '*.css.d.ts'],
+  ignorePatterns: ['/dist/*', '/client/gqlTypes/*', '*.css.d.ts'],
   env: { browser: true, node: true },
 
   rules: {

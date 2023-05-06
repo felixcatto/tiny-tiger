@@ -31,6 +31,7 @@ type IPopupProps = {
   getFloatingProps: any;
   context: any;
   shouldSkipCloseAnimation?: boolean;
+  canUseReferenceWidth?: boolean;
 };
 
 export const usePopup = (props: IUsePopupProps) => {
@@ -64,6 +65,7 @@ export const Popup = (props: IPopupProps) => {
     getFloatingProps,
     context,
     shouldSkipCloseAnimation = false,
+    canUseReferenceWidth = false,
   } = props;
 
   const [referenceWidth, setReferenceWidth] = React.useState('max-content');
@@ -90,7 +92,9 @@ export const Popup = (props: IPopupProps) => {
 
   React.useEffect(() => {
     const reference: any = refs.reference.current;
-    setReferenceWidth(`${reference.offsetWidth}px`);
+    if (canUseReferenceWidth) {
+      setReferenceWidth(`${reference.offsetWidth}px`);
+    }
   }, []);
 
   return (

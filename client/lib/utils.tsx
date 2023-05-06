@@ -1,11 +1,13 @@
 import { AxiosError } from 'axios';
 import cn from 'classnames';
 import { useFormikContext } from 'formik';
+import { Variables, request } from 'graphql-request';
 import produce from 'immer';
 import { get, isEmpty, isFunction, isNull, isNumber, omit, orderBy } from 'lodash-es';
 import React from 'react';
 import { createPortal } from 'react-dom';
 import stringMath from 'string-math';
+import useSWR from 'swr';
 import { Link, useLocation } from 'wouter';
 import { filterTypes, roles, sortOrders } from '../../lib/sharedUtils.js';
 import {
@@ -76,7 +78,9 @@ export const WithApiErrors = (Component: React.ComponentType<IApiErrors>) => pro
   );
 };
 
-const getAxiosErrorData = (axiosError: AxiosError): any => axiosError.response?.data;
+const getAxiosErrorData = (axiosError: AxiosError): any => axiosError.response?.data || {};
+
+const getGqlErrorData = gqlError => gqlError.response?.errors?.[0].extensions || {};
 
 export const useSubmit: IUseSubmit = onSubmit => {
   const { setApiErrors } = React.useContext(FormContext);
@@ -86,8 +90,11 @@ export const useSubmit: IUseSubmit = onSubmit => {
       await onSubmit(values, actions);
     } catch (e: any) {
       const { errors } = getAxiosErrorData(e);
+      const { errors: gqlErrors } = getGqlErrorData(e);
       if (errors) {
         setApiErrors(errors);
+      } else if (gqlErrors) {
+        setApiErrors(gqlErrors);
       } else {
         throw e;
       }
@@ -276,3 +283,11 @@ export const useQuery: IUseQuery = props => {
 
 export const getCssValue = (cssValue: string) =>
   stringMath(cssValue.trim().replaceAll('calc', '').replaceAll('s', ''));
+
+export const gqlRequest = <TVariables extends Variables = any>(query, variables?: TVariables) =>
+  request('/graphql', query, variables);
+
+const fetcher: any = ({ query, variables }) => request('/graphql', query, variables);
+
+export const useGql = <TResponse = any, TVariables = any>(query, variables?: TVariables) =>
+  useSWR<TResponse>({ query, variables }, fetcher);

@@ -2,17 +2,24 @@ import cn from 'classnames';
 import { Form, Formik } from 'formik';
 import React from 'react';
 import { useSelector } from 'react-redux';
-import useSWR from 'swr';
-import { IGetTodosResponse, ITodo } from '../../../lib/types.js';
+import { IGqlResponse, ITodo } from '../../../lib/types.js';
 import Layout from '../../common/layout.js';
+import {
+  MutationDeleteTodosArgs,
+  MutationPostTodosArgs,
+  MutationPutTodosArgs,
+  QueryGetTodosArgs,
+} from '../../gqlTypes/graphql.js';
+import { deleteTodos, getTodos, postTodos, putTodos } from '../../lib/graphql.js';
 import {
   ErrorMessage,
   Field,
   SubmitBtn,
   WithApiErrors,
   filterTypes,
-  getApiUrl,
+  gqlRequest,
   useContext,
+  useGql,
   useQuery,
   useSubmit,
   useTable,
@@ -47,7 +54,7 @@ const defaultFilters = {
 
 const TodoList = () => {
   const { isSignedIn } = useSelector(selectSession);
-  const { axios, actions } = useContext();
+  const { actions } = useContext();
 
   const { page, size, sortBy, sortOrder, filters, paginationProps, headerCellProps } = useTable({
     page: 0,
@@ -62,11 +69,18 @@ const TodoList = () => {
   const filtersList = React.useMemo(() => Object.values(filters), [filters]);
   const query = useQuery({ page, size, sortBy, sortOrder, filters: filtersList });
 
-  const { data, mutate } = useSWR<IGetTodosResponse>(getApiUrl('todos', {}, query));
-  useSWR<IGetTodosResponse>(getApiUrl('todos', {}, { ...query, page: page + 1 }));
+  // const { data, mutate } = useSWR<IGetTodosResponse>(getApiUrl('todos', {}, query));
+  // useSWR(getApiUrl('todos', {}, { ...query, page: page + 1 }));
+  const { data, mutate } = useGql<IGqlResponse<'getTodos'>, QueryGetTodosArgs>(getTodos, {
+    ...query,
+    withAuthor: true,
+  });
+  useGql(getTodos, { ...query, page: page + 1, withAuthor: true });
 
-  const rows = data?.rows || [];
-  const totalRows = data?.totalRows || 0;
+  // const rows = data?.rows || [];
+  // const totalRows = data?.totalRows || 0;
+  const rows = data?.getTodos?.rows || [];
+  const totalRows = data?.getTodos?.totalRows || 0;
 
   const initialValues = editingTodo
     ? { name: editingTodo.author?.name, email: editingTodo.author?.email, text: editingTodo.text }
@@ -74,10 +88,12 @@ const TodoList = () => {
 
   const onSubmit = useSubmit(async (values, fmActions) => {
     if (editingTodo) {
-      await axios.put(getApiUrl('todo', { id: editingTodo.id }), { text: values.text });
+      // await axios.put(getApiUrl('todo', { id: editingTodo.id }), { text: values.text });
+      await gqlRequest<MutationPutTodosArgs>(putTodos, { ...values, id: editingTodo.id });
       actions.addNotification(makeNotification({ title: 'Todo', text: 'Edited successfully' }));
     } else {
-      await axios.post(getApiUrl('todos'), values);
+      // await axios.post(getApiUrl('todos'), values);
+      await gqlRequest<MutationPostTodosArgs>(postTodos, values);
       actions.addNotification(makeNotification({ title: 'Todo', text: 'Created successfully' }));
     }
     fmActions.resetForm();
@@ -90,10 +106,11 @@ const TodoList = () => {
   };
 
   const changeTodoStatus = todo => async () => {
-    await axios.put(getApiUrl('todo', { id: todo.id }), {
-      ...todo,
-      is_completed: !todo.is_completed,
-    });
+    // await axios.put(getApiUrl('todo', { id: todo.id }), {
+    //   ...todo,
+    //   is_completed: !todo.is_completed,
+    // });
+    await gqlRequest<MutationPutTodosArgs>(putTodos, { ...todo, is_completed: !todo.is_completed });
     mutate();
   };
 
@@ -102,7 +119,8 @@ const TodoList = () => {
   };
 
   const deleteTodo = id => async () => {
-    await axios.delete(getApiUrl('todo', { id }));
+    // await axios.delete(getApiUrl('todo', { id }));
+    await gqlRequest<MutationDeleteTodosArgs>(deleteTodos, { id });
     mutate();
   };
 

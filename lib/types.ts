@@ -27,6 +27,11 @@ import {
   sortOrders,
 } from './utils.js';
 import { FastifyInstance, FastifyReply } from 'fastify';
+import { Query } from '../client/gqlTypes/graphql.js';
+
+export type IAnyObj = {
+  [key: string]: any;
+};
 
 export type IMakeEnum = <T extends ReadonlyArray<string>>(
   ...args: T
@@ -122,6 +127,11 @@ export type IApiErrors = {
   setApiErrors: any;
 };
 
+export type IYupError = {
+  message: string;
+  errors: IAnyObj;
+};
+
 export type IAuthenticate = (
   rawCookies,
   keygrip,
@@ -130,9 +140,8 @@ export type IAuthenticate = (
 
 export type IValidate = <T = any>(
   schema,
-  payload,
-  apiType?: IApiType
-) => [data: T, error: null] | [data: null, error: object];
+  payload
+) => [data: T, error: null] | [data: null, error: IYupError];
 export type IPayloadTypes = 'query' | 'body';
 export type IValidateMW = (schema, payloadType?: IPayloadTypes) => (req, res) => any;
 
@@ -296,7 +305,7 @@ export type IUseQuery = (props: IUseQueryProps) => {
   size?: number;
   sortBy?: string;
   sortOrder?: ISortOrder;
-  filters?: IFilter[];
+  filters?: string;
 };
 
 type IFn<T> = (freshState: T) => Partial<T>;
@@ -333,3 +342,7 @@ export type IGqlCtx = {
 };
 
 export type IApiType = keyof typeof apiTypes;
+
+export type IGqlResponse<T extends keyof Query> = {
+  [key in T]: Query[T];
+};

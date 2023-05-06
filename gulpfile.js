@@ -86,6 +86,8 @@ const viteBuildSSR = async () =>
     'client/main/entry-server.tsx',
   ]);
 
+const makeGqlTypes = async () => spawnNpxAsync(['graphql-codegen']);
+
 const trackChangesInDist = () => {
   const watcher = gulp.watch('dist/**/*');
   watcher
@@ -100,7 +102,13 @@ const watch = async () => {
   trackChangesInDist();
 };
 
-export const dev = series(clean, parallel(transpileServerJs, copyMisc), startServer, watch);
+export const dev = series(
+  clean,
+  parallel(transpileServerJs, copyMisc),
+  startServer,
+  makeGqlTypes,
+  watch
+);
 
 export const build = series(
   clean,

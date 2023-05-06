@@ -243,7 +243,7 @@ describe('todos', () => {
     });
 
     const { data, errors } = res.json();
-    expect(data).toBeFalsy();
+    expect(data.putTodos).toBeFalsy();
     expect(errors).toMatchObject([{ message: '403 Forbidden' }]);
   });
 
