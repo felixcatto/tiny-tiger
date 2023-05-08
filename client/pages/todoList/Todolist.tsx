@@ -1,3 +1,4 @@
+import { css } from '@emotion/react';
 import cn from 'classnames';
 import { Form, Formik } from 'formik';
 import React from 'react';
@@ -28,7 +29,6 @@ import { selectSession } from '../../redux/reducers.js';
 import { HeaderCell } from '../../ui/HeaderCell.js';
 import { makeNotification } from '../../ui/Notifications.jsx';
 import { Pagination } from '../../ui/Pagination.js';
-import s from './styles.module.css';
 
 const defaultFilters = {
   'author.name': {
@@ -124,19 +124,8 @@ const TodoList = () => {
     mutate();
   };
 
-  const todoClass = todo =>
-    cn('fa', {
-      'fa-check': todo.is_completed,
-      'fa-dove': !todo.is_completed,
-    });
-  const changeStatusIconClass = todo =>
-    cn('fa fa_big mr-3 clickable', {
-      'fa-check': !todo.is_completed,
-      'fa-dove': todo.is_completed,
-    });
   const changeStatusIconTitle = todo =>
     todo.is_completed ? 'Mark as Incomplete' : 'Mark as Completed';
-  const todoRowClass = todo => cn({ [s.todoRow_completed]: todo.is_completed });
 
   return (
     <Layout>
@@ -206,13 +195,13 @@ const TodoList = () => {
             </thead>
             <tbody>
               {rows.map(todo => (
-                <tr key={todo.id} className={todoRowClass(todo)}>
+                <tr key={todo.id} css={s.todoRow(todo)}>
                   <td>{todo.author?.name}</td>
                   <td className="truncate">{todo.author?.email}</td>
                   <td className="text-justify">{todo.text}</td>
                   <td>
                     <i
-                      className={todoClass(todo)}
+                      className={s.todoClass(todo)}
                       title={todo.is_completed ? 'Completed' : 'Incomplete'}
                     ></i>
                     {todo.is_edited_by_admin && (
@@ -222,7 +211,7 @@ const TodoList = () => {
                   {isSignedIn && (
                     <td className="text-right">
                       <i
-                        className={changeStatusIconClass(todo)}
+                        className={s.changeStatusIconClass(todo)}
                         title={changeStatusIconTitle(todo)}
                         onClick={changeTodoStatus(todo)}
                       ></i>
@@ -248,6 +237,27 @@ const TodoList = () => {
       </div>
     </Layout>
   );
+};
+
+const s = {
+  todoRow: todo => css`
+    ${todo.is_completed &&
+    css`
+      background: var(--secondary-light);
+    `};
+  `,
+
+  todoClass: todo =>
+    cn('fa', {
+      'fa-check': todo.is_completed,
+      'fa-dove': !todo.is_completed,
+    }),
+
+  changeStatusIconClass: todo =>
+    cn('fa fa_big mr-3 clickable', {
+      'fa-check': !todo.is_completed,
+      'fa-dove': todo.is_completed,
+    }),
 };
 
 export default WithApiErrors(TodoList);

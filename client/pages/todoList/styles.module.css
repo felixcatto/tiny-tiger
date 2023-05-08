@@ -1,5 +1,0 @@
-.todoRow {
-  &_completed {
-    background: var(--secondary-light);
-  }
-}
