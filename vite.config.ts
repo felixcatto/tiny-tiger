@@ -9,7 +9,7 @@ loadEnv();
 let config = defineConfig({
   build: { sourcemap: true },
   plugins: [
-    react({ jsxImportSource: '@emotion/react' }),
+    react(),
     sentryVitePlugin({
       include: './dist/public',
       org: process.env.SENTRY_ORG,
