@@ -243,8 +243,39 @@ table {
     border-bottom: 1px solid #dee2e6;
   }
   & th {
+    @apply bg-gray-100;
     color: var(--secondary);
     text-align: left;
+  }
+}
+
+.table {
+  &_inner {
+    position: relative;
+    &:before,
+    &:after {
+      @apply bg-gray-100;
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 6px;
+    }
+    &:before {
+      left: 0;
+    }
+    &:after {
+      right: 0;
+    }
+
+    & tr:last-child td {
+      border: none;
+    }
+
+    & th {
+      @apply text-sm;
+      color: var(--primary);
+    }
   }
 }
 

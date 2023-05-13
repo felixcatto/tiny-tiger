@@ -101,7 +101,9 @@ export const resolvers = {
         }
 
         if (size && isNumber(page)) {
-          totalRowsQuery = todoQuery.clone().resultSize();
+          totalRowsQuery = withAuthor
+            ? todoQuery.clone().joinRelated('author').resultSize()
+            : todoQuery.clone().resultSize();
           todoQuery.offset(page * size).limit(size);
         }
 

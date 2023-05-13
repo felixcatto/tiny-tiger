@@ -30,28 +30,6 @@ import { makeNotification } from '../../ui/Notifications.jsx';
 import { Pagination } from '../../ui/Pagination.js';
 import s from './styles.module.css';
 
-const defaultFilters = {
-  'author.name': {
-    filterBy: 'author.name',
-    filterType: filterTypes.search,
-    filter: '',
-  },
-  text: {
-    filterBy: 'text',
-    filterType: filterTypes.search,
-    filter: '',
-  },
-  is_completed: {
-    filterBy: 'is_completed',
-    filterType: filterTypes.select,
-    filter: [],
-    filterOptions: [
-      { label: 'Completed', value: true },
-      { label: 'Incomplete', value: false },
-    ],
-  },
-};
-
 const TodoList = () => {
   const { isSignedIn } = useSelector(selectSession);
   const { actions } = useContext();
@@ -248,6 +226,28 @@ const TodoList = () => {
       </div>
     </Layout>
   );
+};
+
+const defaultFilters = {
+  'author.name': {
+    filterBy: 'author.name',
+    filterType: filterTypes.search,
+    filter: '',
+  },
+  text: {
+    filterBy: 'text',
+    filterType: filterTypes.search,
+    filter: '',
+  },
+  is_completed: {
+    filterBy: 'is_completed',
+    filterType: filterTypes.select,
+    filter: [],
+    filterOptions: [
+      { label: 'Completed', value: true },
+      { label: 'Incomplete', value: false },
+    ],
+  },
 };
 
 export default WithApiErrors(TodoList);

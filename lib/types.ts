@@ -1,8 +1,11 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { AxiosInstance, AxiosRequestConfig } from 'axios';
+import { FastifyInstance, FastifyReply } from 'fastify';
 import { FormikHelpers } from 'formik';
 import { Knex } from 'knex';
 import * as y from 'yup';
+import { Query } from '../client/gqlTypes/graphql.js';
+import { selectedRowsStates } from '../client/lib/utils.jsx';
 import { makeThunks, reduxActions } from '../client/redux/actions.js';
 import {
   makeCurUserReducer,
@@ -26,8 +29,6 @@ import {
   roles,
   sortOrders,
 } from './utils.js';
-import { FastifyInstance, FastifyReply } from 'fastify';
-import { Query } from '../client/gqlTypes/graphql.js';
 
 export type IAnyObj = {
   [key: string]: any;
@@ -43,6 +44,7 @@ export type IMakeUrlFor = <T extends object>(
 
 export type IRole = keyof typeof roles;
 export type IAsyncState = keyof typeof asyncStates;
+export type ISelectedRowsState = keyof typeof selectedRowsStates;
 
 export type IMode = 'test' | 'development' | 'production';
 
@@ -258,37 +260,64 @@ export type IHeaderCellProps = {
   className?: string;
 };
 
-type IUseTableCommonProps = {
-  page: number;
-  size: number;
-  sortBy: string | null;
-  sortOrder: ISortOrder;
-  filters: IFiltersMap;
+export type IUseTableState = {
+  page?: number;
+  size?: number;
+  sortBy?: string | null;
+  sortOrder?: ISortOrder;
+  filters?: IFiltersMap;
 };
 
-export type IUseTableProps<T = any> = IUseTableCommonProps & {
-  rows?: T;
+export type IUseTableProps<T = any> = {
+  rows?: T[];
+  page?: number;
+  size?: number;
+  sortBy?: string | null;
+  sortOrder?: ISortOrder;
+  filters?: IFiltersMap;
 };
 
-export type IUseTableState = IUseTableCommonProps;
-
-export type IUseTable = <T extends any[]>(
-  props: IUseTableProps<T>
-) => IUseTableCommonProps & {
-  rows: T;
+export type IUseTable = <T extends object, TActualProps extends IUseTableProps>(
+  props: IUseTableProps<T> & TActualProps
+) => {
+  rows: T[];
   totalRows: number;
+
+  page: TActualProps['page'];
+  size: TActualProps['size'];
+  sortBy: TActualProps['sortBy'];
+  sortOrder: TActualProps['sortOrder'];
+  filters: TActualProps['filters'];
+
   paginationProps: {
     page;
     size;
     onPageChange;
     onSizeChange;
   };
+
   headerCellProps: {
     sortBy;
     sortOrder;
     filters;
     onSortChange;
     onFilterChange;
+  };
+};
+
+export type IUseSelectedRows = <T extends object>(props: {
+  rows: T[];
+  defaultSelectedRows?: Record<string, T>;
+  rowKey?: string;
+}) => {
+  selectedRows: Record<string, T>;
+  setSelectedRows: any;
+  isRowSelected: (row: T) => boolean;
+  onSelectRow: (row: T) => () => void;
+  selectAllRowsCheckboxProps: {
+    onChange: () => void;
+    checked: boolean;
+    partiallyChecked: boolean;
   };
 };
 
