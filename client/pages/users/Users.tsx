@@ -13,6 +13,7 @@ import {
   useTable,
   userRolesToIcons,
 } from '../../lib/utils.js';
+import { Collapse } from '../../ui/Collapse.jsx';
 import { Checkbox, Expandbox } from '../../ui/Checkbox.jsx';
 import { HeaderCell } from '../../ui/HeaderCell.js';
 import { Pagination } from '../../ui/Pagination.js';
@@ -87,21 +88,27 @@ export const Users = () => {
                 </td>
                 <td>
                   {!isEmpty(user.todos) && (
-                    <Expandbox onClick={onExpandRow(user)} isExpanded={isRowExpanded(user)} />
+                    <Expandbox
+                      onClick={onExpandRow(user)}
+                      isExpanded={isRowExpanded(user)}
+                      className="p-1"
+                    />
                   )}
                 </td>
                 <td>{user.name}</td>
                 <td>{user.email}</td>
-                <td className="flex items-center">
-                  <div className="w-6">
-                    <i className={userRolesToIcons[user.role]}></i>
+                <td>
+                  <div className="flex items-center">
+                    <div className="w-6">
+                      <i className={userRolesToIcons[user.role]}></i>
+                    </div>
+                    <div>{user.role}</div>
                   </div>
-                  <div>{user.role}</div>
                 </td>
               </tr>
-              {isRowExpanded(user) && (
-                <tr>
-                  <td colSpan={tableColCount} className="p-0 border-none">
+              <tr>
+                <td colSpan={tableColCount} className="p-0 border-none">
+                  <Collapse isHidden={!isRowExpanded(user)} minimumElHeight={85}>
                     <table className="table table_inner table-fixed">
                       <thead>
                         <tr>
@@ -141,9 +148,9 @@ export const Users = () => {
                         </tr>
                       </tfoot>
                     </table>
-                  </td>
-                </tr>
-              )}
+                  </Collapse>
+                </td>
+              </tr>
             </React.Fragment>
           ))}
         </tbody>

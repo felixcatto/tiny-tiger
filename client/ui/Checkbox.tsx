@@ -72,9 +72,11 @@ export const Expandbox = (props: IExpandboxProps) => {
 
   return (
     <div className={cn(s.expandbox, className)} onClick={onClick}>
-      <div className={iconWrapClass}>
-        <div className={lineClass(s.line_one)}></div>
-        <div className={lineClass(s.line_two)}></div>
+      <div className={s.expandVisualBox}>
+        <div className={iconWrapClass}>
+          <div className={lineClass(s.line_one)}></div>
+          <div className={lineClass(s.line_two)}></div>
+        </div>
       </div>
     </div>
   );
