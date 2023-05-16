@@ -1,32 +1,31 @@
 import cn from 'classnames';
 import { isEmpty } from 'lodash-es';
 import React from 'react';
-import { IFiltersMap, IGqlResponse } from '../../../lib/types.js';
+import useSWR from 'swr';
+import { IFiltersMap, IUser } from '../../../lib/types.js';
 import Layout from '../../common/layout.js';
-import { QueryGetUsersArgs } from '../../gqlTypes/graphql.js';
-import { getUsers } from '../../lib/graphql.js';
 import {
   filterTypes,
+  getApiUrl,
   roles,
-  useGql,
   useSelectedRows,
   useTable,
   userRolesToIcons,
 } from '../../lib/utils.js';
-import { Collapse } from '../../ui/Collapse.jsx';
 import { Checkbox, Expandbox } from '../../ui/Checkbox.jsx';
+import { Collapse } from '../../ui/Collapse.jsx';
 import { HeaderCell } from '../../ui/HeaderCell.js';
 import { Pagination } from '../../ui/Pagination.js';
 
 export const Users = () => {
-  // const { data } = useSWR<IUser[]>(getApiUrl('users'));
-  const { data } = useGql<IGqlResponse<'getUsers'>, QueryGetUsersArgs>(getUsers, {
-    withTodos: true,
-  });
+  const { data } = useSWR<IUser[]>(getApiUrl('users'));
+  // const { data } = useGql<IGqlResponse<'getUsers'>, QueryGetUsersArgs>(getUsers, {
+  //   withTodos: true,
+  // });
 
   const tableColCount = 5;
   const { rows, totalRows, paginationProps, headerCellProps } = useTable({
-    rows: data?.getUsers,
+    rows: data,
     page: 0,
     size: 10,
     sortBy: null,
