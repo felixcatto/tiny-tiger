@@ -12,12 +12,12 @@ import {
   WithApiErrors,
   filterTypes,
   getApiUrl,
+  getFSPQuery,
   useContext,
-  useQuery,
   useSubmit,
   useTable,
 } from '../../lib/utils.js';
-import { selectSession } from '../../redux/reducers.js';
+import { selectSession } from '../../redux/selectors.js';
 import { HeaderCell } from '../../ui/HeaderCell.js';
 import { makeNotification } from '../../ui/Notifications.jsx';
 import { Pagination } from '../../ui/Pagination.js';
@@ -37,8 +37,10 @@ const TodoList = () => {
 
   const [editingTodo, setEditingTodo] = React.useState<ITodo | null>(null);
 
-  const filtersList = React.useMemo(() => Object.values(filters), [filters]);
-  const query = useQuery({ page, size, sortBy, sortOrder, filters: filtersList });
+  const query = React.useMemo(
+    () => getFSPQuery({ page, size, sortBy, sortOrder, filters }),
+    [page, size, sortBy, sortOrder, filters]
+  );
 
   const { data, mutate } = useSWR<IGetTodosResponse>(getApiUrl('todos', {}, query));
   useSWR(getApiUrl('todos', {}, { ...query, page: page + 1 }));

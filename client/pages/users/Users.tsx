@@ -5,9 +5,12 @@ import useSWR from 'swr';
 import { IFiltersMap, IUser } from '../../../lib/types.js';
 import Layout from '../../common/layout.js';
 import {
+  PrefetchLink,
   filterTypes,
-  getApiUrl,
+  getUrl,
+  prefetchRoutes,
   roles,
+  routes,
   useSelectedRows,
   useTable,
   userRolesToIcons,
@@ -18,7 +21,7 @@ import { HeaderCell } from '../../ui/HeaderCell.js';
 import { Pagination } from '../../ui/Pagination.js';
 
 export const Users = () => {
-  const { data } = useSWR<IUser[]>(getApiUrl('users'));
+  const { data } = useSWR<IUser[]>(prefetchRoutes[routes.users].swrRequestKey);
   // const { data } = useGql<IGqlResponse<'getUsers'>, QueryGetUsersArgs>(getUsers, {
   //   withTodos: true,
   // });
@@ -94,7 +97,9 @@ export const Users = () => {
                     />
                   )}
                 </td>
-                <td>{user.name}</td>
+                <td>
+                  <PrefetchLink to={getUrl('user', { id: user.id })}>{user.name}</PrefetchLink>
+                </td>
                 <td>{user.email}</td>
                 <td>
                   <div className="flex items-center">

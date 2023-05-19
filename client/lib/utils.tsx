@@ -7,22 +7,31 @@ import { get, isEmpty, isFunction, isNull, isNumber, keyBy, omit, orderBy } from
 import React from 'react';
 import { createPortal } from 'react-dom';
 import stringMath from 'string-math';
-import useSWR from 'swr';
-import { Link, useLocation } from 'wouter';
-import { filterTypes, makeEnum, roles, sortOrders } from '../../lib/sharedUtils.js';
+import useSWR, { useSWRConfig } from 'swr';
+import { useLocation } from 'wouter';
+import {
+  asyncStates,
+  filterTypes,
+  getPrefetchRouteByHref,
+  makeEnum,
+  roles,
+  sortOrders,
+} from '../../lib/sharedUtils.js';
 import {
   IApiErrors,
+  IAsyncState,
   IContext,
   IFilter,
+  IGetFSPQuery,
   IMixedFilter,
   ISortOrder,
   IUseMergeState,
-  IUseQuery,
   IUseSelectedRows,
   IUseSubmit,
   IUseTable,
   IUseTableState,
 } from '../../lib/types.js';
+import { useSelector } from '../redux/utils.js';
 import Context from './context.js';
 
 export * from '../../lib/sharedUtils.js';
@@ -49,16 +58,75 @@ export const useMergeState: IUseMergeState = initialState => {
   return [state, setImmerState];
 };
 
+const usePrefetch = to => {
+  const { mutate, cache } = useSWRConfig();
+  const { axios, actions } = useContext();
+  const prefetchRoutesStates = useSelector(state => state.prefetchRoutesStates);
+
+  const prefetchRoute = getPrefetchRouteByHref(to);
+  const swrRequestKey = prefetchRoute?.swrRequestKey;
+
+  let prefetchState: IAsyncState;
+  if (swrRequestKey) {
+    // via SSR or by useSWR on direct load, i.e. not by Link
+    const isPrefetchedBySWR = cache.get(swrRequestKey);
+    if (isPrefetchedBySWR) {
+      prefetchState = asyncStates.resolved;
+    } else {
+      prefetchState = prefetchRoutesStates[swrRequestKey] || asyncStates.idle;
+    }
+  } else {
+    prefetchState = asyncStates.resolved;
+  }
+
+  const onMouseEnter = async () => {
+    if (!swrRequestKey) return;
+    if (prefetchState !== asyncStates.idle) return;
+
+    actions.setRoutePrefetchState({ swrRequestKey, state: asyncStates.pending });
+    await mutate(swrRequestKey, async () => axios.get(swrRequestKey), {
+      revalidate: false,
+      populateCache: true,
+    });
+    actions.setRoutePrefetchState({ swrRequestKey, state: asyncStates.resolved });
+  };
+
+  return {
+    onMouseEnter,
+    isRoutePrefetched: prefetchState === asyncStates.resolved,
+  };
+};
+
+export const PrefetchLink = ({ to, children, className = '' }) => {
+  const { onMouseEnter, isRoutePrefetched } = usePrefetch(to);
+  const [_, navigate] = useLocation();
+
+  const onClick = async () => {
+    if (isRoutePrefetched) {
+      navigate(to);
+    } else {
+      await new Promise(resolve => setTimeout(resolve, 200));
+      navigate(to);
+    }
+  };
+
+  return (
+    <div className={cn('link', className)} onMouseEnter={onMouseEnter} onClick={onClick}>
+      {children}
+    </div>
+  );
+};
+
 export const NavLink = ({ to, children }) => {
   const [pathname] = useLocation();
-
   const className = cn('nav-link', {
     'nav-link_active': (to !== '/' && pathname.startsWith(to)) || (to === '/' && pathname === '/'),
   });
+
   return (
-    <Link to={to} className={className}>
+    <PrefetchLink to={to} className={className}>
       {children}
-    </Link>
+    </PrefetchLink>
   );
 };
 
@@ -300,28 +368,27 @@ export const transformFiltersForApi = (filters: IFilter[]) => {
   );
 };
 
-export const useQuery: IUseQuery = props => {
+export const getFSPQuery: IGetFSPQuery = props => {
   const { filters, page, size, sortBy, sortOrder } = props;
+  const filtersList = Object.values(filters);
+  const query = {};
 
-  return React.useMemo(() => {
-    const queryStr = {};
-    const filtersForApi = transformFiltersForApi(filters);
-    if (!isEmpty(filtersForApi)) {
-      queryStr['filters'] = JSON.stringify(filtersForApi);
-    }
+  const filtersForApi = transformFiltersForApi(filtersList);
+  if (!isEmpty(filtersForApi)) {
+    query['filters'] = JSON.stringify(filtersForApi);
+  }
 
-    if (size && isNumber(page)) {
-      queryStr['size'] = size;
-      queryStr['page'] = page;
-    }
+  if (size && isNumber(page)) {
+    query['size'] = size;
+    query['page'] = page;
+  }
 
-    if (sortBy && sortOrder) {
-      queryStr['sortBy'] = sortBy;
-      queryStr['sortOrder'] = sortOrder;
-    }
+  if (sortBy && sortOrder) {
+    query['sortBy'] = sortBy;
+    query['sortOrder'] = sortOrder;
+  }
 
-    return queryStr;
-  }, [filters, page, size, sortBy, sortOrder]);
+  return query;
 };
 
 export const getCssValue = (cssValue: string) =>

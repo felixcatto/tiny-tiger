@@ -1,27 +1,12 @@
-import { isEmpty } from 'lodash-es';
-import { compile } from 'path-to-regexp';
-import { IGqlApi, IMakeEnum, IMakeUrlFor } from './types.js';
-
-export const makeEnum: IMakeEnum = (...args) =>
-  args.reduce((acc, key) => ({ ...acc, [key]: key }), {} as any);
-
-export const roles = makeEnum('user', 'admin', 'guest');
-export const asyncStates = makeEnum('idle', 'pending', 'resolved', 'rejected');
-export const sortOrders = makeEnum('asc', 'desc');
-export const filterTypes = makeEnum('search', 'select');
-export const modes = makeEnum('test', 'development', 'production');
-export const apiTypes = makeEnum('rest', 'graphql');
-
-export const isSignedIn = currentUser => currentUser.role !== roles.guest;
-export const isAdmin = currentUser => currentUser.role === roles.admin;
-
-export const guestUser = {
-  id: -111,
-  name: 'Guest',
-  role: roles.guest,
-  email: '',
-  password_digest: '',
-} as const;
+import { isEmpty, keyBy } from 'lodash-es';
+import { compile, match } from 'path-to-regexp';
+import {
+  IGqlApi,
+  IMakeEnum,
+  IMakeUrlFor,
+  IPrefetchRoute,
+  IResolvedPrefetchRoute,
+} from './types.js';
 
 export const qs = {
   stringify: (obj = {}) => {
@@ -61,7 +46,76 @@ export const getUrl = makeUrlFor(routes);
 export const getApiUrl = (name: keyof typeof routes, routeParams?, query?) =>
   `/api${getUrl(name, routeParams, query)}`;
 
+export const prefetchRoutes = keyBy(
+  [
+    {
+      genericRouteUrl: routes.home,
+      swrRequestKey: getApiUrl('todos', {}, { page: 0, size: 3 }),
+    },
+    {
+      genericRouteUrl: routes.users,
+      swrRequestKey: getApiUrl('users', {}, { withTodos: true }),
+    },
+    {
+      genericRouteUrl: routes.user,
+      getSwrRequestKey: params => getApiUrl('user', params),
+    },
+  ],
+  'genericRouteUrl'
+) as Record<string, IPrefetchRoute>;
+
+export const getPrefetchRouteByHref = to => {
+  let prefetchRoute = null as IResolvedPrefetchRoute | null;
+  const routes = Object.values(prefetchRoutes);
+
+  for (let i = 0; i < routes.length; i++) {
+    const testRoute = routes[i];
+    const isRouteDynamic = testRoute.getSwrRequestKey;
+
+    if (isRouteDynamic) {
+      const isMatched = match(testRoute.genericRouteUrl)(to);
+      if (isMatched) {
+        prefetchRoute = {
+          genericRouteUrl: testRoute.genericRouteUrl,
+          swrRequestKey: testRoute.getSwrRequestKey(isMatched.params, to),
+          params: isMatched.params,
+        };
+        break;
+      }
+    } else {
+      const isMatched = testRoute.genericRouteUrl === to;
+      if (isMatched) {
+        prefetchRoute = { ...testRoute, params: {} };
+        break;
+      }
+    }
+  }
+
+  return prefetchRoute;
+};
+
+export const makeEnum: IMakeEnum = (...args) =>
+  args.reduce((acc, key) => ({ ...acc, [key]: key }), {} as any);
+
+export const roles = makeEnum('user', 'admin', 'guest');
+export const asyncStates = makeEnum('idle', 'pending', 'resolved', 'rejected');
+export const sortOrders = makeEnum('asc', 'desc');
+export const filterTypes = makeEnum('search', 'select');
+export const modes = makeEnum('test', 'development', 'production');
+export const apiTypes = makeEnum('rest', 'graphql');
+
+export const guestUser = {
+  id: -111,
+  name: 'Guest',
+  role: roles.guest,
+  email: '',
+  password_digest: '',
+} as const;
+
 export const isBrowser = () => typeof window !== 'undefined';
+
+export const isSignedIn = currentUser => currentUser.role !== roles.guest;
+export const isAdmin = currentUser => currentUser.role === roles.admin;
 
 export const isProduction = mode => mode === modes.production;
 export const isDevelopment = mode => mode === modes.development;

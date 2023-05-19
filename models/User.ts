@@ -38,3 +38,7 @@ export const userLoginSchema = y.object({
   name: y.string().required('required'),
   password: y.string().required('required'),
 });
+
+export const userGetSchema = y.object({
+  withTodos: y.boolean(),
+});

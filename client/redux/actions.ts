@@ -1,5 +1,6 @@
 import { isNull } from 'lodash-es';
 import {
+    IAsyncState,
   IAxiosInstance,
   INotification,
   IReduxActions,
@@ -16,6 +17,7 @@ type IMakeThunksOpts = {
 export const reduxActions = {
   signIn: createAction<IUser>(),
   signOut: createAction<IUser>(),
+  setRoutePrefetchState: createAction<{ swrRequestKey: string, state: IAsyncState }>(),
   addNotificationMount: createAction<INotification>(),
   addNotificationAnimationStart: createAction<INotification>(),
   removeNotificationAnimationStart: createAction<string>(),

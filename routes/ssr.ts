@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { ssrRoutes } from '../lib/ssrRoutes.js';
+import { getSSRData } from '../lib/ssrRoutes.js';
 import { isDevelopment, isProduction, supressConsoleLog } from '../lib/utils.js';
 
 export const ssrRender = async (app: FastifyInstance) => {
@@ -7,16 +7,12 @@ export const ssrRender = async (app: FastifyInstance) => {
 
   app.get('/*', async (req, reply) => {
     const { currentUser, url } = req;
-
     let template = rawTemplate;
     let appHtml;
-    let ssrData = {};
-    const ssrRoute = ssrRoutes[url];
-    if (ssrRoute) {
-      ssrData = await ssrRoute({ orm });
-    }
 
+    const ssrData = await getSSRData(url, { orm });
     const initialState = { currentUser, fallback: ssrData };
+
     if (isProduction(mode)) {
       // @ts-ignore
       const { render } = await import('../server/entry-server.js');

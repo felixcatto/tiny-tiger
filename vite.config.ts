@@ -6,16 +6,19 @@ import { sentryVitePlugin } from '@sentry/vite-plugin';
 
 loadEnv();
 
+const isProd = process.env.NODE_ENV === 'production';
+
 let config = defineConfig({
   build: { sourcemap: true },
   plugins: [
     react(),
-    sentryVitePlugin({
-      include: './dist/public',
-      org: process.env.SENTRY_ORG,
-      project: process.env.SENTRY_PROJECT,
-      authToken: process.env.SENTRY_AUTH_TOKEN,
-    }),
+    isProd &&
+      sentryVitePlugin({
+        include: './dist/public',
+        org: process.env.SENTRY_ORG,
+        project: process.env.SENTRY_PROJECT,
+        authToken: process.env.SENTRY_AUTH_TOKEN,
+      }),
   ],
   css: { modules: { generateScopedName } },
   define: { __SENTRY_DEBUG__: false },

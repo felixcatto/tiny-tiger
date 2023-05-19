@@ -7,11 +7,7 @@ import * as y from 'yup';
 import { Query } from '../client/gqlTypes/graphql.js';
 import { selectedRowsStates } from '../client/lib/utils.jsx';
 import { makeThunks, reduxActions } from '../client/redux/actions.js';
-import {
-  makeCurUserReducer,
-  makeNotificationAnimationDuration,
-  makeNotificationsReducer,
-} from '../client/redux/reducers.js';
+import * as reducers from '../client/redux/reducers.js';
 import * as models from '../models/index.js';
 import {
   Todo,
@@ -19,6 +15,7 @@ import {
   todoPostGuestSchema,
   todoPostUserSchema,
   todoPutSchema,
+  userGetSchema,
   userLoginSchema,
 } from '../models/index.js';
 import {
@@ -73,6 +70,7 @@ export type IUser = {
 };
 export type IUserClass = typeof User;
 export type IUserLoginSchema = y.InferType<typeof userLoginSchema>;
+export type IUserGetSchema = y.InferType<typeof userGetSchema>;
 
 export type IUserLoginCreds = {
   email: string;
@@ -92,9 +90,7 @@ export type ITodoPostGuestSchema = y.InferType<typeof todoPostGuestSchema>;
 export type ITodoPostUserSchema = y.InferType<typeof todoPostUserSchema>;
 export type ITodoPutSchema = y.InferType<typeof todoPutSchema>;
 
-type IModels = {
-  [Property in keyof typeof models]: (typeof models)[Property];
-};
+type IModels = typeof models;
 export type IOrm = { knex: Knex<any, any> } & IModels;
 
 export interface IAxiosInstance extends AxiosInstance {
@@ -148,14 +144,6 @@ export type IPayloadTypes = 'query' | 'body';
 export type IValidateMW = (schema, payloadType?: IPayloadTypes) => (req, res) => any;
 
 type IAnyFn = (...args: any) => any;
-type IReducerKey = { key: any };
-type IGenericReducer = IAnyFn & IReducerKey;
-
-type IReduxRecord<T extends IGenericReducer> = Record<
-  T['key'],
-  ReturnType<ReturnType<T>['getInitialState']>
->;
-
 type IThunkArg<T extends IAnyFn> = Parameters<T>;
 type IThunkReturn<T extends IAnyFn> = ReturnType<ReturnType<ReturnType<T>>['unwrap']>;
 export type IReduxActions = typeof reduxActions;
@@ -163,12 +151,16 @@ export type IReduxThunks = ReturnType<typeof makeThunks>;
 export type IBindedThunks = {
   [K in keyof IReduxThunks]: (...args: IThunkArg<IReduxThunks[K]>) => IThunkReturn<IReduxThunks[K]>;
 };
+
+type IReducers = typeof reducers;
 export type IActions = IReduxActions & IReduxThunks;
 export type IBindedActions = IReduxActions & IBindedThunks;
 
-export type IReduxState = IReduxRecord<typeof makeCurUserReducer> &
-  IReduxRecord<typeof makeNotificationAnimationDuration> &
-  IReduxRecord<typeof makeNotificationsReducer>;
+export type IReduxState = {
+  [Key in keyof IReducers as IReducers[Key]['key']]: ReturnType<
+    ReturnType<IReducers[Key]>['getInitialState']
+  >;
+};
 
 type BaseThunkAPI<S, E> = {
   dispatch: any;
@@ -321,15 +313,15 @@ export type IUseSelectedRows = <T extends object>(props: {
   };
 };
 
-export type IUseQueryProps = {
+export type IGetFSPQueryProps = {
   page: number;
   size: number;
   sortBy: string | null;
   sortOrder: ISortOrder;
-  filters: IFilter[];
+  filters: Record<any, IFilter>;
 };
 
-export type IUseQuery = (props: IUseQueryProps) => {
+export type IGetFSPQuery = (props: IGetFSPQueryProps) => {
   page?: number;
   size?: number;
   sortBy?: string;
@@ -374,4 +366,22 @@ export type IApiType = keyof typeof apiTypes;
 
 export type IGqlResponse<T extends keyof Query> = {
   [key in T]: Query[T];
+};
+
+export type IPrefetchRoute =
+  | {
+      genericRouteUrl: any;
+      swrRequestKey: string;
+      getSwrRequestKey?: undefined;
+    }
+  | {
+      genericRouteUrl: any;
+      swrRequestKey?: undefined;
+      getSwrRequestKey: (params, to?) => string;
+    };
+
+export type IResolvedPrefetchRoute = {
+  genericRouteUrl: string;
+  swrRequestKey: string;
+  params: object;
 };

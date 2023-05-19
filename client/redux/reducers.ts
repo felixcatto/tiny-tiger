@@ -1,6 +1,6 @@
-import { createReducer, createSelector } from '@reduxjs/toolkit';
-import { IActions, INotification, IReduxState, IUser } from '../../lib/types.js';
-import { guestUser, isAdmin, isSignedIn } from '../lib/utils.js';
+import { createReducer } from '@reduxjs/toolkit';
+import { IActions, IAsyncState, INotification, IUser } from '../../lib/types.js';
+import { guestUser } from '../lib/utils.js';
 
 export const makeCurUserReducer = (actions: IActions, initialState: IUser = guestUser) =>
   createReducer(initialState, builder => {
@@ -45,11 +45,14 @@ export const makeNotificationsReducer = (actions: IActions, initialState: INotif
 
 makeNotificationsReducer.key = 'notifications' as const;
 
-export const selectSession = createSelector(
-  (state: IReduxState) => state.currentUser,
-  currentUser => ({
-    currentUser,
-    isSignedIn: isSignedIn(currentUser),
-    isAdmin: isAdmin(currentUser),
-  })
-);
+export const makePrefetchRoutesStates = (
+  actions: IActions,
+  initialState: Record<any, IAsyncState> = {}
+) =>
+  createReducer(initialState, builder => {
+    builder.addCase(actions.setRoutePrefetchState, (state, { payload }) => {
+      state[payload.swrRequestKey] = payload.state;
+    });
+  });
+
+makePrefetchRoutesStates.key = 'prefetchRoutesStates' as const;

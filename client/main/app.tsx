@@ -11,11 +11,13 @@ import {
   makeCurUserReducer,
   makeNotificationAnimationDuration,
   makeNotificationsReducer,
+  makePrefetchRoutesStates,
 } from '../redux/reducers.js';
 import { bindActions } from '../redux/utils.js';
 import Login from '../pages/session/Login.js';
 import TodoList from '../pages/todoList/Todolist.js';
 import { Users } from '../pages/users/Users.js';
+import { User } from '../pages/users/User.jsx';
 
 type IAppProps = {
   initialState: {
@@ -43,6 +45,7 @@ export const App = (props: IAppProps) => {
   const swrConfig = {
     fetcher: axios.get,
     revalidateOnFocus: false,
+    dedupingInterval: 7000,
     fallback,
   };
 
@@ -54,6 +57,7 @@ export const App = (props: IAppProps) => {
       [makeCurUserReducer.key]: makeCurUserReducer(actions, currentUser),
       [makeNotificationAnimationDuration.key]: makeNotificationAnimationDuration(actions),
       [makeNotificationsReducer.key]: makeNotificationsReducer(actions),
+      [makePrefetchRoutesStates.key]: makePrefetchRoutesStates(actions),
     },
   });
 
@@ -70,6 +74,7 @@ export const App = (props: IAppProps) => {
             <Route path={routes.home} component={TodoList} />
             <Route path={routes.newSession} component={Login} />
             <Route path={routes.users} component={Users} />
+            <Route path={routes.user} component={User} />
           </Switch>
         </SWRConfig>
       </Context.Provider>
