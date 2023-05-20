@@ -98,7 +98,7 @@ export const Users = () => {
                   )}
                 </td>
                 <td>
-                  <PrefetchLink to={getUrl('user', { id: user.id })}>{user.name}</PrefetchLink>
+                  <PrefetchLink href={getUrl('user', { id: user.id })}>{user.name}</PrefetchLink>
                 </td>
                 <td>{user.email}</td>
                 <td>

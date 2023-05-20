@@ -377,7 +377,7 @@ export type IPrefetchRoute =
   | {
       genericRouteUrl: any;
       swrRequestKey?: undefined;
-      getSwrRequestKey: (params, to?) => string;
+      getSwrRequestKey: (params, href?) => string;
     };
 
 export type IResolvedPrefetchRoute = {

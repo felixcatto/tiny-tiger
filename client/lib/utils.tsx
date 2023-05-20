@@ -58,12 +58,12 @@ export const useMergeState: IUseMergeState = initialState => {
   return [state, setImmerState];
 };
 
-const usePrefetch = to => {
+const usePrefetch = href => {
   const { mutate, cache } = useSWRConfig();
   const { axios, actions } = useContext();
   const prefetchRoutesStates = useSelector(state => state.prefetchRoutesStates);
 
-  const prefetchRoute = getPrefetchRouteByHref(to);
+  const prefetchRoute = getPrefetchRouteByHref(href);
   const swrRequestKey = prefetchRoute?.swrRequestKey;
 
   let prefetchState: IAsyncState;
@@ -97,17 +97,14 @@ const usePrefetch = to => {
   };
 };
 
-export const PrefetchLink = ({ to, children, className = '' }) => {
-  const { onMouseEnter, isRoutePrefetched } = usePrefetch(to);
+export const PrefetchLink = ({ href, children, className = '' }) => {
+  const { onMouseEnter, isRoutePrefetched } = usePrefetch(href);
   const [_, navigate] = useLocation();
 
   const onClick = async () => {
-    if (isRoutePrefetched) {
-      navigate(to);
-    } else {
-      await new Promise(resolve => setTimeout(resolve, 200));
-      navigate(to);
-    }
+    if (!isRoutePrefetched) await new Promise(resolve => setTimeout(resolve, 200));
+
+    navigate(href);
   };
 
   return (
@@ -117,14 +114,15 @@ export const PrefetchLink = ({ to, children, className = '' }) => {
   );
 };
 
-export const NavLink = ({ to, children }) => {
+export const NavLink = ({ href, children }) => {
   const [pathname] = useLocation();
   const className = cn('nav-link', {
-    'nav-link_active': (to !== '/' && pathname.startsWith(to)) || (to === '/' && pathname === '/'),
+    'nav-link_active':
+      (href !== '/' && pathname.startsWith(href)) || (href === '/' && pathname === '/'),
   });
 
   return (
-    <PrefetchLink to={to} className={className}>
+    <PrefetchLink href={href} className={className}>
       {children}
     </PrefetchLink>
   );

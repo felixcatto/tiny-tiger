@@ -41,7 +41,7 @@ const Login = () => {
               </div>
 
               <div>
-                <Link to={getUrl('home')} className="mr-3">
+                <Link href={getUrl('home')} className="mr-3">
                   Cancel
                 </Link>
                 <SubmitBtn className="btn btn_primary">Sign in</SubmitBtn>

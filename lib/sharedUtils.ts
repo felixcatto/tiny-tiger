@@ -64,7 +64,7 @@ export const prefetchRoutes = keyBy(
   'genericRouteUrl'
 ) as Record<string, IPrefetchRoute>;
 
-export const getPrefetchRouteByHref = to => {
+export const getPrefetchRouteByHref = href => {
   let prefetchRoute = null as IResolvedPrefetchRoute | null;
   const routes = Object.values(prefetchRoutes);
 
@@ -73,17 +73,17 @@ export const getPrefetchRouteByHref = to => {
     const isRouteDynamic = testRoute.getSwrRequestKey;
 
     if (isRouteDynamic) {
-      const isMatched = match(testRoute.genericRouteUrl)(to);
+      const isMatched = match(testRoute.genericRouteUrl)(href);
       if (isMatched) {
         prefetchRoute = {
           genericRouteUrl: testRoute.genericRouteUrl,
-          swrRequestKey: testRoute.getSwrRequestKey(isMatched.params, to),
+          swrRequestKey: testRoute.getSwrRequestKey(isMatched.params, href),
           params: isMatched.params,
         };
         break;
       }
     } else {
-      const isMatched = testRoute.genericRouteUrl === to;
+      const isMatched = testRoute.genericRouteUrl === href;
       if (isMatched) {
         prefetchRoute = { ...testRoute, params: {} };
         break;

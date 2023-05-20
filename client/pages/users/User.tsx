@@ -15,7 +15,7 @@ export const User = () => {
     <Layout>
       <div className="mb-3 flex items-center">
         <div>userId: {userId}</div>
-        <Link to={getUrl('users')} className="btn btn_sm ml-3">
+        <Link href={getUrl('users')} className="btn btn_sm ml-3">
           Back
         </Link>
       </div>

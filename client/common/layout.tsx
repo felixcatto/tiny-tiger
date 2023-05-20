@@ -24,8 +24,8 @@ const Layout = ({ children }: any) => {
           <div className="flex items-center">
             <img src="/img/tiger3.webp" className={cn('mr-7', s.logo)} />
             <div className="flex">
-              <NavLink to={getUrl('home')}>Todolist</NavLink>
-              <NavLink to={getUrl('users')}>Users</NavLink>
+              <NavLink href={getUrl('home')}>Todolist</NavLink>
+              <NavLink href={getUrl('users')}>Users</NavLink>
             </div>
           </div>
           {isSignedIn ? (
@@ -41,7 +41,7 @@ const Layout = ({ children }: any) => {
               ></i>
             </div>
           ) : (
-            <Link to={getUrl('newSession')} className={s.signIn}>
+            <Link href={getUrl('newSession')} className={s.signIn}>
               <div className={s.signInText}>Sign In</div>
               <i className={cn('fa fa-sign-in-alt', s.signIcon)} title="Sign in"></i>
             </Link>
