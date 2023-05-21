@@ -4,15 +4,15 @@ import { Provider } from 'react-redux';
 import { SWRConfig } from 'swr';
 import { Route, Switch } from 'wouter';
 import { IContext, IUser } from '../../lib/types.js';
+import { makeThunks, reduxActions } from '../globalStore/actions.js';
+import { makeReducers } from '../globalStore/reducers.js';
+import { bindActions } from '../globalStore/utils.js';
 import Context from '../lib/context.js';
 import { getUrl, routes } from '../lib/utils.js';
 import Login from '../pages/session/Login.js';
 import TodoList from '../pages/todoList/Todolist.js';
 import { User } from '../pages/users/User.jsx';
 import { Users } from '../pages/users/Users.js';
-import { makeThunks, reduxActions } from '../redux/actions.js';
-import * as makeReducers from '../redux/reducers.js';
-import { bindActions } from '../redux/utils.js';
 
 type IAppProps = {
   initialState: {
@@ -47,16 +47,16 @@ export const App = (props: IAppProps) => {
   const reduxThunks = makeThunks({ axios, actions: reduxActions });
   const actions = { ...reduxActions, ...reduxThunks };
 
-  const { makeCurUserReducer } = makeReducers;
+  const { currentUser: makeCurUserReducer } = makeReducers;
   const reducers = Object.keys(makeReducers).reduce((acc, key) => {
     const makeReducerFn = makeReducers[key];
-    return { ...acc, [makeReducerFn.key]: makeReducerFn(actions) };
+    return { ...acc, [key]: makeReducerFn(actions) };
   }, {});
 
   const reduxStore = configureStore({
     reducer: {
       ...reducers,
-      [makeCurUserReducer.key]: makeCurUserReducer(actions, currentUser),
+      currentUser: makeCurUserReducer(actions, currentUser),
     },
   });
 

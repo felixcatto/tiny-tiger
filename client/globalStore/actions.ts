@@ -1,6 +1,6 @@
 import { isNull } from 'lodash-es';
 import {
-    IAsyncState,
+  IAsyncState,
   IAxiosInstance,
   INotification,
   IReduxActions,
@@ -17,7 +17,7 @@ type IMakeThunksOpts = {
 export const reduxActions = {
   signIn: createAction<IUser>(),
   signOut: createAction<IUser>(),
-  setRoutePrefetchState: createAction<{ swrRequestKey: string, state: IAsyncState }>(),
+  setRoutePrefetchState: createAction<{ swrRequestKey: string; state: IAsyncState }>(),
   addNotificationMount: createAction<INotification>(),
   addNotificationAnimationStart: createAction<INotification>(),
   removeNotificationAnimationStart: createAction<string>(),
@@ -37,7 +37,7 @@ export const makeThunks = ({ actions }: IMakeThunksOpts) => {
   return {
     removeNotification,
     addNotification: createAsyncThunk<void, INotification>(async (notification, api) => {
-      const { autoremoveTimeout } = notification;
+      const { autoremoveTimeout, id } = notification;
       api.dispatch(actions.addNotificationMount(notification));
 
       await new Promise(resolve => setTimeout(resolve, 50));
@@ -45,6 +45,10 @@ export const makeThunks = ({ actions }: IMakeThunksOpts) => {
 
       if (isNull(autoremoveTimeout)) return;
       await new Promise(resolve => setTimeout(resolve, autoremoveTimeout));
+      const { notifications } = api.getState() as IReduxState;
+      const isAlreadyRemoved = !notifications.find(el => el.id === id);
+      if (isAlreadyRemoved) return;
+
       await api.dispatch(removeNotification(notification.id));
     }),
   };

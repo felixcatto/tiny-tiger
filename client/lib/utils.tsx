@@ -31,7 +31,7 @@ import {
   IUseTable,
   IUseTableState,
 } from '../../lib/types.js';
-import { useSelector } from '../redux/utils.js';
+import { useSelector } from '../globalStore/utils.js';
 import Context from './context.js';
 
 export * from '../../lib/sharedUtils.js';

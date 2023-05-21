@@ -1,8 +1,15 @@
 import cn from 'classnames';
-import { useSelector } from 'react-redux';
 import { Link } from 'wouter';
-import { NavLink, getApiUrl, getUrl, popoverRootId, useContext, userRolesToIcons } from '../lib/utils.js';
-import { selectSession } from '../redux/selectors.js';
+import { selectSession } from '../globalStore/reducers.js';
+import { useSelector } from '../globalStore/utils.js';
+import {
+  NavLink,
+  getApiUrl,
+  getUrl,
+  popoverRootId,
+  useContext,
+  userRolesToIcons,
+} from '../lib/utils.js';
 import { Notifications } from '../ui/Notifications.jsx';
 import s from './layout.module.css';
 

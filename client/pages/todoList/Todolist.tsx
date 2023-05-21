@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 import useSWR from 'swr';
 import { IGetTodosResponse, ITodo } from '../../../lib/types.js';
 import Layout from '../../common/layout.js';
+import { selectSession } from '../../globalStore/reducers.js';
 import {
   ErrorMessage,
   Field,
@@ -17,7 +18,6 @@ import {
   useSubmit,
   useTable,
 } from '../../lib/utils.js';
-import { selectSession } from '../../redux/selectors.js';
 import { HeaderCell } from '../../ui/HeaderCell.js';
 import { makeNotification } from '../../ui/Notifications.jsx';
 import { Pagination } from '../../ui/Pagination.js';

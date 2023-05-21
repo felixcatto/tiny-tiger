@@ -2,7 +2,7 @@ import cn from 'classnames';
 import { uniqueId } from 'lodash-es';
 import React from 'react';
 import { IMakeNotification } from '../../lib/types.js';
-import { useSelector } from '../redux/utils.js';
+import { useSelector } from '../globalStore/utils.js';
 import { getCssValue, useContext } from '../lib/utils.jsx';
 import s from './Notifications.module.css';
 

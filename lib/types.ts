@@ -4,10 +4,10 @@ import { FastifyInstance, FastifyReply } from 'fastify';
 import { FormikHelpers } from 'formik';
 import { Knex } from 'knex';
 import * as y from 'yup';
+import { makeThunks, reduxActions } from '../client/globalStore/actions.js';
+import { makeReducers } from '../client/globalStore/reducers.js';
 import { Query } from '../client/gqlTypes/graphql.js';
 import { selectedRowsStates } from '../client/lib/utils.jsx';
-import { makeThunks, reduxActions } from '../client/redux/actions.js';
-import * as reducers from '../client/redux/reducers.js';
 import * as models from '../models/index.js';
 import {
   Todo,
@@ -152,14 +152,12 @@ export type IBindedThunks = {
   [K in keyof IReduxThunks]: (...args: IThunkArg<IReduxThunks[K]>) => IThunkReturn<IReduxThunks[K]>;
 };
 
-type IReducers = typeof reducers;
+type IReducers = typeof makeReducers;
 export type IActions = IReduxActions & IReduxThunks;
 export type IBindedActions = IReduxActions & IBindedThunks;
 
 export type IReduxState = {
-  [Key in keyof IReducers as IReducers[Key]['key']]: ReturnType<
-    ReturnType<IReducers[Key]>['getInitialState']
-  >;
+  [Key in keyof IReducers]: ReturnType<ReturnType<IReducers[Key]>['getInitialState']>;
 };
 
 type BaseThunkAPI<S, E> = {
