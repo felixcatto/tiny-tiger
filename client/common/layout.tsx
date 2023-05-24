@@ -1,7 +1,6 @@
 import cn from 'classnames';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { Link } from 'wouter';
-import { selectSession } from '../globalStore/reducers.js';
-import { useSelector } from '../globalStore/utils.js';
 import {
   NavLink,
   getApiUrl,
@@ -14,12 +13,13 @@ import { Notifications } from '../ui/Notifications.jsx';
 import s from './layout.module.css';
 
 const Layout = ({ children }: any) => {
-  const { actions, axios } = useContext();
-  const { currentUser, isSignedIn } = useSelector(selectSession);
+  const { axios, sessionAtom, currentUserAtom } = useContext();
+  const { currentUser, isSignedIn } = useAtomValue(sessionAtom);
+  const setCurrentUser = useSetAtom(currentUserAtom);
 
   const signOut = async () => {
     const user = await axios.delete(getApiUrl('session'));
-    actions.signOut(user);
+    setCurrentUser(user);
   };
 
   const userIconClass = role => cn(s.userRoleIcon, 'mr-1', userRolesToIcons[role]);

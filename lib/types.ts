@@ -1,11 +1,11 @@
-import { createAsyncThunk } from '@reduxjs/toolkit';
 import { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { FastifyInstance, FastifyReply } from 'fastify';
 import { FormikHelpers } from 'formik';
+import { WritableAtom } from 'jotai';
 import { Knex } from 'knex';
 import * as y from 'yup';
-import { makeThunks, reduxActions } from '../client/globalStore/actions.js';
-import { makeReducers } from '../client/globalStore/reducers.js';
+import makeActions from '../client/globalStore/actions.js';
+import { makeAtoms, makeComputed } from '../client/globalStore/atoms.js';
 import { Query } from '../client/gqlTypes/graphql.js';
 import { selectedRowsStates } from '../client/lib/utils.jsx';
 import * as models from '../models/index.js';
@@ -143,42 +143,24 @@ export type IValidate = <T = any>(
 export type IPayloadTypes = 'query' | 'body';
 export type IValidateMW = (schema, payloadType?: IPayloadTypes) => (req, res) => any;
 
-type IAnyFn = (...args: any) => any;
-type IThunkArg<T extends IAnyFn> = Parameters<T>;
-type IThunkReturn<T extends IAnyFn> = ReturnType<ReturnType<ReturnType<T>>['unwrap']>;
-export type IReduxActions = typeof reduxActions;
-export type IReduxThunks = ReturnType<typeof makeThunks>;
-export type IBindedThunks = {
-  [K in keyof IReduxThunks]: (...args: IThunkArg<IReduxThunks[K]>) => IThunkReturn<IReduxThunks[K]>;
+type IMakeAtoms = typeof makeAtoms;
+type IMakeComputed = typeof makeComputed;
+type IMakeActions = typeof makeActions;
+
+export type IJotaiAtoms = {
+  [Key in keyof IMakeAtoms]: ReturnType<IMakeAtoms[Key]>;
 };
 
-type IReducers = typeof makeReducers;
-export type IActions = IReduxActions & IReduxThunks;
-export type IBindedActions = IReduxActions & IBindedThunks;
+export type IJotaiComputed = ReturnType<IMakeComputed>;
 
-export type IReduxState = {
-  [Key in keyof IReducers]: ReturnType<ReturnType<IReducers[Key]>['getInitialState']>;
-};
+export type IJotaiActions = ReturnType<IMakeActions>;
 
-type BaseThunkAPI<S, E> = {
-  dispatch: any;
-  getState: () => S;
-  extra: E;
-  requestId: string;
-  signal: AbortSignal;
-  abort: (reason?: string) => void;
-  rejectWithValue: any;
-  fulfillWithValue: any;
-};
-
-export type ICreateAsyncThunk = <TReturn = void, TThunkArg = void>(
-  thunkFn: (arg: TThunkArg, thunkAPI: BaseThunkAPI<any, any>) => Promise<any>
-) => ReturnType<typeof createAsyncThunk<TReturn, TThunkArg>>;
+export type IJotaiState = IJotaiAtoms & IJotaiComputed;
 
 export type IContext = {
   axios: IAxiosInstance;
-  actions: IBindedActions;
-};
+} & IJotaiState &
+  IJotaiActions;
 
 export type IGetTodosResponse = {
   rows: ITodo[];
@@ -383,3 +365,13 @@ export type IResolvedPrefetchRoute = {
   swrRequestKey: string;
   params: object;
 };
+
+type IAsyncAtomState<T> = {
+  data: T;
+  state: IAsyncState;
+  errors?: Record<string, any>;
+};
+
+export type IMakeAsyncAtom = <T>(
+  initialData: T
+) => WritableAtom<IAsyncAtomState<T>, (() => Promise<void>)[], Promise<void>>;

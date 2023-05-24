@@ -1,4 +1,5 @@
 import { Form, Formik } from 'formik';
+import { useSetAtom } from 'jotai';
 import { Link, useLocation } from 'wouter';
 import { IUser, IUserLoginCreds } from '../../../lib/types.js';
 import Layout from '../../common/layout.js';
@@ -14,12 +15,13 @@ import {
 } from '../../lib/utils.js';
 
 const Login = () => {
-  const { actions, axios } = useContext();
+  const { axios, currentUserAtom } = useContext();
   const [_, navigate] = useLocation();
+  const setCurrentUser = useSetAtom(currentUserAtom);
 
   const onSubmit = useSubmit(async (userCreds: IUserLoginCreds) => {
     const user = await axios.post<IUser>(getApiUrl('session'), userCreds);
-    actions.signIn(user);
+    setCurrentUser(user);
     navigate(getUrl('home'));
   });
 

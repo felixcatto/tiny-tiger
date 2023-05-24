@@ -1,11 +1,10 @@
 import cn from 'classnames';
 import { Form, Formik } from 'formik';
+import { useAtomValue, useSetAtom } from 'jotai';
 import React from 'react';
-import { useSelector } from 'react-redux';
 import useSWR from 'swr';
 import { IGetTodosResponse, ITodo } from '../../../lib/types.js';
 import Layout from '../../common/layout.js';
-import { selectSession } from '../../globalStore/reducers.js';
 import {
   ErrorMessage,
   Field,
@@ -24,8 +23,9 @@ import { Pagination } from '../../ui/Pagination.js';
 import s from './styles.module.css';
 
 const TodoList = () => {
-  const { isSignedIn } = useSelector(selectSession);
-  const { actions, axios } = useContext();
+  const { axios, sessionAtom, addNotificationAtom } = useContext();
+  const { isSignedIn } = useAtomValue(sessionAtom);
+  const addNotification = useSetAtom(addNotificationAtom);
 
   const { page, size, sortBy, sortOrder, filters, paginationProps, headerCellProps } = useTable({
     page: 0,
@@ -63,11 +63,11 @@ const TodoList = () => {
     if (editingTodo) {
       await axios.put(getApiUrl('todo', { id: editingTodo.id }), { text: values.text });
       // await gqlRequest<MutationPutTodosArgs>(putTodos, { ...values, id: editingTodo.id });
-      actions.addNotification(makeNotification({ title: 'Todo', text: 'Edited successfully' }));
+      addNotification(makeNotification({ title: 'Todo', text: 'Edited successfully' }));
     } else {
       await axios.post(getApiUrl('todos'), values);
       // await gqlRequest<MutationPostTodosArgs>(postTodos, values);
-      actions.addNotification(makeNotification({ title: 'Todo', text: 'Created successfully' }));
+      addNotification(makeNotification({ title: 'Todo', text: 'Created successfully' }));
     }
     fmActions.resetForm();
     mutate();

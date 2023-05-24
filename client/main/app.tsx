@@ -1,12 +1,10 @@
-import { configureStore } from '@reduxjs/toolkit';
 import originalAxios from 'axios';
-import { Provider } from 'react-redux';
+import { Provider } from 'jotai';
 import { SWRConfig } from 'swr';
 import { Route, Switch } from 'wouter';
-import { IContext, IUser } from '../../lib/types.js';
-import { makeThunks, reduxActions } from '../globalStore/actions.js';
-import { makeReducers } from '../globalStore/reducers.js';
-import { bindActions } from '../globalStore/utils.js';
+import { IContext, IJotaiAtoms, IUser } from '../../lib/types.js';
+import makeActions from '../globalStore/actions.js';
+import { makeAtoms, makeComputed } from '../globalStore/atoms.js';
 import Context from '../lib/context.js';
 import { getUrl, routes } from '../lib/utils.js';
 import Login from '../pages/session/Login.js';
@@ -44,29 +42,20 @@ export const App = (props: IAppProps) => {
     fallback,
   };
 
-  const reduxThunks = makeThunks({ axios, actions: reduxActions });
-  const actions = { ...reduxActions, ...reduxThunks };
+  const atoms = Object.keys(makeAtoms).reduce((acc, key) => {
+    const makeFn = makeAtoms[key];
+    return { ...acc, [key]: makeFn() };
+  }, {} as IJotaiAtoms);
 
-  const { currentUser: makeCurUserReducer } = makeReducers;
-  const reducers = Object.keys(makeReducers).reduce((acc, key) => {
-    const makeReducerFn = makeReducers[key];
-    return { ...acc, [key]: makeReducerFn(actions) };
-  }, {});
+  atoms['currentUserAtom'] = makeAtoms.currentUserAtom(currentUser);
 
-  const reduxStore = configureStore({
-    reducer: {
-      ...reducers,
-      currentUser: makeCurUserReducer(actions, currentUser),
-    },
-  });
+  const computed = makeComputed(atoms);
+  const actions = makeActions({ ...atoms, ...computed });
 
-  const contextStore: IContext = {
-    axios,
-    actions: bindActions(reduxActions, reduxThunks, reduxStore.dispatch),
-  };
+  const contextStore: IContext = { axios, ...atoms, ...computed, ...actions };
 
   return (
-    <Provider store={reduxStore}>
+    <Provider>
       <Context.Provider value={contextStore}>
         <SWRConfig value={swrConfig}>
           <Switch>

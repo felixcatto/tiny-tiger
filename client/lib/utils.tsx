@@ -3,6 +3,7 @@ import cn from 'classnames';
 import { useFormikContext } from 'formik';
 import { Variables, request } from 'graphql-request';
 import produce from 'immer';
+import { atom, useAtom } from 'jotai';
 import { get, isEmpty, isFunction, isNull, isNumber, keyBy, omit, orderBy } from 'lodash-es';
 import React from 'react';
 import { createPortal } from 'react-dom';
@@ -23,6 +24,7 @@ import {
   IContext,
   IFilter,
   IGetFSPQuery,
+  IMakeAsyncAtom,
   IMixedFilter,
   ISortOrder,
   IUseMergeState,
@@ -31,7 +33,6 @@ import {
   IUseTable,
   IUseTableState,
 } from '../../lib/types.js';
-import { useSelector } from '../globalStore/utils.js';
 import Context from './context.js';
 
 export * from '../../lib/sharedUtils.js';
@@ -60,8 +61,8 @@ export const useMergeState: IUseMergeState = initialState => {
 
 const usePrefetch = href => {
   const { mutate, cache } = useSWRConfig();
-  const { axios, actions } = useContext();
-  const prefetchRoutesStates = useSelector(state => state.prefetchRoutesStates);
+  const { axios, prefetchRoutesStatesAtom } = useContext();
+  const [prefetchRoutesStates, setPrefetchRoutesStates] = useAtom(prefetchRoutesStatesAtom);
 
   const prefetchRoute = getPrefetchRouteByHref(href);
   const swrRequestKey = prefetchRoute?.swrRequestKey;
@@ -83,12 +84,16 @@ const usePrefetch = href => {
     if (!swrRequestKey) return;
     if (prefetchState !== asyncStates.idle) return;
 
-    actions.setRoutePrefetchState({ swrRequestKey, state: asyncStates.pending });
+    setPrefetchRoutesStates(state => {
+      state[swrRequestKey] = asyncStates.pending;
+    });
     await mutate(swrRequestKey, async () => axios.get(swrRequestKey), {
       revalidate: false,
       populateCache: true,
     });
-    actions.setRoutePrefetchState({ swrRequestKey, state: asyncStates.resolved });
+    setPrefetchRoutesStates(state => {
+      state[swrRequestKey] = asyncStates.resolved;
+    });
   };
 
   return {
@@ -401,3 +406,34 @@ export const useGql = <TResponse = any, TVariables = any>(query, variables?: TVa
   useSWR<TResponse>({ query, variables }, fetcher);
 
 export const selectedRowsStates = makeEnum('all', 'none', 'partially');
+
+export const makeAsyncAtom: IMakeAsyncAtom = initialData => {
+  const initialState = {
+    data: initialData,
+    state: asyncStates.idle,
+  };
+
+  const asyncAtom = atom(initialState, async (get, set, asyncFn: any) => {
+    const pendingStateData = get(asyncAtom).data;
+    set(asyncAtom, {
+      data: pendingStateData,
+      state: asyncStates.pending,
+    });
+
+    try {
+      const data = await asyncFn();
+      set(asyncAtom, {
+        data,
+        state: asyncStates.resolved,
+      });
+    } catch (e) {
+      set(asyncAtom, {
+        data: pendingStateData,
+        state: asyncStates.rejected,
+        errors: e.response.data,
+      });
+    }
+  });
+
+  return asyncAtom;
+};
