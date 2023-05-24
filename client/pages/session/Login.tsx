@@ -10,16 +10,18 @@ import {
   getApiUrl,
   getUrl,
   useContext,
+  useSetGlobalState,
   useSubmit,
 } from '../../lib/utils.js';
 
 const Login = () => {
-  const { actions, axios } = useContext();
+  const { axios } = useContext();
+  const setGlobalState = useSetGlobalState();
   const [_, navigate] = useLocation();
 
   const onSubmit = useSubmit(async (userCreds: IUserLoginCreds) => {
     const user = await axios.post<IUser>(getApiUrl('session'), userCreds);
-    actions.signIn(user);
+    setGlobalState({ currentUser: user });
     navigate(getUrl('home'));
   });
 

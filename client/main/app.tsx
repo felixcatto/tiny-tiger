@@ -1,18 +1,17 @@
-import { configureStore } from '@reduxjs/toolkit';
 import originalAxios from 'axios';
-import { Provider } from 'react-redux';
 import { SWRConfig } from 'swr';
 import { Route, Switch } from 'wouter';
+import { create } from 'zustand';
+import { immer } from 'zustand/middleware/immer';
 import { IContext, IUser } from '../../lib/types.js';
-import { makeThunks, reduxActions } from '../globalStore/actions.js';
-import { makeReducers } from '../globalStore/reducers.js';
-import { bindActions } from '../globalStore/utils.js';
+import { storeSlice } from '../globalStore/store.js';
 import Context from '../lib/context.js';
 import { getUrl, routes } from '../lib/utils.js';
 import Login from '../pages/session/Login.js';
 import TodoList from '../pages/todoList/Todolist.js';
 import { User } from '../pages/users/User.jsx';
 import { Users } from '../pages/users/Users.js';
+import makeActions from '../globalStore/actions.js';
 
 type IAppProps = {
   initialState: {
@@ -44,39 +43,32 @@ export const App = (props: IAppProps) => {
     fallback,
   };
 
-  const reduxThunks = makeThunks({ axios, actions: reduxActions });
-  const actions = { ...reduxActions, ...reduxThunks };
-
-  const { currentUser: makeCurUserReducer } = makeReducers;
-  const reducers = Object.keys(makeReducers).reduce((acc, key) => {
-    const makeReducerFn = makeReducers[key];
-    return { ...acc, [key]: makeReducerFn(actions) };
+  const store = Object.keys(storeSlice).reduce((acc, key) => {
+    const makeFn = storeSlice[key];
+    return { ...acc, [key]: makeFn() };
   }, {});
 
-  const reduxStore = configureStore({
-    reducer: {
-      ...reducers,
-      currentUser: makeCurUserReducer(actions, currentUser),
-    },
-  });
+  const useStore = create<any>(
+    immer((set, get) => ({
+      setGlobalState: set,
+      ...makeActions(set, get),
+      ...store,
+      currentUser: storeSlice.currentUser(currentUser),
+    }))
+  );
 
-  const contextStore: IContext = {
-    axios,
-    actions: bindActions(reduxActions, reduxThunks, reduxStore.dispatch),
-  };
+  const contextStore: IContext = { axios, useStore };
 
   return (
-    <Provider store={reduxStore}>
-      <Context.Provider value={contextStore}>
-        <SWRConfig value={swrConfig}>
-          <Switch>
-            <Route path={routes.home} component={TodoList} />
-            <Route path={routes.newSession} component={Login} />
-            <Route path={routes.users} component={Users} />
-            <Route path={routes.user} component={User} />
-          </Switch>
-        </SWRConfig>
-      </Context.Provider>
-    </Provider>
+    <Context.Provider value={contextStore}>
+      <SWRConfig value={swrConfig}>
+        <Switch>
+          <Route path={routes.home} component={TodoList} />
+          <Route path={routes.newSession} component={Login} />
+          <Route path={routes.users} component={Users} />
+          <Route path={routes.user} component={User} />
+        </Switch>
+      </SWRConfig>
+    </Context.Provider>
   );
 };

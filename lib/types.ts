@@ -1,11 +1,12 @@
-import { createAsyncThunk } from '@reduxjs/toolkit';
 import { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { FastifyInstance, FastifyReply } from 'fastify';
 import { FormikHelpers } from 'formik';
+import { Draft } from 'immer';
 import { Knex } from 'knex';
 import * as y from 'yup';
-import { makeThunks, reduxActions } from '../client/globalStore/actions.js';
-import { makeReducers } from '../client/globalStore/reducers.js';
+import { StoreApi, UseBoundStore } from 'zustand';
+import makeActions from '../client/globalStore/actions.js';
+import { storeSlice } from '../client/globalStore/store.js';
 import { Query } from '../client/gqlTypes/graphql.js';
 import { selectedRowsStates } from '../client/lib/utils.jsx';
 import * as models from '../models/index.js';
@@ -143,41 +144,24 @@ export type IValidate = <T = any>(
 export type IPayloadTypes = 'query' | 'body';
 export type IValidateMW = (schema, payloadType?: IPayloadTypes) => (req, res) => any;
 
+type IRawStoreSlice = typeof storeSlice;
+export type IStoreSlice = {
+  [key in keyof IRawStoreSlice]: ReturnType<IRawStoreSlice[key]>;
+};
+
+export type IActions = ReturnType<typeof makeActions>;
+
+type ISetStateUpdateFn = (state: Draft<IStoreSlice>) => Partial<IStoreSlice> | void;
+export type ISetGlobalState = (arg: Partial<IStoreSlice> | ISetStateUpdateFn) => void;
+export type IGetGlobalState = () => IStoreSlice & IActions;
+
+export type IStore = IStoreSlice & IActions & { setGlobalState: ISetGlobalState };
+
 type IAnyFn = (...args: any) => any;
-type IThunkArg<T extends IAnyFn> = Parameters<T>;
-type IThunkReturn<T extends IAnyFn> = ReturnType<ReturnType<ReturnType<T>>['unwrap']>;
-export type IReduxActions = typeof reduxActions;
-export type IReduxThunks = ReturnType<typeof makeThunks>;
-export type IBindedThunks = {
-  [K in keyof IReduxThunks]: (...args: IThunkArg<IReduxThunks[K]>) => IThunkReturn<IReduxThunks[K]>;
-};
-
-type IReducers = typeof makeReducers;
-export type IActions = IReduxActions & IReduxThunks;
-export type IBindedActions = IReduxActions & IBindedThunks;
-
-export type IReduxState = {
-  [Key in keyof IReducers]: ReturnType<ReturnType<IReducers[Key]>['getInitialState']>;
-};
-
-type BaseThunkAPI<S, E> = {
-  dispatch: any;
-  getState: () => S;
-  extra: E;
-  requestId: string;
-  signal: AbortSignal;
-  abort: (reason?: string) => void;
-  rejectWithValue: any;
-  fulfillWithValue: any;
-};
-
-export type ICreateAsyncThunk = <TReturn = void, TThunkArg = void>(
-  thunkFn: (arg: TThunkArg, thunkAPI: BaseThunkAPI<any, any>) => Promise<any>
-) => ReturnType<typeof createAsyncThunk<TReturn, TThunkArg>>;
 
 export type IContext = {
   axios: IAxiosInstance;
-  actions: IBindedActions;
+  useStore: UseBoundStore<StoreApi<IStore>>;
 };
 
 export type IGetTodosResponse = {

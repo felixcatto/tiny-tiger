@@ -1,55 +1,39 @@
 import { isNull } from 'lodash-es';
-import {
-  IAsyncState,
-  IAxiosInstance,
-  INotification,
-  IReduxActions,
-  IReduxState,
-  IUser,
-} from '../../lib/types.js';
-import { createAction, createAsyncThunk } from './utils.js';
+import { IGetGlobalState, INotification, ISetGlobalState } from '../../lib/types.js';
 
-type IMakeThunksOpts = {
-  axios: IAxiosInstance;
-  actions: IReduxActions;
-};
+const makeActions = (set: ISetGlobalState, get: IGetGlobalState) => ({
+  removeNotification: async id => {
+    set(state => {
+      const item = state.notifications.find(el => el.id === id);
+      if (!item) return;
+      item.isHidden = true;
+      item.isInverseAnimation = true;
+    });
 
-export const reduxActions = {
-  signIn: createAction<IUser>(),
-  signOut: createAction<IUser>(),
-  setRoutePrefetchState: createAction<{ swrRequestKey: string; state: IAsyncState }>(),
-  addNotificationMount: createAction<INotification>(),
-  addNotificationAnimationStart: createAction<INotification>(),
-  removeNotificationAnimationStart: createAction<string>(),
-  removeNotificationUnmount: createAction<string>(),
-  setNotificationAnimationDuration: createAction<number>(),
-};
-
-export const makeThunks = ({ actions }: IMakeThunksOpts) => {
-  const removeNotification = createAsyncThunk<void, string>(async (id, api) => {
-    api.dispatch(actions.removeNotificationAnimationStart(id));
-
-    const { notificationAnimationDuration } = api.getState() as IReduxState;
+    const { notificationAnimationDuration } = get();
     await new Promise(resolve => setTimeout(resolve, notificationAnimationDuration));
-    api.dispatch(actions.removeNotificationUnmount(id));
-  });
+    set(state => ({ notifications: state.notifications.filter(el => el.id !== id) }));
+  },
 
-  return {
-    removeNotification,
-    addNotification: createAsyncThunk<void, INotification>(async (notification, api) => {
-      const { autoremoveTimeout, id } = notification;
-      api.dispatch(actions.addNotificationMount(notification));
+  addNotification: async (newNotification: INotification) => {
+    const { autoremoveTimeout, id } = newNotification;
+    set(state => ({ notifications: [newNotification].concat(state.notifications) }));
 
-      await new Promise(resolve => setTimeout(resolve, 50));
-      api.dispatch(actions.addNotificationAnimationStart(notification));
+    await new Promise(resolve => setTimeout(resolve, 50));
+    set(state => {
+      const item = state.notifications.find(el => el.id === newNotification.id);
+      if (!item) return;
+      item.isHidden = false;
+    });
 
-      if (isNull(autoremoveTimeout)) return;
-      await new Promise(resolve => setTimeout(resolve, autoremoveTimeout));
-      const { notifications } = api.getState() as IReduxState;
-      const isAlreadyRemoved = !notifications.find(el => el.id === id);
-      if (isAlreadyRemoved) return;
+    if (isNull(autoremoveTimeout)) return;
+    await new Promise(resolve => setTimeout(resolve, autoremoveTimeout));
+    const { notifications, removeNotification } = get();
+    const isAlreadyRemoved = !notifications.find(el => el.id === id);
+    if (isAlreadyRemoved) return;
 
-      await api.dispatch(removeNotification(notification.id));
-    }),
-  };
-};
+    removeNotification(id);
+  },
+});
+
+export default makeActions;

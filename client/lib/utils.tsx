@@ -31,7 +31,6 @@ import {
   IUseTable,
   IUseTableState,
 } from '../../lib/types.js';
-import { useSelector } from '../globalStore/utils.js';
 import Context from './context.js';
 
 export * from '../../lib/sharedUtils.js';
@@ -60,8 +59,9 @@ export const useMergeState: IUseMergeState = initialState => {
 
 const usePrefetch = href => {
   const { mutate, cache } = useSWRConfig();
-  const { axios, actions } = useContext();
-  const prefetchRoutesStates = useSelector(state => state.prefetchRoutesStates);
+  const { axios, useStore } = useContext();
+  const setGlobalState = useSetGlobalState();
+  const prefetchRoutesStates = useStore(state => state.prefetchRoutesStates);
 
   const prefetchRoute = getPrefetchRouteByHref(href);
   const swrRequestKey = prefetchRoute?.swrRequestKey;
@@ -83,12 +83,16 @@ const usePrefetch = href => {
     if (!swrRequestKey) return;
     if (prefetchState !== asyncStates.idle) return;
 
-    actions.setRoutePrefetchState({ swrRequestKey, state: asyncStates.pending });
+    setGlobalState(state => {
+      state.prefetchRoutesStates[swrRequestKey] = asyncStates.pending;
+    });
     await mutate(swrRequestKey, async () => axios.get(swrRequestKey), {
       revalidate: false,
       populateCache: true,
     });
-    actions.setRoutePrefetchState({ swrRequestKey, state: asyncStates.resolved });
+    setGlobalState(state => {
+      state.prefetchRoutesStates[swrRequestKey] = asyncStates.resolved;
+    });
   };
 
   return {
@@ -401,3 +405,8 @@ export const useGql = <TResponse = any, TVariables = any>(query, variables?: TVa
   useSWR<TResponse>({ query, variables }, fetcher);
 
 export const selectedRowsStates = makeEnum('all', 'none', 'partially');
+
+export const useSetGlobalState = () => {
+  const { useStore } = useContext();
+  return useStore(state => state.setGlobalState);
+};

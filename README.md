@@ -1,6 +1,6 @@
 # Description
 
-SPA app using fastify + react + redux + postgress + objection orm. Yet another todolist :smile:. Also have users and authentification.
+SPA app using fastify + react + postgress + objection orm. Yet another todolist :smile:. Also have users and authentification.
 
 ### Features
 

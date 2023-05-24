@@ -2,19 +2,20 @@ import cn from 'classnames';
 import { uniqueId } from 'lodash-es';
 import React from 'react';
 import { IMakeNotification } from '../../lib/types.js';
-import { useSelector } from '../globalStore/utils.js';
-import { getCssValue, useContext } from '../lib/utils.jsx';
+import { getCssValue, useContext, useSetGlobalState } from '../lib/utils.jsx';
 import s from './Notifications.module.css';
 
 export const Notifications = () => {
-  const { actions } = useContext();
-  const notifications = useSelector(state => state.notifications);
+  const { useStore } = useContext();
+  const setGlobalState = useSetGlobalState();
+  const notifications = useStore(state => state.notifications);
+  const removeNotification = useStore(state => state.removeNotification);
 
   React.useEffect(() => {
     const rootStyles = getComputedStyle(document.querySelector(`.${s.root}`)!);
     const animationDuration =
       getCssValue(rootStyles.getPropertyValue('--animationDuration')) * 1000;
-    actions.setNotificationAnimationDuration(animationDuration);
+    setGlobalState({ notificationAnimationDuration: animationDuration });
   }, []);
 
   return (
@@ -34,7 +35,7 @@ export const Notifications = () => {
           </div>
           <i
             className="far fa-circle-xmark fa_big fa_link text-lg ml-2"
-            onClick={() => actions.removeNotification(el.id)}
+            onClick={() => removeNotification(el.id)}
           ></i>
         </div>
       ))}

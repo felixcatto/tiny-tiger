@@ -1,25 +1,26 @@
 import cn from 'classnames';
 import { Link } from 'wouter';
-import { selectSession } from '../globalStore/reducers.js';
-import { useSelector } from '../globalStore/utils.js';
+import { session } from '../globalStore/store.js';
 import {
   NavLink,
   getApiUrl,
   getUrl,
   popoverRootId,
   useContext,
+  useSetGlobalState,
   userRolesToIcons,
 } from '../lib/utils.js';
 import { Notifications } from '../ui/Notifications.jsx';
 import s from './layout.module.css';
 
 const Layout = ({ children }: any) => {
-  const { actions, axios } = useContext();
-  const { currentUser, isSignedIn } = useSelector(selectSession);
+  const { axios, useStore } = useContext();
+  const setGlobalState = useSetGlobalState();
+  const { currentUser, isSignedIn } = useStore(session);
 
   const signOut = async () => {
     const user = await axios.delete(getApiUrl('session'));
-    actions.signOut(user);
+    setGlobalState({ currentUser: user });
   };
 
   const userIconClass = role => cn(s.userRoleIcon, 'mr-1', userRolesToIcons[role]);
