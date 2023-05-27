@@ -367,3 +367,13 @@ export type IResolvedPrefetchRoute = {
   swrRequestKey: string;
   params: object;
 };
+
+export type ISpinnerProps = {
+  wrapperClass?: string;
+  spinnerClass?: string;
+};
+
+export type ILoadable = <T extends IAnyFn>(
+  dynamicImportFn: T,
+  opts?: { fallback: any }
+) => Awaited<ReturnType<T>>['default'];

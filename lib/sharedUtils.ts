@@ -40,6 +40,7 @@ export const routes = {
   editTodo: '/todos/:id/edit',
   session: '/session',
   newSession: '/session/new',
+  projectStructure: '/project-structure',
 };
 
 export const getUrl = makeUrlFor(routes);

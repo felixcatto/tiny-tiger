@@ -350,6 +350,11 @@ table {
     --radius: 7px;
     --size: 2px;
   }
+
+  &_md {
+    --radius: 18px;
+    --size: 5px;
+  }
 }
 
 @keyframes spin {

@@ -34,6 +34,7 @@ const Layout = ({ children }: any) => {
             <div className="flex">
               <NavLink href={getUrl('home')}>Todolist</NavLink>
               <NavLink href={getUrl('users')}>Users</NavLink>
+              <NavLink href={getUrl('projectStructure')}>Structure</NavLink>
             </div>
           </div>
           {isSignedIn ? (

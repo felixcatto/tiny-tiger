@@ -1,3 +1,4 @@
+import rawLoadable from '@loadable/component';
 import { AxiosError } from 'axios';
 import cn from 'classnames';
 import { useFormikContext } from 'formik';
@@ -23,8 +24,10 @@ import {
   IContext,
   IFilter,
   IGetFSPQuery,
+  ILoadable,
   IMixedFilter,
   ISortOrder,
+  ISpinnerProps,
   IUseMergeState,
   IUseSelectedRows,
   IUseSubmit,
@@ -35,6 +38,26 @@ import Context from './context.js';
 
 export * from '../../lib/sharedUtils.js';
 export { Context };
+
+export const Spinner = (props: ISpinnerProps) => {
+  const { wrapperClass = '', spinnerClass = '' } = props;
+  const spinnerStates = makeEnum('hidden', 'visible', 'maybeVisible');
+  const [state, setState] = React.useState<any>(spinnerStates.hidden);
+  React.useEffect(() => {
+    const id = setTimeout(() => setState(spinnerStates.visible), 400);
+    return () => clearTimeout(id);
+  }, []);
+
+  return state === spinnerStates.hidden ? null : (
+    <div className={cn('flex items-center justify-center', wrapperClass)}>
+      <div className={cn('spinner', spinnerClass)}></div>
+    </div>
+  );
+};
+
+export const SpinnerAtMiddleScreen = () => (
+  <Spinner wrapperClass="h-full" spinnerClass="spinner_md" />
+);
 
 export const useContext = () => React.useContext<IContext>(Context);
 
@@ -79,7 +102,7 @@ const usePrefetch = href => {
     prefetchState = asyncStates.resolved;
   }
 
-  const onMouseEnter = async () => {
+  const prefetchSwrRequest = async () => {
     if (!swrRequestKey) return;
     if (prefetchState !== asyncStates.idle) return;
 
@@ -96,13 +119,13 @@ const usePrefetch = href => {
   };
 
   return {
-    onMouseEnter,
+    prefetchSwrRequest,
     isRoutePrefetched: prefetchState === asyncStates.resolved,
   };
 };
 
 export const PrefetchLink = ({ href, children, className = '' }) => {
-  const { onMouseEnter, isRoutePrefetched } = usePrefetch(href);
+  const { prefetchSwrRequest, isRoutePrefetched } = usePrefetch(href);
   const [_, navigate] = useLocation();
 
   const onClick = async () => {
@@ -112,7 +135,7 @@ export const PrefetchLink = ({ href, children, className = '' }) => {
   };
 
   return (
-    <div className={cn('link', className)} onMouseEnter={onMouseEnter} onClick={onClick}>
+    <div className={cn('link', className)} onMouseEnter={prefetchSwrRequest} onClick={onClick}>
       {children}
     </div>
   );
@@ -410,3 +433,6 @@ export const useSetGlobalState = () => {
   const { useStore } = useContext();
   return useStore(state => state.setGlobalState);
 };
+
+export const loadable: ILoadable =
+  typeof rawLoadable === 'function' ? rawLoadable : rawLoadable.default;

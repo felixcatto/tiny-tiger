@@ -4,14 +4,15 @@ import { Route, Switch } from 'wouter';
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { IContext, IUser } from '../../lib/types.js';
+import makeActions from '../globalStore/actions.js';
 import { storeSlice } from '../globalStore/store.js';
 import Context from '../lib/context.js';
 import { getUrl, routes } from '../lib/utils.js';
+import { ProjectStructureAsync } from '../pages/projectStructure/ProjectStructureAsync.jsx';
 import Login from '../pages/session/Login.js';
 import TodoList from '../pages/todoList/Todolist.js';
 import { User } from '../pages/users/User.jsx';
 import { Users } from '../pages/users/Users.js';
-import makeActions from '../globalStore/actions.js';
 
 type IAppProps = {
   initialState: {
@@ -67,6 +68,7 @@ export const App = (props: IAppProps) => {
           <Route path={routes.newSession} component={Login} />
           <Route path={routes.users} component={Users} />
           <Route path={routes.user} component={User} />
+          <Route path={routes.projectStructure} component={ProjectStructureAsync} />
         </Switch>
       </SWRConfig>
     </Context.Provider>

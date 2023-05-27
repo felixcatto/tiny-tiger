@@ -1,9 +1,11 @@
 import spawnAsync from 'await-spawn';
 import { spawn } from 'child_process';
 import { deleteAsync } from 'del';
+import fs from 'fs';
 import gulp from 'gulp';
 import sourcemaps from 'gulp-sourcemaps';
 import swc from 'gulp-swc';
+import madge from 'madge';
 import waitOn from 'wait-on';
 
 const { series, parallel } = gulp;
@@ -88,6 +90,17 @@ const viteBuildSSR = async () =>
 
 const makeGqlTypes = async () => spawnNpxAsync(['graphql-codegen']);
 
+const makeProjectStructure = async () => {
+  const result = await madge(['client/main/entry-client.tsx', 'main/index.ts'], {
+    dependencyFilter: importedDependency => {
+      const isTypeImport = importedDependency.match(/types\.ts$/);
+      return !isTypeImport;
+    },
+  });
+  const svg = await result.svg();
+  fs.writeFileSync('public/img/project-structure.svg', svg);
+};
+
 const trackChangesInDist = () => {
   const watcher = gulp.watch('dist/**/*');
   watcher
@@ -117,3 +130,5 @@ export const build = series(
   viteBuildClient,
   viteBuildSSR
 );
+
+export { makeProjectStructure };

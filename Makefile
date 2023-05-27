@@ -63,6 +63,9 @@ lint:
 	npx eslint .
 	npx tsc
 
+madge-project-structure:
+	npx gulp makeProjectStructure
+
 caddy-reload-config:
 	docker compose exec caddy caddy reload --config="/etc/caddy/Caddyfile"
 

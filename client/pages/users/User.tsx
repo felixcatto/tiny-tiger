@@ -2,7 +2,7 @@ import useSWR from 'swr';
 import { Link, useRoute } from 'wouter';
 import { IUser } from '../../../lib/types.js';
 import Layout from '../../common/layout.jsx';
-import { getUrl, prefetchRoutes, routes } from '../../lib/utils.jsx';
+import { Spinner, getUrl, loadable, prefetchRoutes, routes } from '../../lib/utils.jsx';
 
 export const User = () => {
   const [_, params] = useRoute(routes.user);
@@ -23,6 +23,16 @@ export const User = () => {
       {!data && isLoading && <div className="spinner"></div>}
 
       {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
+
+      {data && (
+        <div className="text-center mt-3">
+          <InfoCircle entityMaxValue={5} entityValue={(data.id + 5) % 7} />
+        </div>
+      )}
     </Layout>
   );
 };
+
+const InfoCircle = loadable(() => import('./UI/InfoCircle.jsx'), {
+  fallback: <Spinner />,
+});
