@@ -69,10 +69,10 @@ const transpileServerJsWithSourcemaps = () =>
     .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest(paths.dest));
 
-const uploadServerSourcemaps = async () => {
-  await spawnNpxAsync(['sentry-cli', 'sourcemaps', 'inject', 'dist']);
-  await spawnNpxAsync(['sentry-cli', 'sourcemaps', 'upload', '--use-artifact-bundle', 'dist']);
-};
+// const uploadServerSourcemaps = async () => {
+//   await spawnNpxAsync(['sentry-cli', 'sourcemaps', 'inject', 'dist']);
+//   await spawnNpxAsync(['sentry-cli', 'sourcemaps', 'upload', '--use-artifact-bundle', 'dist']);
+// };
 
 const copyMisc = () => gulp.src(paths.misc).pipe(gulp.dest(paths.dest));
 
@@ -126,7 +126,7 @@ export const dev = series(
 export const build = series(
   clean,
   parallel(copyMisc, transpileServerJsWithSourcemaps),
-  uploadServerSourcemaps,
+  // uploadServerSourcemaps,
   viteBuildClient,
   viteBuildSSR
 );
