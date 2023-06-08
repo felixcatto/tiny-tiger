@@ -7,12 +7,12 @@ import { IContext, IUser } from '../../lib/types.js';
 import makeActions from '../globalStore/actions.js';
 import { storeSlice } from '../globalStore/store.js';
 import Context from '../lib/context.js';
-import { getUrl, routes } from '../lib/utils.js';
+import { getUrl, routes } from '../lib/utils.jsx';
 import { ProjectStructureAsync } from '../pages/projectStructure/ProjectStructureAsync.jsx';
-import Login from '../pages/session/Login.js';
-import TodoList from '../pages/todoList/Todolist.js';
+import Login from '../pages/session/Login.jsx';
+import Todolist from '../pages/todoList/Todolist.jsx';
 import { User } from '../pages/users/User.jsx';
-import { Users } from '../pages/users/Users.js';
+import { Users } from '../pages/users/Users.jsx';
 
 type IAppProps = {
   initialState: {
@@ -64,7 +64,7 @@ export const App = (props: IAppProps) => {
     <Context.Provider value={contextStore}>
       <SWRConfig value={swrConfig}>
         <Switch>
-          <Route path={routes.home} component={TodoList} />
+          <Route path={routes.home} component={Todolist} />
           <Route path={routes.newSession} component={Login} />
           <Route path={routes.users} component={Users} />
           <Route path={routes.user} component={User} />

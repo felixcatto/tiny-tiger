@@ -129,13 +129,13 @@ export const PrefetchLink = ({ href, children, className = '' }) => {
   const [_, navigate] = useLocation();
 
   const onClick = async () => {
-    if (!isRoutePrefetched) await new Promise(resolve => setTimeout(resolve, 200));
+    if (!isRoutePrefetched) await prefetchSwrRequest();
 
     navigate(href);
   };
 
   return (
-    <div className={cn('link', className)} onMouseEnter={prefetchSwrRequest} onClick={onClick}>
+    <div className={cn('link', className)} onClick={onClick}>
       {children}
     </div>
   );

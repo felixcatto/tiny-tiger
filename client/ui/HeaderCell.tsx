@@ -4,8 +4,8 @@ import React from 'react';
 import { IHeaderCellProps, ISortOrder } from '../../lib/types.js';
 import { filterTypes, sortOrders } from '../lib/utils.js';
 import s from './HeaderCell.module.css';
-import { Popup, usePopup } from './Popup.js';
-import { SearchFilter, SelectFilter } from './TableFilters.js';
+import { Popup, usePopup } from './Popup.jsx';
+import { SearchFilter, SelectFilter } from './TableFilters.jsx';
 
 const getSortOrderIcon = (sortOrder: ISortOrder) => {
   switch (sortOrder) {

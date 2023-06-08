@@ -3,7 +3,7 @@ import { isEmpty } from 'lodash-es';
 import React from 'react';
 import useSWR from 'swr';
 import { IFiltersMap, IUser } from '../../../lib/types.js';
-import Layout from '../../common/layout.js';
+import Layout from '../../common/layout.jsx';
 import {
   PrefetchLink,
   filterTypes,
@@ -17,8 +17,8 @@ import {
 } from '../../lib/utils.js';
 import { Checkbox, Expandbox } from '../../ui/Checkbox.jsx';
 import { Collapse } from '../../ui/Collapse.jsx';
-import { HeaderCell } from '../../ui/HeaderCell.js';
-import { Pagination } from '../../ui/Pagination.js';
+import { HeaderCell } from '../../ui/HeaderCell.jsx';
+import { Pagination } from '../../ui/Pagination.jsx';
 
 export const Users = () => {
   const { data } = useSWR<IUser[]>(prefetchRoutes[routes.users].swrRequestKey);
