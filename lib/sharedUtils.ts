@@ -1,12 +1,7 @@
-import { isEmpty, keyBy } from 'lodash-es';
+import { isEmpty, isString } from 'lodash-es';
 import { compile, match } from 'path-to-regexp';
-import {
-  IGqlApi,
-  IMakeEnum,
-  IMakeUrlFor,
-  IPrefetchRoute,
-  IResolvedPrefetchRoute,
-} from './types.js';
+import * as y from 'yup';
+import { IGetGenericRouteByHref, IGqlApi, IMakeEnum, IMakeUrlFor } from './types.js';
 
 export const qs = {
   stringify: (obj = {}) => {
@@ -15,6 +10,19 @@ export const qs = {
       .sort()
       .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(obj[key])}`)
       .join('&');
+  },
+  parse: queryString => {
+    if (!queryString) return {};
+    const queryParts = queryString
+      .split('&')
+      .map(pair => pair.split('=').map(el => decodeURIComponent(el)));
+
+    return queryParts.reduce((acc, queryPart) => ({ ...acc, [queryPart[0]]: queryPart[1] }), {});
+  },
+  splitUrl: url => {
+    const [pathname, rawQuery] = url.split('?');
+    const query = qs.parse(rawQuery);
+    return { pathname, query };
   },
 };
 
@@ -41,58 +49,27 @@ export const routes = {
   session: '/session',
   newSession: '/session/new',
   projectStructure: '/project-structure',
+  loaderData: '/loader-data',
 };
 
 export const getUrl = makeUrlFor(routes);
 export const getApiUrl = (name: keyof typeof routes, routeParams?, query?) =>
   `/api${getUrl(name, routeParams, query)}`;
 
-export const prefetchRoutes = keyBy(
-  [
-    {
-      genericRouteUrl: routes.home,
-      swrRequestKey: getApiUrl('todos', {}, { page: 0, size: 3 }),
-    },
-    {
-      genericRouteUrl: routes.users,
-      swrRequestKey: getApiUrl('users', {}, { withTodos: true }),
-    },
-    {
-      genericRouteUrl: routes.user,
-      getSwrRequestKey: params => getApiUrl('user', params),
-    },
-  ],
-  'genericRouteUrl'
-) as Record<string, IPrefetchRoute>;
+export const getGenericRouteByHref: IGetGenericRouteByHref = href => {
+  let genericRoute = null as any;
+  const genericRoutes = Object.values(routes);
 
-export const getPrefetchRouteByHref = href => {
-  let prefetchRoute = null as IResolvedPrefetchRoute | null;
-  const routes = Object.values(prefetchRoutes);
-
-  for (let i = 0; i < routes.length; i++) {
-    const testRoute = routes[i];
-    const isRouteDynamic = testRoute.getSwrRequestKey;
-
-    if (isRouteDynamic) {
-      const isMatched = match(testRoute.genericRouteUrl)(href);
-      if (isMatched) {
-        prefetchRoute = {
-          genericRouteUrl: testRoute.genericRouteUrl,
-          swrRequestKey: testRoute.getSwrRequestKey(isMatched.params, href),
-          params: isMatched.params,
-        };
-        break;
-      }
-    } else {
-      const isMatched = testRoute.genericRouteUrl === href;
-      if (isMatched) {
-        prefetchRoute = { ...testRoute, params: {} };
-        break;
-      }
+  for (let i = 0; i < genericRoutes.length; i++) {
+    const testRoute = genericRoutes[i];
+    const isMatched = match(testRoute)(href);
+    if (isMatched) {
+      genericRoute = { url: testRoute, params: isMatched.params };
+      break;
     }
   }
 
-  return prefetchRoute;
+  return genericRoute;
 };
 
 export const makeEnum: IMakeEnum = (...args) =>
@@ -124,3 +101,10 @@ export const isTest = mode => mode === modes.test;
 
 export const gqlApi: IGqlApi = { method: 'post', url: 'graphql' };
 export const makeGqlPayload = (query, variables?) => ({ query, variables });
+
+export const yupFromJson = value => (isString(value) ? JSON.parse(value) : value);
+
+export const paginationSchema = y.object({
+  size: y.number().min(1),
+  page: y.number().min(0),
+});

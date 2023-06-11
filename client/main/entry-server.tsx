@@ -5,6 +5,6 @@ import { App } from './app.js';
 export const render = (url, initialState) =>
   renderToString(
     <Router ssrPath={url}>
-      <App initialState={initialState} />
+      <App {...initialState} />
     </Router>
   );

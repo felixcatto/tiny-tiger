@@ -1,14 +1,15 @@
 import cn from 'classnames';
-import { makeEnum } from '../lib/utils.js';
+import { makeEnum } from '../../lib/sharedUtils.js';
 import s from './Pagination.module.css';
 import { Select } from './Select.js';
 
 type IPaginationProps = {
-  page: number;
-  size: number;
   totalRows: number;
-  onPageChange: (newPage: number) => void;
-  onSizeChange: (newSize: number) => void;
+  onPaginationChange?: (newState: { page: number; size: number }) => void;
+  onPageChange?: (newPage: number) => void;
+  onSizeChange?: (newSize: number) => void;
+  page?: number;
+  size?: number;
   siblings?: number;
   slots?: number;
   className?: string;
@@ -20,10 +21,11 @@ const states = makeEnum('full', 'start', 'mid', 'end');
 export const Pagination = (props: IPaginationProps) => {
   const {
     totalRows,
-    page: rawPage,
-    size,
+    onPaginationChange,
     onPageChange,
     onSizeChange,
+    page: rawPage = 0,
+    size = Infinity,
     siblings = 2,
     className = '',
     availableSizes = [3, 10, 25, 50],
@@ -54,13 +56,31 @@ export const Pagination = (props: IPaginationProps) => {
 
   const prevPage = () => {
     if (!isPrevPageAvailable) return;
-    onPageChange(page - 1 - pageOffset);
+
+    const newPage = page - 1 - pageOffset;
+    if (onPageChange) onPageChange(newPage);
+    if (onPaginationChange) onPaginationChange({ size, page: newPage });
   };
+
   const nextPage = () => {
     if (!isNextPageAvailable) return;
-    onPageChange(page + 1 - pageOffset);
+
+    const newPage = page + 1 - pageOffset;
+    if (onPageChange) onPageChange(newPage);
+    if (onPaginationChange) onPaginationChange({ size, page: newPage });
   };
-  const onSelectPage = curPage => () => onPageChange(curPage - pageOffset);
+
+  const onSelectPage = curPage => () => {
+    const newPage = curPage - pageOffset;
+    if (onPageChange) onPageChange(newPage);
+    if (onPaginationChange) onPaginationChange({ size, page: newPage });
+  };
+
+  const onSize = selectedItem => {
+    const newSize = selectedItem.value;
+    if (onSizeChange) onSizeChange(newSize);
+    if (onPaginationChange) onPaginationChange({ size: newSize, page: 0 });
+  };
 
   const renderPage = (curPage, i) => (
     <div
@@ -133,7 +153,7 @@ export const Pagination = (props: IPaginationProps) => {
           inputClass="input-secondary input-secondary_hover text-sm w-24"
           popupClass={s.popup}
           placement="bottom-end"
-          onSelect={selectedItem => onSizeChange(selectedItem.value)}
+          onSelect={onSize}
         />
       </div>
     </div>

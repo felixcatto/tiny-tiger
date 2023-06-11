@@ -1,8 +1,18 @@
 import cn from 'classnames';
 import { Form, Formik } from 'formik';
+import produce from 'immer';
+import { isArray, isEmpty, isString, isUndefined } from 'lodash-es';
 import React from 'react';
-import useSWR from 'swr';
-import { IGetTodosResponse, ITodo } from '../../../lib/types.js';
+import * as y from 'yup';
+import {
+  filterTypes,
+  getApiUrl,
+  getUrl,
+  paginationSchema,
+  sortOrders,
+  yupFromJson,
+} from '../../../lib/sharedUtils.js';
+import { IClientFSPSchema, IFiltersMap, IMixedFilter, ITodo } from '../../../lib/types.js';
 import Layout from '../../common/layout.js';
 import { session } from '../../globalStore/store.js';
 import {
@@ -10,12 +20,12 @@ import {
   Field,
   SubmitBtn,
   WithApiErrors,
-  filterTypes,
-  getApiUrl,
-  getFSPQuery,
+  decodeFSPOpts,
+  encodeFSPOpts,
   useContext,
+  useLoaderData,
+  useQuery,
   useSubmit,
-  useTable,
 } from '../../lib/utils.js';
 import { HeaderCell } from '../../ui/HeaderCell.js';
 import { makeNotification } from '../../ui/Notifications.jsx';
@@ -23,54 +33,57 @@ import { Pagination } from '../../ui/Pagination.js';
 import s from './styles.module.css';
 
 const TodoList = () => {
+  const props = useLoaderData();
+  console.log('');
+  console.log(props);
+  const { rows, totalRows, refreshLoaderData, navigate } = props;
   const { useStore, axios } = useContext();
   const { isSignedIn } = useStore(session);
   const addNotification = useStore(state => state.addNotification);
+  const { query } = useQuery();
 
-  const { page, size, sortBy, sortOrder, filters, paginationProps, headerCellProps } = useTable({
-    page: 0,
-    size: 3,
-    sortBy: null,
-    sortOrder: null,
-    filters: defaultFilters,
-  });
+  const FSPOpts = React.useMemo(() => decodeFSPOpts(querySchema, query, defaultFSPOpts), [query]);
+  const { page, size, sortBy, sortOrder, filters } = FSPOpts;
+
+  const onChange = async newState => {
+    const query = encodeFSPOpts({ ...FSPOpts, ...newState });
+    navigate(getUrl('home', {}, query));
+  };
+
+  const onSortChange = (sortOrder, sortBy) => onChange({ sortOrder, sortBy });
+
+  const onFilterChange = (filter: IMixedFilter, filterBy) => {
+    onChange({
+      filters: produce(filters, draft => {
+        draft[filterBy].filter = filter;
+      }),
+      page: 0,
+    });
+  };
+
+  const paginationProps = { totalRows, page, size, onPaginationChange: onChange };
+  const headerCellProps = { sortBy, sortOrder, filters, onSortChange, onFilterChange };
 
   const [editingTodo, setEditingTodo] = React.useState<ITodo | null>(null);
 
-  const query = React.useMemo(
-    () => getFSPQuery({ page, size, sortBy, sortOrder, filters }),
-    [page, size, sortBy, sortOrder, filters]
-  );
-
-  const { data, mutate } = useSWR<IGetTodosResponse>(getApiUrl('todos', {}, query));
-  useSWR(getApiUrl('todos', {}, { ...query, page: page + 1 }));
-  const rows = data?.rows || [];
-  const totalRows = data?.totalRows || 0;
-
-  // const { data, mutate } = useGql<IGqlResponse<'getTodos'>, QueryGetTodosArgs>(getTodos, {
-  //   ...query,
-  //   withAuthor: true,
-  // });
-  // useGql(getTodos, { ...query, page: page + 1, withAuthor: true });
-  // const rows = data?.getTodos?.rows || [];
-  // const totalRows = data?.getTodos?.totalRows || 0;
-
   const initialValues = editingTodo
-    ? { name: editingTodo.author?.name, email: editingTodo.author?.email, text: editingTodo.text }
+    ? {
+        name: editingTodo.author?.name,
+        email: editingTodo.author?.email,
+        text: editingTodo.text,
+      }
     : { name: '', email: '', text: '' };
 
   const onSubmit = useSubmit(async (values, fmActions) => {
     if (editingTodo) {
       await axios.put(getApiUrl('todo', { id: editingTodo.id }), { text: values.text });
-      // await gqlRequest<MutationPutTodosArgs>(putTodos, { ...values, id: editingTodo.id });
       addNotification(makeNotification({ title: 'Todo', text: 'Edited successfully' }));
     } else {
       await axios.post(getApiUrl('todos'), values);
-      // await gqlRequest<MutationPostTodosArgs>(postTodos, values);
       addNotification(makeNotification({ title: 'Todo', text: 'Created successfully' }));
     }
     fmActions.resetForm();
-    mutate();
+    refreshLoaderData();
     setEditingTodo(null);
   });
 
@@ -83,8 +96,7 @@ const TodoList = () => {
       ...todo,
       is_completed: !todo.is_completed,
     });
-    // await gqlRequest<MutationPutTodosArgs>(putTodos, { ...todo, is_completed: !todo.is_completed });
-    mutate();
+    refreshLoaderData();
   };
 
   const cancelEdit = () => {
@@ -93,8 +105,7 @@ const TodoList = () => {
 
   const deleteTodo = id => async () => {
     await axios.delete(getApiUrl('todo', { id }));
-    // await gqlRequest<MutationDeleteTodosArgs>(deleteTodos, { id });
-    mutate();
+    refreshLoaderData();
   };
 
   const todoClass = todo =>
@@ -243,6 +254,50 @@ const defaultFilters = {
       { label: 'Incomplete', value: false },
     ],
   },
-};
+} as IFiltersMap;
+
+const defaultFSPOpts = {
+  page: 0,
+  size: 3,
+  filters: defaultFilters,
+} as IClientFSPSchema;
+
+const todoFields = [
+  'id',
+  'text',
+  'is_completed',
+  'is_edited_by_admin',
+  'author.name',
+  'author.email',
+];
+
+const todoSortSchema = y.object({
+  sortOrder: y.string().oneOf([sortOrders.asc, sortOrders.desc]),
+  sortBy: y.string().oneOf(todoFields),
+});
+
+const todoFilterSchema = y.object({
+  filters: y
+    .array()
+    .of(
+      y.object({
+        filterBy: y.string().oneOf(todoFields).required(),
+        filter: y.mixed().test({
+          message: 'filter should be non empty String or Any[]',
+          test: value => {
+            if (!isString(value) && !isArray(value)) return false;
+            return !isEmpty(value);
+          },
+        }),
+      })
+    )
+    .test({
+      message: 'filters should be not empty []',
+      test: value => (isArray(value) && !isEmpty(value)) || isUndefined(value),
+    })
+    .transform(yupFromJson),
+});
+
+const querySchema = paginationSchema.concat(todoSortSchema).concat(todoFilterSchema);
 
 export default WithApiErrors(TodoList);

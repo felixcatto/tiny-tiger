@@ -1,10 +1,9 @@
 import cn from 'classnames';
-import { Link } from 'wouter';
+import { getApiUrl, getUrl } from '../../lib/sharedUtils.js';
 import { session } from '../globalStore/store.js';
 import {
+  Link,
   NavLink,
-  getApiUrl,
-  getUrl,
   popoverRootId,
   useContext,
   useSetGlobalState,

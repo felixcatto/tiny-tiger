@@ -1,5 +1,6 @@
 import React from 'react';
+import { IApiErrors } from '../../lib/types.js';
 
-const Context: any = React.createContext(null);
+export const Context: any = React.createContext(null);
 
-export default Context;
+export const FormContext = React.createContext<IApiErrors>(null as any);

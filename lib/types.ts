@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { FastifyInstance, FastifyReply } from 'fastify';
 import { FormikHelpers } from 'formik';
@@ -23,6 +24,7 @@ import {
   apiTypes,
   asyncStates,
   filterTypes,
+  loaderDataSchema,
   paginationSchema,
   roles,
   sortOrders,
@@ -45,21 +47,6 @@ export type IAsyncState = keyof typeof asyncStates;
 export type ISelectedRowsState = keyof typeof selectedRowsStates;
 
 export type IMode = 'test' | 'development' | 'production';
-
-export type IPaginationSchema = y.InferType<typeof paginationSchema>;
-export type ISortSchema = {
-  sortOrder: Exclude<ISortOrder, 'none'>;
-  sortBy: string;
-};
-export type IFilterSchema = {
-  filterBy: string;
-  filter: string | any[];
-};
-export type IFiltersSchema = {
-  filters: IFilterSchema[];
-};
-
-export type IFSPSchema = IFiltersSchema & ISortSchema & IPaginationSchema;
 
 export type IUser = {
   id: number;
@@ -137,12 +124,20 @@ export type IAuthenticate = (
   fetchUser: (id) => Promise<IUser | undefined>
 ) => Promise<[currentUser: IUser, shouldRemoveSession: boolean]>;
 
+type IYupOpts = {
+  stripUnknown?: boolean;
+};
 export type IValidate = <T = any>(
   schema,
-  payload
+  payload,
+  yupOpts?: IYupOpts
 ) => [data: T, error: null] | [data: null, error: IYupError];
 export type IPayloadTypes = 'query' | 'body';
-export type IValidateMW = (schema, payloadType?: IPayloadTypes) => (req, res) => any;
+export type IValidateMW = (
+  schema,
+  payloadType?: IPayloadTypes,
+  yupOpts?: IYupOpts
+) => (req, res) => any;
 
 type IRawStoreSlice = typeof storeSlice;
 export type IStoreSlice = {
@@ -162,6 +157,8 @@ type IAnyFn = (...args: any) => any;
 export type IContext = {
   axios: IAxiosInstance;
   useStore: UseBoundStore<StoreApi<IStore>>;
+  initialQuery: object;
+  initialLoaderData: any;
 };
 
 export type IGetTodosResponse = {
@@ -187,7 +184,9 @@ export type IFilterTypes = typeof filterTypes;
 export type ISelectFilter = ISelectOption[];
 export type ISearchFilter = string;
 
-type ISelectFilterObj = {
+export type IMixedFilter = ISearchFilter | ISelectFilter;
+
+export type ISelectFilterObj = {
   filterBy: string;
   filterType: IFilterTypes['select'];
   filter: ISelectFilter;
@@ -195,7 +194,7 @@ type ISelectFilterObj = {
   customFilterFn?: (rowValue, filter: IMixedFilter) => boolean;
 };
 
-type ISearchFilterObj = {
+export type ISearchFilterObj = {
   filterBy: string;
   filterType: IFilterTypes['search'];
   filter: ISearchFilter;
@@ -203,9 +202,27 @@ type ISearchFilterObj = {
 };
 
 export type IFilter = ISelectFilterObj | ISearchFilterObj;
-
-export type IMixedFilter = ISearchFilter | ISelectFilter;
 export type IFiltersMap = Record<string, Anyify<IFilter> & { filterOptions?: any }>;
+
+export type ILoaderDataSchema = y.InferType<typeof loaderDataSchema>;
+export type IPaginationSchema = y.InferType<typeof paginationSchema>;
+export type ISortSchema = {
+  sortOrder?: Exclude<ISortOrder, 'none'>;
+  sortBy?: string;
+};
+export type IFilterSchema = {
+  filterBy: string;
+  filter: string | any[];
+};
+export type IFiltersSchema = {
+  filters?: IFilterSchema[];
+};
+export type IClientFiltersSchema = {
+  filters: IFiltersMap;
+};
+
+export type IFSPSchema = IFiltersSchema & ISortSchema & IPaginationSchema;
+export type IClientFSPSchema = IClientFiltersSchema & ISortSchema & IPaginationSchema;
 
 export type ISelectFilterProps = {
   name: string;
@@ -237,7 +254,7 @@ export type IHeaderCellProps = {
 export type IUseTableState = {
   page?: number;
   size?: number;
-  sortBy?: string | null;
+  sortBy?: string;
   sortOrder?: ISortOrder;
   filters?: IFiltersMap;
 };
@@ -246,12 +263,12 @@ export type IUseTableProps<T = any> = {
   rows?: T[];
   page?: number;
   size?: number;
-  sortBy?: string | null;
+  sortBy?: string;
   sortOrder?: ISortOrder;
   filters?: IFiltersMap;
 };
 
-export type IUseTable = <T extends object, TActualProps extends IUseTableProps>(
+export type IUseTable = <T extends IAnyObj, TActualProps extends IUseTableProps>(
   props: IUseTableProps<T> & TActualProps
 ) => {
   rows: T[];
@@ -295,15 +312,15 @@ export type IUseSelectedRows = <T extends object>(props: {
   };
 };
 
-export type IGetFSPQueryProps = {
-  page: number;
-  size: number;
-  sortBy: string | null;
-  sortOrder: ISortOrder;
+export type IEncodeFSPOptsProps = {
+  page?: number;
+  size?: number;
+  sortBy?: string | null;
+  sortOrder?: ISortOrder;
   filters: Record<any, IFilter>;
 };
 
-export type IGetFSPQuery = (props: IGetFSPQueryProps) => {
+export type IEncodeFSPOpts = (props: IEncodeFSPOptsProps) => {
   page?: number;
   size?: number;
   sortBy?: string;
@@ -316,7 +333,10 @@ type ISetState<T> = (fnOrObject: Partial<T> | IFn<T>) => void;
 export type IUseMergeState = <T>(initialState: T) => [state: T, setState: ISetState<T>];
 
 type INotificationText = { text: string; component?: undefined };
-type INotificationComponent = { text?: undefined; component: () => JSX.Element };
+type INotificationComponent = {
+  text?: undefined;
+  component: () => JSX.Element;
+};
 export type INotification = {
   id: string;
   title: string;
@@ -332,8 +352,12 @@ type IMakeNotificationOpts = {
 export type IMakeNotification = (opts: IMakeNotificationOpts) => INotification;
 
 declare global {
-  interface ImportMeta {
-    env: { [key: string]: any };
+  interface Window {
+    INITIAL_STATE: {
+      currentUser: IUser;
+      query: IAnyObj;
+      loaderData: any;
+    };
   }
 }
 
@@ -350,24 +374,6 @@ export type IGqlResponse<T extends keyof Query> = {
   [key in T]: Query[T];
 };
 
-export type IPrefetchRoute =
-  | {
-      genericRouteUrl: any;
-      swrRequestKey: string;
-      getSwrRequestKey?: undefined;
-    }
-  | {
-      genericRouteUrl: any;
-      swrRequestKey?: undefined;
-      getSwrRequestKey: (params, href?) => string;
-    };
-
-export type IResolvedPrefetchRoute = {
-  genericRouteUrl: string;
-  swrRequestKey: string;
-  params: object;
-};
-
 export type ISpinnerProps = {
   wrapperClass?: string;
   spinnerClass?: string;
@@ -377,3 +383,5 @@ export type ILoadable = <T extends IAnyFn>(
   dynamicImportFn: T,
   opts?: { fallback: any }
 ) => Awaited<ReturnType<T>>['default'];
+
+export type IGetGenericRouteByHref = (href: string) => { url: string; params: object } | null;

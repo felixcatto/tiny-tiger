@@ -1,45 +1,88 @@
-import { IOrm } from './types.js';
-import { getPrefetchRouteByHref, routes } from './utils.js';
+import { isArray, isEmpty, isNumber, isString } from 'lodash-es';
+import { todoFilterSchema, todoSortSchema } from '../models/Todo.js';
+import { IAnyObj, IFSPSchema, IOrm } from './types.js';
+import { getGenericRouteByHref, ivalidate, paginationSchema, routes } from './utils.js';
 
-export const getSSRData = async (url, opts) => {
-  const ssrRoute = getPrefetchRouteByHref(url);
-  if (!ssrRoute) return {};
-
-  const routeFetcher = ssrRouteFetchers[ssrRoute.genericRouteUrl];
-  if (!routeFetcher) return {};
-
-  const ssrData = await routeFetcher({ ...opts, params: ssrRoute.params });
-  return { [ssrRoute.swrRequestKey]: ssrData };
+type IOpts = {
+  pathname: string;
+  params: IAnyObj;
+  query: IAnyObj;
+  orm: IOrm;
 };
 
-export const ssrRouteFetchers = {
-  [routes.home]: async opts => {
-    const { orm } = opts;
-    const { Todo } = orm as IOrm;
-    const page = 0;
-    const size = 3;
+type ILoaderOpts = Omit<IOpts, 'params'>;
 
-    const totalRowsQuery = Todo.query().resultSize();
-    const todoQuery = Todo.query()
-      .withGraphJoined('author')
-      .offset(page * size)
-      .limit(size)
-      .orderBy('id');
-    const [todos, totalRows] = await Promise.all([todoQuery, totalRowsQuery]);
+export const getLoaderData = async (opts: ILoaderOpts) => {
+  const { pathname, query } = opts;
+  const genericRoute = getGenericRouteByHref(pathname);
+  if (!genericRoute) return {};
 
-    return { rows: todos, totalRows };
+  const loadRouteData = routeLoaders[genericRoute.url];
+  if (!loadRouteData) return {};
+
+  return loadRouteData({ ...opts, params: genericRoute.params, query });
+};
+
+const routeLoaders = {
+  [routes.home]: async (opts: IOpts) => {
+    const { orm, query } = opts;
+    const { Todo } = orm;
+    const defaultQuery = { page: 0, size: 3 } as IFSPSchema;
+
+    const querySchema = paginationSchema.concat(todoSortSchema).concat(todoFilterSchema);
+    const [vlQuery, error] = ivalidate<IFSPSchema>(querySchema, query);
+    if (error) return error;
+
+    const computedQuery = isEmpty(vlQuery) ? defaultQuery : vlQuery;
+    const { sortOrder, sortBy, page, size, filters } = computedQuery;
+
+    let totalRowsQuery;
+    const todoQuery = Todo.query();
+
+    if (filters) {
+      filters.forEach(el => {
+        if (isArray(el.filter)) {
+          todoQuery.whereIn(el.filterBy, el.filter);
+        } else if (isString(el.filter)) {
+          todoQuery.where(el.filterBy, 'ilike', `%${el.filter}%`);
+        }
+      });
+    }
+
+    if (sortOrder && sortBy) {
+      todoQuery.orderBy(sortBy, sortOrder);
+    } else {
+      todoQuery.orderBy('id');
+    }
+
+    if (size && isNumber(page)) {
+      totalRowsQuery = todoQuery.clone().joinRelated('author').resultSize();
+      todoQuery.offset(page * size).limit(size);
+    }
+
+    todoQuery.withGraphJoined('author');
+
+    if (totalRowsQuery) {
+      const [todos, totalRows] = await Promise.all([todoQuery, totalRowsQuery]);
+      return { rows: todos, totalRows };
+    } else {
+      const todos = await todoQuery;
+      return { rows: todos, totalRows: todos.length };
+    }
   },
 
-  [routes.users]: async opts => {
+  [routes.users]: async (opts: IOpts) => {
     const { orm } = opts;
-    const { User } = orm as IOrm;
-    return User.query().withGraphFetched('todos');
+    const { User } = orm;
+    const users = await User.query().withGraphFetched('todos');
+    return { users };
   },
 
-  [routes.user]: async opts => {
+  [routes.user]: async (opts: IOpts) => {
     const { orm, params } = opts;
-    const { User } = orm as IOrm;
+    const { User } = orm;
     const { id } = params;
-    return User.query().findById(id);
+    const user = await User.query().findById(id);
+    return { user };
   },
 };

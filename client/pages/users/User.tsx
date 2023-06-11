@@ -1,34 +1,26 @@
-import useSWR from 'swr';
-import { Link, useRoute } from 'wouter';
-import { IUser } from '../../../lib/types.js';
+import { getUrl } from '../../../lib/sharedUtils.js';
 import Layout from '../../common/layout.jsx';
-import { Spinner, getUrl, loadable, prefetchRoutes, routes } from '../../lib/utils.jsx';
+import { Link, Spinner, loadable, useLoaderData } from '../../lib/utils.jsx';
 
 export const User = () => {
-  const [_, params] = useRoute(routes.user);
-  const userId = params!.id;
-  const route = prefetchRoutes[routes.user];
-
-  const { data, isLoading } = useSWR<IUser>(route.getSwrRequestKey!({ id: userId }));
+  const props = useLoaderData();
+  console.log(props);
+  const { user } = props;
 
   return (
     <Layout>
       <div className="mb-3 flex items-center">
-        <div>userId: {userId}</div>
+        <div>userId: {user.id}</div>
         <Link href={getUrl('users')} className="btn btn_sm ml-3">
           Back
         </Link>
       </div>
 
-      {!data && isLoading && <div className="spinner"></div>}
+      <pre>{JSON.stringify(user, null, 2)}</pre>
 
-      {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
-
-      {data && (
-        <div className="text-center mt-3">
-          <InfoCircle entityMaxValue={5} entityValue={(data.id + 5) % 7} />
-        </div>
-      )}
+      <div className="text-center mt-3">
+        <InfoCircle entityMaxValue={5} entityValue={(user.id + 5) % 7} />
+      </div>
     </Layout>
   );
 };

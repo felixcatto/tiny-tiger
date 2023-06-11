@@ -88,7 +88,7 @@ const viteBuildSSR = async () =>
     'client/main/entry-server.tsx',
   ]);
 
-const makeGqlTypes = async () => spawnNpxAsync(['graphql-codegen']);
+// const makeGqlTypes = async () => spawnNpxAsync(['graphql-codegen']);
 
 const makeProjectStructure = async () => {
   const result = await madge(['client/main/entry-client.tsx', 'main/index.ts'], {
@@ -119,7 +119,7 @@ export const dev = series(
   clean,
   parallel(transpileServerJs, copyMisc),
   startServer,
-  makeGqlTypes,
+  // makeGqlTypes,
   watch
 );
 

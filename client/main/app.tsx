@@ -1,28 +1,22 @@
 import originalAxios from 'axios';
 import { SWRConfig } from 'swr';
-import { Route, Switch } from 'wouter';
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
+import { getUrl } from '../../lib/sharedUtils.js';
 import { IContext, IUser } from '../../lib/types.js';
+import { AppRoutes } from '../common/AppRoutes.jsx';
 import makeActions from '../globalStore/actions.js';
 import { storeSlice } from '../globalStore/store.js';
-import Context from '../lib/context.js';
-import { getUrl, routes } from '../lib/utils.jsx';
-import { ProjectStructureAsync } from '../pages/projectStructure/ProjectStructureAsync.jsx';
-import Login from '../pages/session/Login.jsx';
-import Todolist from '../pages/todoList/Todolist.jsx';
-import { User } from '../pages/users/User.jsx';
-import { Users } from '../pages/users/Users.jsx';
+import { Context } from '../lib/context.jsx';
 
 type IAppProps = {
-  initialState: {
-    currentUser: IUser;
-    fallback: any;
-  };
+  currentUser: IUser;
+  query: object;
+  loaderData: any;
 };
 
 export const App = (props: IAppProps) => {
-  const { currentUser, fallback = {} } = props.initialState;
+  const { currentUser, query, loaderData } = props;
 
   const axios = originalAxios.create();
   axios.interceptors.response.use(
@@ -41,7 +35,6 @@ export const App = (props: IAppProps) => {
     fetcher: axios.get,
     revalidateOnFocus: false,
     dedupingInterval: 7000,
-    fallback,
   };
 
   const store = Object.keys(storeSlice).reduce((acc, key) => {
@@ -58,18 +51,17 @@ export const App = (props: IAppProps) => {
     }))
   );
 
-  const contextStore: IContext = { axios, useStore };
+  const contextStore: IContext = {
+    axios,
+    useStore,
+    initialQuery: query,
+    initialLoaderData: loaderData,
+  };
 
   return (
     <Context.Provider value={contextStore}>
       <SWRConfig value={swrConfig}>
-        <Switch>
-          <Route path={routes.home} component={Todolist} />
-          <Route path={routes.newSession} component={Login} />
-          <Route path={routes.users} component={Users} />
-          <Route path={routes.user} component={User} />
-          <Route path={routes.projectStructure} component={ProjectStructureAsync} />
-        </Switch>
+        <AppRoutes />
       </SWRConfig>
     </Context.Provider>
   );

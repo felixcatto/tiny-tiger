@@ -1,16 +1,12 @@
 import cn from 'classnames';
 import { isEmpty } from 'lodash-es';
 import React from 'react';
-import useSWR from 'swr';
-import { IFiltersMap, IUser } from '../../../lib/types.js';
+import { filterTypes, getUrl, roles } from '../../../lib/sharedUtils.js';
+import { IFiltersMap } from '../../../lib/types.js';
 import Layout from '../../common/layout.jsx';
 import {
-  PrefetchLink,
-  filterTypes,
-  getUrl,
-  prefetchRoutes,
-  roles,
-  routes,
+  Link,
+  useLoaderData,
   useSelectedRows,
   useTable,
   userRolesToIcons,
@@ -21,18 +17,15 @@ import { HeaderCell } from '../../ui/HeaderCell.jsx';
 import { Pagination } from '../../ui/Pagination.jsx';
 
 export const Users = () => {
-  const { data } = useSWR<IUser[]>(prefetchRoutes[routes.users].swrRequestKey);
-  // const { data } = useGql<IGqlResponse<'getUsers'>, QueryGetUsersArgs>(getUsers, {
-  //   withTodos: true,
-  // });
+  const props = useLoaderData();
+  console.log(props);
+  const { users } = props;
 
   const tableColCount = 5;
   const { rows, totalRows, paginationProps, headerCellProps } = useTable({
-    rows: data,
+    rows: users,
     page: 0,
     size: 10,
-    sortBy: null,
-    sortOrder: null,
     filters: defaultFilters,
   });
 
@@ -98,7 +91,7 @@ export const Users = () => {
                   )}
                 </td>
                 <td>
-                  <PrefetchLink href={getUrl('user', { id: user.id })}>{user.name}</PrefetchLink>
+                  <Link href={getUrl('user', { id: user.id })}>{user.name}</Link>
                 </td>
                 <td>{user.email}</td>
                 <td>

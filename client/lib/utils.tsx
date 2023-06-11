@@ -4,29 +4,23 @@ import cn from 'classnames';
 import { useFormikContext } from 'formik';
 import { Variables, request } from 'graphql-request';
 import produce from 'immer';
-import { get, isEmpty, isFunction, isNull, isNumber, keyBy, omit, orderBy } from 'lodash-es';
+import { get, isArray, isEmpty, isFunction, isNumber, keyBy, omit, orderBy } from 'lodash-es';
 import React from 'react';
 import { createPortal } from 'react-dom';
 import stringMath from 'string-math';
-import useSWR, { useSWRConfig } from 'swr';
+import useSWR from 'swr';
 import { useLocation } from 'wouter';
-import {
-  asyncStates,
-  filterTypes,
-  getPrefetchRouteByHref,
-  makeEnum,
-  roles,
-  sortOrders,
-} from '../../lib/sharedUtils.js';
+import { filterTypes, getApiUrl, isBrowser, makeEnum, qs, roles } from '../../lib/sharedUtils.js';
 import {
   IApiErrors,
-  IAsyncState,
+  IClientFSPSchema,
   IContext,
+  IEncodeFSPOpts,
+  IFSPSchema,
   IFilter,
-  IGetFSPQuery,
   ILoadable,
   IMixedFilter,
-  ISortOrder,
+  ISelectFilterObj,
   ISpinnerProps,
   IUseMergeState,
   IUseSelectedRows,
@@ -34,10 +28,7 @@ import {
   IUseTable,
   IUseTableState,
 } from '../../lib/types.js';
-import Context from './context.js';
-
-export * from '../../lib/sharedUtils.js';
-export { Context };
+import { Context, FormContext } from './context.js';
 
 export const Spinner = (props: ISpinnerProps) => {
   const { wrapperClass = '', spinnerClass = '' } = props;
@@ -80,62 +71,54 @@ export const useMergeState: IUseMergeState = initialState => {
   return [state, setImmerState];
 };
 
-const usePrefetch = href => {
-  const { mutate, cache } = useSWRConfig();
-  const { axios, useStore } = useContext();
-  const setGlobalState = useSetGlobalState();
-  const prefetchRoutesStates = useStore(state => state.prefetchRoutesStates);
-
-  const prefetchRoute = getPrefetchRouteByHref(href);
-  const swrRequestKey = prefetchRoute?.swrRequestKey;
-
-  let prefetchState: IAsyncState;
-  if (swrRequestKey) {
-    // via SSR or by useSWR on direct load, i.e. not by Link
-    const isPrefetchedBySWR = cache.get(swrRequestKey);
-    if (isPrefetchedBySWR) {
-      prefetchState = asyncStates.resolved;
-    } else {
-      prefetchState = prefetchRoutesStates[swrRequestKey] || asyncStates.idle;
-    }
+export const useQuery = () => {
+  const { initialQuery } = useContext();
+  let query;
+  if (isBrowser()) {
+    query = qs.parse(window.location.search.slice(1));
   } else {
-    prefetchState = asyncStates.resolved;
+    query = initialQuery;
   }
 
-  const prefetchSwrRequest = async () => {
-    if (!swrRequestKey) return;
-    if (prefetchState !== asyncStates.idle) return;
-
-    setGlobalState(state => {
-      state.prefetchRoutesStates[swrRequestKey] = asyncStates.pending;
-    });
-    await mutate(swrRequestKey, async () => axios.get(swrRequestKey), {
-      revalidate: false,
-      populateCache: true,
-    });
-    setGlobalState(state => {
-      state.prefetchRoutesStates[swrRequestKey] = asyncStates.resolved;
-    });
-  };
-
-  return {
-    prefetchSwrRequest,
-    isRoutePrefetched: prefetchState === asyncStates.resolved,
-  };
+  return { query };
 };
 
-export const PrefetchLink = ({ href, children, className = '' }) => {
-  const { prefetchSwrRequest, isRoutePrefetched } = usePrefetch(href);
-  const [_, navigate] = useLocation();
+export const storeLoaderData = loaderData => {
+  window.INITIAL_STATE.loaderData = loaderData;
+};
 
-  const onClick = async () => {
-    if (!isRoutePrefetched) await prefetchSwrRequest();
+export const useLoaderData = () => {
+  const { axios, initialLoaderData } = useContext();
+  const [location, setLocation] = useLocation();
+  const [loaderData, setLoaderData] = React.useState(() =>
+    isBrowser() ? window.INITIAL_STATE.loaderData : initialLoaderData
+  );
 
-    navigate(href);
+  const refreshLoaderData = async () => {
+    const url = `${location}${window.location.search}`;
+    const loaderData = await axios.get(getApiUrl('loaderData', {}, { url }));
+    storeLoaderData(loaderData);
+    setLoaderData(loaderData);
   };
 
+  const navigate = async href => {
+    const loaderData = await axios.get(getApiUrl('loaderData', {}, { url: href }));
+
+    storeLoaderData(loaderData);
+    setLocation(href);
+    setLoaderData(loaderData);
+  };
+
+  return { ...loaderData, refreshLoaderData, navigate };
+};
+
+export const Link = ({ href, children, className = 'link', shouldOverrideClass = false }) => {
+  const { navigate } = useLoaderData();
+  const onClick = () => navigate(href);
+  const linkClass = shouldOverrideClass ? className : cn('link', className);
+
   return (
-    <div className={cn('link', className)} onClick={onClick}>
+    <div className={linkClass} onClick={onClick}>
       {children}
     </div>
   );
@@ -149,9 +132,9 @@ export const NavLink = ({ href, children }) => {
   });
 
   return (
-    <PrefetchLink href={href} className={className}>
+    <Link href={href} className={className}>
       {children}
-    </PrefetchLink>
+    </Link>
   );
 };
 
@@ -160,8 +143,6 @@ export const userRolesToIcons = {
   [roles.user]: 'fa fa-fire',
   [roles.guest]: 'fa fa-ghost',
 };
-
-export const FormContext = React.createContext<IApiErrors>(null as any);
 
 export const WithApiErrors = (Component: React.ComponentType<IApiErrors>) => props => {
   const [apiErrors, setApiErrors] = React.useState({});
@@ -268,14 +249,7 @@ export const useTable: IUseTable = props => {
 
   const onPageChange = newPage => setState({ page: newPage });
   const onSizeChange = newSize => setState({ size: newSize, page: 0 });
-
-  const onSortChange = (sortOrder, sortBy) => {
-    let newSortOrder: ISortOrder = null;
-    if (isNull(sortOrder)) newSortOrder = sortOrders.asc;
-    if (sortOrders.asc === sortOrder) newSortOrder = sortOrders.desc;
-
-    setState({ sortBy, sortOrder: newSortOrder });
-  };
+  const onSortChange = (sortOrder, sortBy) => setState({ sortBy, sortOrder });
 
   const onFilterChange = (filter: IMixedFilter, filterBy) => {
     if (!filters) return;
@@ -393,7 +367,7 @@ export const transformFiltersForApi = (filters: IFilter[]) => {
   );
 };
 
-export const getFSPQuery: IGetFSPQuery = props => {
+export const encodeFSPOpts: IEncodeFSPOpts = props => {
   const { filters, page, size, sortBy, sortOrder } = props;
   const filtersList = Object.values(filters);
   const query = {};
@@ -414,6 +388,32 @@ export const getFSPQuery: IGetFSPQuery = props => {
   }
 
   return query;
+};
+
+export const decodeFSPOpts = (querySchema, query, defaultFSPOpts): IClientFSPSchema => {
+  const castedQuery = querySchema.cast(query, {
+    stripUnknown: true,
+  }) as IFSPSchema;
+  if (isEmpty(castedQuery)) return defaultFSPOpts;
+
+  if (isEmpty(castedQuery.filters)) return { ...defaultFSPOpts, ...castedQuery };
+
+  const tableFilters = produce(defaultFSPOpts.filters, draft => {
+    castedQuery.filters!.forEach(filterObj => {
+      const filterItem = draft[filterObj.filterBy];
+
+      if (isArray(filterObj.filter)) {
+        const newFilter = filterObj.filter.map(filterValue =>
+          (filterItem as ISelectFilterObj).filterOptions.find(el => el.value === filterValue)
+        );
+        filterItem.filter = newFilter;
+      } else {
+        filterItem.filter = filterObj.filter;
+      }
+    });
+  });
+
+  return { ...defaultFSPOpts, ...castedQuery, filters: tableFilters };
 };
 
 export const getCssValue = (cssValue: string) =>

@@ -21,8 +21,6 @@ export * from './sharedUtils.js';
 
 export const dirname = url => fileURLToPath(path.dirname(url));
 
-export const yupFromJson = value => (isString(value) ? JSON.parse(value) : value);
-
 export const getYupErrors = e => {
   if (e.inner) {
     return e.inner.reduce(
@@ -53,11 +51,12 @@ export const makeGqlError = error => {
   }
 };
 
-export const ivalidate: IValidate = (schema, payload) => {
+export const ivalidate: IValidate = (schema, payload, yupOpts = {}) => {
+  const { stripUnknown = true } = yupOpts;
   try {
     const validatedPayload = schema.validateSync(payload, {
       abortEarly: false,
-      stripUnknown: true,
+      stripUnknown,
     });
     return [validatedPayload, null];
   } catch (e) {
@@ -66,11 +65,11 @@ export const ivalidate: IValidate = (schema, payload) => {
 };
 
 export const validate: IValidateMW =
-  (schema, payloadType = 'body') =>
+  (schema, payloadType = 'body', yupOpts = {}) =>
   async (req, res) => {
     const payload = payloadType === 'query' ? req.query : req.body;
 
-    const [data, error] = ivalidate(schema, payload);
+    const [data, error] = ivalidate(schema, payload, yupOpts);
     if (error) {
       res.code(400).send(error);
     } else {
@@ -222,9 +221,8 @@ export const leftJoin = (mainEntities, joinedEntities, mainKey, joinedKey, joinP
     return { ...mainEntity, [joinProp]: result };
   });
 
-export const paginationSchema = y.object({
-  size: y.number().min(1),
-  page: y.number().min(0),
+export const loaderDataSchema = y.object({
+  url: y.string().required(),
 });
 
 export const supressConsoleLog = fn => {

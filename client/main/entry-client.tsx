@@ -1,9 +1,9 @@
 import '../css/index.css'; // Import FIRST
+// import { isProduction } from '../lib/utils.jsx';
+import { App } from './app';
 // import * as Sentry from '@sentry/browser';
 import { hydrateRoot } from 'react-dom/client';
 import { Router } from 'wouter';
-// import { isProduction } from '../lib/utils.jsx';
-import { App } from './app';
 import '../css/tailwind.css'; // Import LAST
 
 // if (isProduction(import.meta.env.MODE)) {
@@ -15,11 +15,10 @@ import '../css/tailwind.css'; // Import LAST
 // }
 
 document.body.style.display = ''; // avoid FOUC in dev mode
-const initialState = (window as any).INITIAL_STATE;
 
 hydrateRoot(
   document.getElementById('root')!,
   <Router>
-    <App initialState={initialState} />
+    <App {...window.INITIAL_STATE} />
   </Router>
 );

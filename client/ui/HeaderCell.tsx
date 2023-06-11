@@ -1,8 +1,8 @@
 import cn from 'classnames';
-import { isEmpty } from 'lodash-es';
+import { isEmpty, isNil } from 'lodash-es';
 import React from 'react';
+import { filterTypes, sortOrders } from '../../lib/sharedUtils.js';
 import { IHeaderCellProps, ISortOrder } from '../../lib/types.js';
-import { filterTypes, sortOrders } from '../lib/utils.js';
 import s from './HeaderCell.module.css';
 import { Popup, usePopup } from './Popup.jsx';
 import { SearchFilter, SelectFilter } from './TableFilters.jsx';
@@ -52,7 +52,12 @@ export const HeaderCell = (props: IHeaderCellProps) => {
 
   const ownOnSortChange = () => {
     if (!sortable) return;
-    onSortChange(sortOrder, name);
+
+    let newSortOrder: ISortOrder = null;
+    if (isNil(sortOrder)) newSortOrder = sortOrders.asc;
+    if (sortOrders.asc === sortOrder) newSortOrder = sortOrders.desc;
+
+    onSortChange(newSortOrder, name);
   };
 
   return (
