@@ -19,6 +19,7 @@ export const qs = {
 
     return queryParts.reduce((acc, queryPart) => ({ ...acc, [queryPart[0]]: queryPart[1] }), {});
   },
+  getPathname: url => url.split('?')[0],
   splitUrl: url => {
     const [pathname, rawQuery] = url.split('?');
     const query = qs.parse(rawQuery);
@@ -50,7 +51,9 @@ export const routes = {
   newSession: '/session/new',
   projectStructure: '/project-structure',
   loaderData: '/loader-data',
-};
+} as const;
+
+export const routesWithLoaders = [routes.home, routes.users, routes.user] as const;
 
 export const getUrl = makeUrlFor(routes);
 export const getApiUrl = (name: keyof typeof routes, routeParams?, query?) =>
@@ -58,7 +61,7 @@ export const getApiUrl = (name: keyof typeof routes, routeParams?, query?) =>
 
 export const getGenericRouteByHref: IGetGenericRouteByHref = href => {
   let genericRoute = null as any;
-  const genericRoutes = Object.values(routes);
+  const genericRoutes = routesWithLoaders;
 
   for (let i = 0; i < genericRoutes.length; i++) {
     const testRoute = genericRoutes[i];

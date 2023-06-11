@@ -11,7 +11,7 @@ export const User = () => {
     <Layout>
       <div className="mb-3 flex items-center">
         <div>userId: {user.id}</div>
-        <Link href={getUrl('users')} className="btn btn_sm ml-3">
+        <Link href={getUrl('users')} className="btn btn_sm ml-3" shouldOverrideClass>
           Back
         </Link>
       </div>

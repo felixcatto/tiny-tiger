@@ -10,7 +10,15 @@ import { createPortal } from 'react-dom';
 import stringMath from 'string-math';
 import useSWR from 'swr';
 import { useLocation } from 'wouter';
-import { filterTypes, getApiUrl, isBrowser, makeEnum, qs, roles } from '../../lib/sharedUtils.js';
+import {
+  filterTypes,
+  getApiUrl,
+  getGenericRouteByHref,
+  isBrowser,
+  makeEnum,
+  qs,
+  roles,
+} from '../../lib/sharedUtils.js';
 import {
   IApiErrors,
   IClientFSPSchema,
@@ -102,11 +110,14 @@ export const useLoaderData = () => {
   };
 
   const navigate = async href => {
-    const loaderData = await axios.get(getApiUrl('loaderData', {}, { url: href }));
+    const isRouteWithLoader = getGenericRouteByHref(qs.getPathname(href));
+    if (isRouteWithLoader) {
+      const loaderData = await axios.get(getApiUrl('loaderData', {}, { url: href }));
+      storeLoaderData(loaderData);
+      setLoaderData(loaderData);
+    }
 
-    storeLoaderData(loaderData);
     setLocation(href);
-    setLoaderData(loaderData);
   };
 
   return { ...loaderData, refreshLoaderData, navigate };
