@@ -3,20 +3,14 @@ import { SWRConfig } from 'swr';
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { getUrl } from '../../lib/sharedUtils.js';
-import { IContext, IUser } from '../../lib/types.js';
-import { AppRoutes } from '../common/AppRoutes.jsx';
+import { IAppProps, IContext } from '../../lib/types.js';
 import makeActions from '../globalStore/actions.js';
 import { storeSlice } from '../globalStore/store.js';
 import { Context } from '../lib/context.jsx';
-
-type IAppProps = {
-  currentUser: IUser;
-  query: object;
-  loaderData: any;
-};
+import { AppRoutes } from './AppRoutes.jsx';
 
 export const App = (props: IAppProps) => {
-  const { currentUser, query, loaderData } = props;
+  const { currentUser, pathname, query, loaderData } = props;
 
   const axios = originalAxios.create();
   axios.interceptors.response.use(
@@ -54,6 +48,7 @@ export const App = (props: IAppProps) => {
   const contextStore: IContext = {
     axios,
     useStore,
+    initialPathname: pathname,
     initialQuery: query,
     initialLoaderData: loaderData,
   };

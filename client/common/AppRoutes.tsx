@@ -1,5 +1,5 @@
-import { Route, Switch } from 'wouter';
 import { routes } from '../../lib/sharedUtils.js';
+import { Route, Switch } from '../lib/router.jsx';
 import { ProjectStructureAsync } from '../pages/projectStructure/ProjectStructureAsync.jsx';
 import Login from '../pages/session/Login.jsx';
 import Todolist from '../pages/todoList/Todolist.jsx';

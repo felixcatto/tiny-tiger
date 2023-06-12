@@ -9,16 +9,7 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import stringMath from 'string-math';
 import useSWR from 'swr';
-import { useLocation } from 'wouter';
-import {
-  filterTypes,
-  getApiUrl,
-  getGenericRouteByHref,
-  isBrowser,
-  makeEnum,
-  qs,
-  roles,
-} from '../../lib/sharedUtils.js';
+import { filterTypes, makeEnum, roles } from '../../lib/sharedUtils.js';
 import {
   IApiErrors,
   IClientFSPSchema,
@@ -39,16 +30,15 @@ import {
 import { Context, FormContext } from './context.js';
 
 export const Spinner = (props: ISpinnerProps) => {
-  const { wrapperClass = '', spinnerClass = '' } = props;
-  const spinnerStates = makeEnum('hidden', 'visible', 'maybeVisible');
-  const [state, setState] = React.useState<any>(spinnerStates.hidden);
-  React.useEffect(() => {
-    const id = setTimeout(() => setState(spinnerStates.visible), 400);
-    return () => clearTimeout(id);
-  }, []);
+  const { wrapperClass = '', spinnerClass = '', isVisible = true } = props;
+  const computedWrapperClass = cn(
+    'flex items-center justify-center transition-opacity duration-300 delay-500',
+    wrapperClass,
+    { 'opacity-0': !isVisible, 'opacity-1': isVisible }
+  );
 
-  return state === spinnerStates.hidden ? null : (
-    <div className={cn('flex items-center justify-center', wrapperClass)}>
+  return (
+    <div className={computedWrapperClass}>
       <div className={cn('spinner', spinnerClass)}></div>
     </div>
   );
@@ -77,76 +67,6 @@ export const useMergeState: IUseMergeState = initialState => {
   }, []);
 
   return [state, setImmerState];
-};
-
-export const useQuery = () => {
-  const { initialQuery } = useContext();
-  let query;
-  if (isBrowser()) {
-    query = qs.parse(window.location.search.slice(1));
-  } else {
-    query = initialQuery;
-  }
-
-  return { query };
-};
-
-export const storeLoaderData = loaderData => {
-  window.INITIAL_STATE.loaderData = loaderData;
-};
-
-export const useLoaderData = () => {
-  const { axios, initialLoaderData } = useContext();
-  const [location, setLocation] = useLocation();
-  const [loaderData, setLoaderData] = React.useState(() =>
-    isBrowser() ? window.INITIAL_STATE.loaderData : initialLoaderData
-  );
-
-  const refreshLoaderData = async () => {
-    const url = `${location}${window.location.search}`;
-    const loaderData = await axios.get(getApiUrl('loaderData', {}, { url }));
-    storeLoaderData(loaderData);
-    setLoaderData(loaderData);
-  };
-
-  const navigate = async href => {
-    const isRouteWithLoader = getGenericRouteByHref(qs.getPathname(href));
-    if (isRouteWithLoader) {
-      const loaderData = await axios.get(getApiUrl('loaderData', {}, { url: href }));
-      storeLoaderData(loaderData);
-      setLoaderData(loaderData);
-    }
-
-    setLocation(href);
-  };
-
-  return { ...loaderData, refreshLoaderData, navigate };
-};
-
-export const Link = ({ href, children, className = 'link', shouldOverrideClass = false }) => {
-  const { navigate } = useLoaderData();
-  const onClick = () => navigate(href);
-  const linkClass = shouldOverrideClass ? className : cn('link', className);
-
-  return (
-    <div className={linkClass} onClick={onClick}>
-      {children}
-    </div>
-  );
-};
-
-export const NavLink = ({ href, children }) => {
-  const [pathname] = useLocation();
-  const className = cn('nav-link', {
-    'nav-link_active':
-      (href !== '/' && pathname.startsWith(href)) || (href === '/' && pathname === '/'),
-  });
-
-  return (
-    <Link href={href} className={className}>
-      {children}
-    </Link>
-  );
 };
 
 export const userRolesToIcons = {

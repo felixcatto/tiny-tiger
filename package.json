@@ -41,7 +41,6 @@
     "react-zoom-pan-pinch": "^3.0.7",
     "string-math": "^1.2.2",
     "swr": "^2.0.4",
-    "wouter": "^2.11.0",
     "yup": "^1.0.2",
     "zustand": "^4.3.8"
   },

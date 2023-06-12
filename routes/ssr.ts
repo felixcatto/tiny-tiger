@@ -21,18 +21,18 @@ export const ssrRender = async (app: FastifyInstance) => {
 
     const { pathname, query } = qs.splitUrl(url);
     const loaderData = await getLoaderData({ pathname, query, orm });
-    const initialState = { currentUser, query, loaderData };
+    const initialState = { currentUser, pathname, query, loaderData };
 
     if (isProduction(mode)) {
       // @ts-ignore
       const { render } = await import('../server/entry-server.js');
-      appHtml = supressConsoleLog(() => render(pathname, initialState));
+      appHtml = supressConsoleLog(() => render(initialState));
     } else if (isDevelopment(mode)) {
       template = await vite.transformIndexHtml(pathname, template);
       template = template.replace('<body>', '<body style="display: none">'); // avoid FOUC in dev mode
       const { render } = await vite.ssrLoadModule('/client/main/entry-server.tsx');
       try {
-        appHtml = supressConsoleLog(() => render(pathname, initialState));
+        appHtml = supressConsoleLog(() => render(initialState));
       } catch (e) {
         vite.ssrFixStacktrace(e);
         console.log(e.stack);

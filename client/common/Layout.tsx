@@ -1,18 +1,19 @@
 import cn from 'classnames';
-import { getApiUrl, getUrl } from '../../lib/sharedUtils.js';
+import { asyncStates, getApiUrl, getUrl } from '../../lib/sharedUtils.js';
 import { session } from '../globalStore/store.js';
+import { Link, NavLink, useRouter } from '../lib/router.jsx';
 import {
-  Link,
-  NavLink,
+  Spinner,
   popoverRootId,
   useContext,
   useSetGlobalState,
   userRolesToIcons,
 } from '../lib/utils.js';
 import { Notifications } from '../ui/Notifications.jsx';
-import s from './layout.module.css';
+import s from './Layout.module.css';
 
 const Layout = ({ children }: any) => {
+  const { loaderDataState } = useRouter();
   const { axios, useStore } = useContext();
   const setGlobalState = useSetGlobalState();
   const { currentUser, isSignedIn } = useStore(session);
@@ -27,7 +28,12 @@ const Layout = ({ children }: any) => {
   return (
     <div className={s.app}>
       <div className={s.header}>
-        <div className={cn('container', s.headerFg)}>
+        <div className={cn('container relative', s.headerFg)}>
+          <Spinner
+            wrapperClass={s.spinnerWrapper}
+            spinnerClass={s.spinner}
+            isVisible={loaderDataState === asyncStates.pending}
+          />
           <div className="flex items-center">
             <img src="/img/tiger3.webp" className={cn('mr-7', s.logo)} />
             <div className="flex">

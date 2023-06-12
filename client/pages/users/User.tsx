@@ -1,10 +1,9 @@
 import { getUrl } from '../../../lib/sharedUtils.js';
-import Layout from '../../common/layout.jsx';
-import { Link, Spinner, loadable, useLoaderData } from '../../lib/utils.jsx';
+import Layout from '../../common/Layout.jsx';
+import { Link } from '../../lib/router.jsx';
+import { Spinner, loadable } from '../../lib/utils.jsx';
 
-export const User = () => {
-  const props = useLoaderData();
-  console.log(props);
+export const User = props => {
   const { user } = props;
 
   return (

@@ -1,15 +1,14 @@
 import { Form, Formik } from 'formik';
 import { getApiUrl, getUrl } from '../../../lib/sharedUtils.js';
 import { IUser, IUserLoginCreds } from '../../../lib/types.js';
-import Layout from '../../common/layout.js';
+import Layout from '../../common/Layout.jsx';
+import { Link, useRouter } from '../../lib/router.jsx';
 import {
   ErrorMessage,
   Field,
-  Link,
   SubmitBtn,
   WithApiErrors,
   useContext,
-  useLoaderData,
   useSetGlobalState,
   useSubmit,
 } from '../../lib/utils.js';
@@ -17,7 +16,7 @@ import {
 const Login = () => {
   const { axios } = useContext();
   const setGlobalState = useSetGlobalState();
-  const { navigate } = useLoaderData();
+  const { navigate } = useRouter();
 
   const onSubmit = useSubmit(async (userCreds: IUserLoginCreds) => {
     const user = await axios.post<IUser>(getApiUrl('session'), userCreds);

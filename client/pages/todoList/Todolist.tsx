@@ -13,8 +13,9 @@ import {
   yupFromJson,
 } from '../../../lib/sharedUtils.js';
 import { IClientFSPSchema, IFiltersMap, IMixedFilter, ITodo } from '../../../lib/types.js';
-import Layout from '../../common/layout.js';
+import Layout from '../../common/Layout.jsx';
 import { session } from '../../globalStore/store.js';
+import { useRoute, useRouter } from '../../lib/router.jsx';
 import {
   ErrorMessage,
   Field,
@@ -23,8 +24,6 @@ import {
   decodeFSPOpts,
   encodeFSPOpts,
   useContext,
-  useLoaderData,
-  useQuery,
   useSubmit,
 } from '../../lib/utils.js';
 import { HeaderCell } from '../../ui/HeaderCell.js';
@@ -32,15 +31,13 @@ import { makeNotification } from '../../ui/Notifications.jsx';
 import { Pagination } from '../../ui/Pagination.js';
 import s from './styles.module.css';
 
-const TodoList = () => {
-  const props = useLoaderData();
-  console.log('');
-  console.log(props);
-  const { rows, totalRows, refreshLoaderData, navigate } = props;
+const TodoList = props => {
+  const { rows, totalRows } = props;
+  const { refreshLoaderData, navigate } = useRouter();
   const { useStore, axios } = useContext();
   const { isSignedIn } = useStore(session);
   const addNotification = useStore(state => state.addNotification);
-  const { query } = useQuery();
+  const { query } = useRoute();
 
   const FSPOpts = React.useMemo(() => decodeFSPOpts(querySchema, query, defaultFSPOpts), [query]);
   const { page, size, sortBy, sortOrder, filters } = FSPOpts;

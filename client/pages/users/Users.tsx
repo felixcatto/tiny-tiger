@@ -3,22 +3,15 @@ import { isEmpty } from 'lodash-es';
 import React from 'react';
 import { filterTypes, getUrl, roles } from '../../../lib/sharedUtils.js';
 import { IFiltersMap } from '../../../lib/types.js';
-import Layout from '../../common/layout.jsx';
-import {
-  Link,
-  useLoaderData,
-  useSelectedRows,
-  useTable,
-  userRolesToIcons,
-} from '../../lib/utils.js';
+import Layout from '../../common/Layout.jsx';
+import { Link } from '../../lib/router.jsx';
+import { useSelectedRows, useTable, userRolesToIcons } from '../../lib/utils.js';
 import { Checkbox, Expandbox } from '../../ui/Checkbox.jsx';
 import { Collapse } from '../../ui/Collapse.jsx';
 import { HeaderCell } from '../../ui/HeaderCell.jsx';
 import { Pagination } from '../../ui/Pagination.jsx';
 
-export const Users = () => {
-  const props = useLoaderData();
-  console.log(props);
+export const Users = props => {
   const { users } = props;
 
   const tableColCount = 5;

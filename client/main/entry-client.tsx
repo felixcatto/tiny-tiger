@@ -1,9 +1,8 @@
 import '../css/index.css'; // Import FIRST
 // import { isProduction } from '../lib/utils.jsx';
-import { App } from './app';
 // import * as Sentry from '@sentry/browser';
 import { hydrateRoot } from 'react-dom/client';
-import { Router } from 'wouter';
+import { App } from '../common/App.jsx';
 import '../css/tailwind.css'; // Import LAST
 
 // if (isProduction(import.meta.env.MODE)) {
@@ -16,9 +15,4 @@ import '../css/tailwind.css'; // Import LAST
 
 document.body.style.display = ''; // avoid FOUC in dev mode
 
-hydrateRoot(
-  document.getElementById('root')!,
-  <Router>
-    <App {...window.INITIAL_STATE} />
-  </Router>
-);
+hydrateRoot(document.getElementById('root')!, <App {...window.INITIAL_STATE} />);

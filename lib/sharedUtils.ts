@@ -60,19 +60,19 @@ export const getApiUrl = (name: keyof typeof routes, routeParams?, query?) =>
   `/api${getUrl(name, routeParams, query)}`;
 
 export const getGenericRouteByHref: IGetGenericRouteByHref = href => {
-  let genericRoute = null as any;
+  let matchedRoute = null as any;
   const genericRoutes = routesWithLoaders;
 
   for (let i = 0; i < genericRoutes.length; i++) {
-    const testRoute = genericRoutes[i];
-    const isMatched = match(testRoute)(href);
+    const genericRoute = genericRoutes[i];
+    const isMatched = match(genericRoute)(href);
     if (isMatched) {
-      genericRoute = { url: testRoute, params: isMatched.params };
+      matchedRoute = { url: genericRoute, params: isMatched.params };
       break;
     }
   }
 
-  return genericRoute;
+  return matchedRoute;
 };
 
 export const makeEnum: IMakeEnum = (...args) =>

@@ -157,7 +157,8 @@ type IAnyFn = (...args: any) => any;
 export type IContext = {
   axios: IAxiosInstance;
   useStore: UseBoundStore<StoreApi<IStore>>;
-  initialQuery: object;
+  initialPathname: string;
+  initialQuery: IAnyObj;
   initialLoaderData: any;
 };
 
@@ -351,13 +352,16 @@ type IMakeNotificationOpts = {
 } & (INotificationText | INotificationComponent);
 export type IMakeNotification = (opts: IMakeNotificationOpts) => INotification;
 
+export type IAppProps = {
+  currentUser: IUser;
+  pathname: string;
+  query: IAnyObj;
+  loaderData: any;
+};
+
 declare global {
   interface Window {
-    INITIAL_STATE: {
-      currentUser: IUser;
-      query: IAnyObj;
-      loaderData: any;
-    };
+    INITIAL_STATE: IAppProps;
   }
 }
 
@@ -377,6 +381,7 @@ export type IGqlResponse<T extends keyof Query> = {
 export type ISpinnerProps = {
   wrapperClass?: string;
   spinnerClass?: string;
+  isVisible?: boolean;
 };
 
 export type ILoadable = <T extends IAnyFn>(
@@ -385,3 +390,16 @@ export type ILoadable = <T extends IAnyFn>(
 ) => Awaited<ReturnType<T>>['default'];
 
 export type IGetGenericRouteByHref = (href: string) => { url: string; params: object } | null;
+
+export type IUseRouter = {
+  refreshLoaderData: () => Promise<void>;
+  navigate: (href: string) => Promise<void>;
+  loaderDataState: IAsyncState;
+};
+
+export type IRoute = {
+  path: string;
+  component: React.FC;
+  shouldRender?: boolean;
+  [key: string]: any;
+};

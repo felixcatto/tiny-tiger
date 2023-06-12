@@ -1,4 +1,4 @@
-import Layout from '../../common/layout.jsx';
+import Layout from '../../common/Layout.jsx';
 import { SpinnerAtMiddleScreen, loadable } from '../../lib/utils.jsx';
 
 const ProjectStructure = loadable(() => import('./ProjectStructure.jsx'), {

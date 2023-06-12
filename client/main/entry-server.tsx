@@ -1,10 +1,4 @@
 import { renderToString } from 'react-dom/server';
-import { Router } from 'wouter';
-import { App } from './app.js';
+import { App } from '../common/App.jsx';
 
-export const render = (url, initialState) =>
-  renderToString(
-    <Router ssrPath={url}>
-      <App {...initialState} />
-    </Router>
-  );
+export const render = initialState => renderToString(<App {...initialState} />);
