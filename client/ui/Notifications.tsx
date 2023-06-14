@@ -2,11 +2,10 @@ import cn from 'classnames';
 import { uniqueId } from 'lodash-es';
 import React from 'react';
 import { IMakeNotification } from '../../lib/types.js';
-import { getCssValue, useContext, useSetGlobalState } from '../lib/utils.jsx';
+import { getCssValue, useSetGlobalState, useStore } from '../lib/utils.jsx';
 import s from './Notifications.module.css';
 
 export const Notifications = () => {
-  const { useStore } = useContext();
   const setGlobalState = useSetGlobalState();
   const notifications = useStore(state => state.notifications);
   const removeNotification = useStore(state => state.removeNotification);

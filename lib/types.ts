@@ -5,7 +5,7 @@ import { FormikHelpers } from 'formik';
 import { Draft } from 'immer';
 import { Knex } from 'knex';
 import * as y from 'yup';
-import { StoreApi, UseBoundStore } from 'zustand';
+import { StoreApi } from 'zustand';
 import makeActions from '../client/globalStore/actions.js';
 import { storeSlice } from '../client/globalStore/store.js';
 import { Query } from '../client/gqlTypes/graphql.js';
@@ -152,11 +152,13 @@ export type IGetGlobalState = () => IStoreSlice & IActions;
 
 export type IStore = IStoreSlice & IActions & { setGlobalState: ISetGlobalState };
 
+export type IUseStore = <T>(selector: (state: IStore) => T) => T;
+
 type IAnyFn = (...args: any) => any;
 
 export type IContext = {
   axios: IAxiosInstance;
-  useStore: UseBoundStore<StoreApi<IStore>>;
+  globalStore: StoreApi<IStore>;
   initialPathname: string;
   initialQuery: IAnyObj;
   initialLoaderData: any;

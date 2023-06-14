@@ -9,6 +9,7 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import stringMath from 'string-math';
 import useSWR from 'swr';
+import { useStore as useStoreRaw } from 'zustand';
 import { filterTypes, makeEnum, roles } from '../../lib/sharedUtils.js';
 import {
   IApiErrors,
@@ -23,6 +24,7 @@ import {
   ISpinnerProps,
   IUseMergeState,
   IUseSelectedRows,
+  IUseStore,
   IUseSubmit,
   IUseTable,
   IUseTableState,
@@ -360,10 +362,12 @@ export const useGql = <TResponse = any, TVariables = any>(query, variables?: TVa
 
 export const selectedRowsStates = makeEnum('all', 'none', 'partially');
 
-export const useSetGlobalState = () => {
-  const { useStore } = useContext();
-  return useStore(state => state.setGlobalState);
+export const useStore: IUseStore = selector => {
+  const { globalStore } = useContext();
+  return useStoreRaw(globalStore, selector);
 };
+
+export const useSetGlobalState = () => useStore(state => state.setGlobalState);
 
 export const loadable: ILoadable =
   typeof rawLoadable === 'function' ? rawLoadable : rawLoadable.default;

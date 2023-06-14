@@ -24,6 +24,7 @@ import {
   decodeFSPOpts,
   encodeFSPOpts,
   useContext,
+  useStore,
   useSubmit,
 } from '../../lib/utils.js';
 import { HeaderCell } from '../../ui/HeaderCell.js';
@@ -34,7 +35,7 @@ import s from './styles.module.css';
 const TodoList = props => {
   const { rows, totalRows } = props;
   const { refreshLoaderData, navigate } = useRouter();
-  const { useStore, axios } = useContext();
+  const { axios } = useContext();
   const { isSignedIn } = useStore(session);
   const addNotification = useStore(state => state.addNotification);
   const { query } = useRoute();

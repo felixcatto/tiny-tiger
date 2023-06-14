@@ -362,3 +362,6 @@ table {
     transform: rotate(360deg);
   }
 }
+
+@tailwind components;
+@tailwind utilities;

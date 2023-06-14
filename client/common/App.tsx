@@ -1,6 +1,6 @@
 import originalAxios from 'axios';
 import { SWRConfig } from 'swr';
-import { create } from 'zustand';
+import { createStore } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { getUrl } from '../../lib/sharedUtils.js';
 import { IAppProps, IContext } from '../../lib/types.js';
@@ -31,23 +31,23 @@ export const App = (props: IAppProps) => {
     dedupingInterval: 7000,
   };
 
-  const store = Object.keys(storeSlice).reduce((acc, key) => {
+  const initializedStoreSlice = Object.keys(storeSlice).reduce((acc, key) => {
     const makeFn = storeSlice[key];
     return { ...acc, [key]: makeFn() };
   }, {});
 
-  const useStore = create<any>(
-    immer((set, get) => ({
-      setGlobalState: set,
-      ...makeActions(set, get),
-      ...store,
-      currentUser: storeSlice.currentUser(currentUser),
-    }))
-  );
+  const globalStoreState = (set, get) => ({
+    setGlobalState: set,
+    ...makeActions(set, get),
+    ...initializedStoreSlice,
+    currentUser: storeSlice.currentUser(currentUser),
+  });
+
+  const globalStore: any = createStore(immer(globalStoreState));
 
   const contextStore: IContext = {
     axios,
-    useStore,
+    globalStore,
     initialPathname: pathname,
     initialQuery: query,
     initialLoaderData: loaderData,

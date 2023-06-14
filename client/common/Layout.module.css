@@ -23,6 +23,7 @@
 }
 
 .logo {
+  width: 74px;
   height: 50px;
   transform: scale(1.2);
 }

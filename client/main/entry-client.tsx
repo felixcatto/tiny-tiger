@@ -3,7 +3,6 @@ import '../css/index.css'; // Import FIRST
 // import * as Sentry from '@sentry/browser';
 import { hydrateRoot } from 'react-dom/client';
 import { App } from '../common/App.jsx';
-import '../css/tailwind.css'; // Import LAST
 
 // if (isProduction(import.meta.env.MODE)) {
 //   Sentry.init({

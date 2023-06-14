@@ -7,6 +7,7 @@ import {
   popoverRootId,
   useContext,
   useSetGlobalState,
+  useStore,
   userRolesToIcons,
 } from '../lib/utils.js';
 import { Notifications } from '../ui/Notifications.jsx';
@@ -14,7 +15,7 @@ import s from './Layout.module.css';
 
 const Layout = ({ children }: any) => {
   const { loaderDataState } = useRouter();
-  const { axios, useStore } = useContext();
+  const { axios } = useContext();
   const setGlobalState = useSetGlobalState();
   const { currentUser, isSignedIn } = useStore(session);
 
