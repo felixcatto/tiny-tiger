@@ -1,5 +1,5 @@
 import { configure } from '@testing-library/dom';
-import { loadEnv } from '../../devUtils.js';
+import { loadEnv } from '../../scripts/devUtils.js';
 
 loadEnv({ useEnvConfig: 'development', isSilent: true });
 

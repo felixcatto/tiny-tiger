@@ -2,13 +2,20 @@ install:
 	npm i
 
 start:
-	npx gulp dev
+	npx nodemon --watch 'server/*' --watch 'index.html' \
+	--exec 'node --loader @swc-node/register/esm' server/bin/server.ts
+# 	npx graphql-codegen
 
 start-production:
 	NODE_ENV=production node dist/bin/server.js
 
 build:
-	npx gulp build
+	rm -rf dist
+	npx swc server -C jsc.target=es2022 -C sourceMaps=true -d dist
+# 	npx sentry-cli sourcemaps inject dist
+# 	npx sentry-cli sourcemaps upload --use-artifact-bundle dist
+	npx vite build
+	npx vite build --outDir dist/public/server --ssr client/main/entry-server.tsx
 
 analyze-bundle:
 	ANALYZE=true npx vite build
@@ -64,7 +71,7 @@ lint:
 	npx tsc
 
 madge-project-structure:
-	npx gulp makeProjectStructure
+	node scripts/madge.js
 
 caddy-reload-config:
 	docker compose exec caddy caddy reload --config="/etc/caddy/Caddyfile"

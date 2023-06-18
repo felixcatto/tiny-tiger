@@ -16,7 +16,7 @@ import knexConfig from '../../knexfile.js';
 import { guestUser, isAdmin, isSignedIn, isTest } from './sharedUtils.js';
 import { IAuthenticate, IGqlCtx, IValidate, IValidateMW } from './types.js';
 
-export { loadEnv } from '../../devUtils.js';
+export { loadEnv } from '../../scripts/devUtils.js';
 export * from './sharedUtils.js';
 
 export const dirname = url => fileURLToPath(path.dirname(url));

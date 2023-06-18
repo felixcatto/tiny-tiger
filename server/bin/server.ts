@@ -6,7 +6,7 @@ loadEnv();
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
-  tracesSampleRate: 1.0, // TODO: adjust in prod???
+  tracesSampleRate: 0,
 });
 
 const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost';
