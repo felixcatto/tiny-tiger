@@ -2,7 +2,8 @@ import '../css/index.css'; // Import FIRST
 // import { isProduction } from '../lib/utils.jsx';
 // import * as Sentry from '@sentry/browser';
 import { hydrateRoot } from 'react-dom/client';
-import { App } from '../common/App.jsx';
+import { Router } from '../lib/router.jsx';
+import { App } from './App.jsx';
 
 // if (isProduction(import.meta.env.MODE)) {
 //   Sentry.init({
@@ -14,4 +15,9 @@ import { App } from '../common/App.jsx';
 
 document.body.style.display = ''; // avoid FOUC in dev mode
 
-hydrateRoot(document.getElementById('root')!, <App {...window.INITIAL_STATE} />);
+hydrateRoot(
+  document.getElementById('root')!,
+  <Router loaderData={window.INITIAL_STATE.loaderData}>
+    <App {...window.INITIAL_STATE} />
+  </Router>
+);

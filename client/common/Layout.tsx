@@ -14,7 +14,7 @@ import { Notifications } from '../ui/Notifications.jsx';
 import s from './Layout.module.css';
 
 const Layout = ({ children }: any) => {
-  const { loaderDataState } = useRouter();
+  const loaderDataState = useRouter(s => s.loaderDataState);
   const { axios } = useContext();
   const setGlobalState = useSetGlobalState();
   const { currentUser, isSignedIn } = useStore(session);

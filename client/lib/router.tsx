@@ -1,7 +1,9 @@
+import originalAxios from 'axios';
 import cn from 'classnames';
 import { omit } from 'lodash-es';
 import { match } from 'path-to-regexp';
 import React from 'react';
+import { createStore, useStore } from 'zustand';
 import {
   asyncStates,
   getApiUrl,
@@ -9,79 +11,105 @@ import {
   isBrowser,
   qs,
 } from '../../lib/sharedUtils.js';
-import { IAsyncState, IRoute, IUseRouter } from '../../lib/types.js';
+import {
+  IGetRouterState,
+  IRoute,
+  IRouterProps,
+  ISetRouterState,
+  IUseRouter,
+} from '../../lib/types.js';
 import { RouterContext } from '../lib/context.jsx';
-import { useContext } from '../lib/utils.jsx';
 
-export const useRouter = () => React.useContext<IUseRouter>(RouterContext);
+export const useRouter: IUseRouter = (selector: any) => {
+  const routerStore = React.useContext(RouterContext);
+  return useStore(routerStore, selector);
+};
 
-export const Switch = ({ children }) => {
-  const { axios, initialLoaderData, initialPathname } = useContext();
-  const [dynamicPathname, setDynamicPathname] = React.useState(initialPathname);
-  const [loaderData, setLoaderData] = React.useState(initialLoaderData);
-  const [loaderDataState, setLoaderDataState] = React.useState<IAsyncState>(asyncStates.idle);
+export const Router = (props: IRouterProps) => {
+  const { loaderData: initialLoaderData, children } = props;
 
-  const ComponentToRender = children.find(component =>
-    match(component.props.path)(dynamicPathname)
-  );
+  const initialPathname = isBrowser() ? window.location.pathname : props.pathname;
+  const initialQuery = isBrowser() ? qs.parse(window.location.search.slice(1)) : props.query;
+
+  const axios = originalAxios.create();
+  axios.interceptors.response.use(response => response.data);
 
   const fetchLoaderData = async href => {
     const isRouteWithLoader = getGenericRouteByHref(qs.getPathname(href));
     if (isRouteWithLoader) return axios.get(getApiUrl('loaderData', {}, { url: href }));
   };
 
+  const routerStore = createStore<any>((set: ISetRouterState, _: IGetRouterState) => ({
+    setRouterState: set,
+
+    refreshLoaderData: async () => {
+      const { pathname, search } = window.location;
+      const url = `${pathname}${search}`;
+      const newLoaderData = await axios.get(getApiUrl('loaderData', {}, { url }));
+      set({ loaderData: newLoaderData });
+    },
+
+    navigate: async href => {
+      const pathname = qs.getPathname(href);
+      set({ loaderDataState: asyncStates.pending });
+
+      const newLoaderData = await fetchLoaderData(href);
+      if (newLoaderData) set({ loaderData: newLoaderData });
+
+      history.pushState(null, '', href);
+      set({
+        loaderDataState: asyncStates.resolved,
+        dynamicPathname: pathname,
+      });
+    },
+
+    initialPathname,
+    initialQuery,
+
+    dynamicPathname: initialPathname,
+    loaderData: initialLoaderData,
+    loaderDataState: asyncStates.idle,
+  }));
+
   React.useEffect(() => {
     const onPopstate = async () => {
+      const set: ISetRouterState = routerStore.setState;
       const { pathname, search } = window.location;
       const href = `${pathname}${search}`;
 
       const newLoaderData = await fetchLoaderData(href);
-      if (newLoaderData) setLoaderData(newLoaderData);
+      if (newLoaderData) set({ loaderData: newLoaderData });
 
-      setDynamicPathname(pathname);
+      set({ dynamicPathname: pathname });
     };
 
     addEventListener('popstate', onPopstate);
     return () => removeEventListener('popstate', onPopstate);
   }, []);
 
-  const routerStore = {
-    refreshLoaderData: async () => {
-      const { pathname, search } = window.location;
-      const url = `${pathname}${search}`;
-      const newLoaderData = await axios.get(getApiUrl('loaderData', {}, { url }));
-      setLoaderData(newLoaderData);
-    },
-
-    navigate: async href => {
-      const pathname = qs.getPathname(href);
-      setLoaderDataState(asyncStates.pending);
-      const newLoaderData = await fetchLoaderData(href);
-      if (newLoaderData) setLoaderData(newLoaderData);
-
-      history.pushState(null, '', href);
-      setLoaderDataState(asyncStates.resolved);
-      setDynamicPathname(pathname);
-    },
-
-    loaderDataState,
-  };
-
-  return (
-    <RouterContext.Provider value={routerStore}>
-      {React.cloneElement(ComponentToRender, { shouldRender: true, ...loaderData })}
-    </RouterContext.Provider>
-  );
+  return <RouterContext.Provider value={routerStore}>{children}</RouterContext.Provider>;
 };
 
-export const Route = (props: IRoute) => {
+export const Switch = ({ children }) => {
+  const dynamicPathname = useRouter(s => s.dynamicPathname);
+  const loaderData = useRouter(s => s.loaderData);
+
+  const ComponentToRender = children.find(component =>
+    match(component.props.path)(dynamicPathname)
+  );
+
+  return React.cloneElement(ComponentToRender, { shouldRender: true, ...loaderData });
+};
+
+export const Route = React.memo((props: IRoute) => {
   const { component, shouldRender } = props;
   const loaderData = omit(props, ['path', 'component', 'shouldRender']);
   return shouldRender ? React.createElement(component, loaderData) : null;
-};
+});
 
 export const useRoute = () => {
-  const { initialQuery, initialPathname } = useContext();
+  const initialPathname = useRouter(s => s.initialPathname);
+  const initialQuery = useRouter(s => s.initialQuery);
   let query;
   let pathname;
   if (isBrowser()) {
@@ -96,7 +124,7 @@ export const useRoute = () => {
 };
 
 export const Link = ({ href, children, className = 'link', shouldOverrideClass = false }) => {
-  const { navigate } = useRouter();
+  const navigate = useRouter(s => s.navigate);
   const onClick = () => navigate(href);
   const linkClass = shouldOverrideClass ? className : cn('link', className);
 

@@ -159,9 +159,6 @@ type IAnyFn = (...args: any) => any;
 export type IContext = {
   axios: IAxiosInstance;
   globalStore: StoreApi<IStore>;
-  initialPathname: string;
-  initialQuery: IAnyObj;
-  initialLoaderData: any;
 };
 
 export type IGetTodosResponse = {
@@ -354,16 +351,21 @@ type IMakeNotificationOpts = {
 } & (INotificationText | INotificationComponent);
 export type IMakeNotification = (opts: IMakeNotificationOpts) => INotification;
 
-export type IAppProps = {
+export type IInitialState = {
   currentUser: IUser;
-  pathname: string;
-  query: IAnyObj;
-  loaderData: any;
+  loaderData: IAnyObj;
+};
+
+export type IRouterProps = {
+  children: any;
+  loaderData: IAnyObj;
+  pathname?: string;
+  query?: IAnyObj;
 };
 
 declare global {
   interface Window {
-    INITIAL_STATE: IAppProps;
+    INITIAL_STATE: IInitialState;
   }
 }
 
@@ -393,11 +395,28 @@ export type ILoadable = <T extends IAnyFn>(
 
 export type IGetGenericRouteByHref = (href: string) => { url: string; params: object } | null;
 
-export type IUseRouter = {
+export type IRouterActions = {
+  setRouterState: ISetRouterState;
   refreshLoaderData: () => Promise<void>;
   navigate: (href: string) => Promise<void>;
-  loaderDataState: IAsyncState;
 };
+
+export type IRouterSlice = {
+  initialQuery: IAnyObj;
+  initialPathname: string;
+
+  loaderDataState: IAsyncState;
+  dynamicPathname: string;
+  loaderData: IAnyObj;
+};
+
+type ISetRouterStateUpdateFn = (state: IRouterSlice) => Partial<IRouterSlice> | void;
+export type ISetRouterState = (arg: Partial<IRouterSlice> | ISetRouterStateUpdateFn) => void;
+export type IGetRouterState = () => IRouterSlice & IRouterActions;
+
+type IRouterStore = IRouterActions & IRouterSlice;
+
+export type IUseRouter = <T>(selector: (state: IRouterStore) => T) => T;
 
 export type IRoute = {
   path: string;

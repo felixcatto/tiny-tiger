@@ -16,7 +16,7 @@ import {
 const Login = () => {
   const { axios } = useContext();
   const setGlobalState = useSetGlobalState();
-  const { navigate } = useRouter();
+  const navigate = useRouter(s => s.navigate);
 
   const onSubmit = useSubmit(async (userCreds: IUserLoginCreds) => {
     const user = await axios.post<IUser>(getApiUrl('session'), userCreds);

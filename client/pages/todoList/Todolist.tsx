@@ -34,7 +34,9 @@ import s from './styles.module.css';
 
 const TodoList = props => {
   const { rows, totalRows } = props;
-  const { refreshLoaderData, navigate } = useRouter();
+  console.log(rows);
+  const refreshLoaderData = useRouter(s => s.refreshLoaderData);
+  const navigate = useRouter(s => s.navigate);
   const { axios } = useContext();
   const { isSignedIn } = useStore(session);
   const addNotification = useStore(state => state.addNotification);

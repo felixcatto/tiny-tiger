@@ -1,4 +1,10 @@
 import { renderToString } from 'react-dom/server';
-import { App } from '../common/App.jsx';
+import { Router } from '../lib/router.jsx';
+import { App } from './App.jsx';
 
-export const render = initialState => renderToString(<App {...initialState} />);
+export const render = (routerProps, initialState) =>
+  renderToString(
+    <Router {...routerProps}>
+      <App {...initialState} />
+    </Router>
+  );

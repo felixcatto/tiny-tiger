@@ -13,6 +13,7 @@ import { Pagination } from '../../ui/Pagination.jsx';
 
 export const Users = props => {
   const { users } = props;
+  console.log(users);
 
   const tableColCount = 5;
   const { rows, totalRows, paginationProps, headerCellProps } = useTable({

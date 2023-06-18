@@ -3,14 +3,20 @@ import { SWRConfig } from 'swr';
 import { createStore } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { getUrl } from '../../lib/sharedUtils.js';
-import { IAppProps, IContext } from '../../lib/types.js';
+import { routes } from '../../lib/sharedUtils.js';
+import { IContext, IInitialState } from '../../lib/types.js';
 import makeActions from '../globalStore/actions.js';
 import { storeSlice } from '../globalStore/store.js';
 import { Context } from '../lib/context.jsx';
-import { AppRoutes } from './AppRoutes.jsx';
+import { Route, Switch } from '../lib/router.jsx';
+import { ProjectStructureAsync } from '../pages/projectStructure/ProjectStructureAsync.jsx';
+import Login from '../pages/session/Login.jsx';
+import Todolist from '../pages/todoList/Todolist.jsx';
+import { User } from '../pages/users/User.jsx';
+import { Users } from '../pages/users/Users.jsx';
 
-export const App = (props: IAppProps) => {
-  const { currentUser, pathname, query, loaderData } = props;
+export const App = (props: IInitialState) => {
+  const { currentUser } = props;
 
   const axios = originalAxios.create();
   axios.interceptors.response.use(
@@ -45,18 +51,18 @@ export const App = (props: IAppProps) => {
 
   const globalStore: any = createStore(immer(globalStoreState));
 
-  const contextStore: IContext = {
-    axios,
-    globalStore,
-    initialPathname: pathname,
-    initialQuery: query,
-    initialLoaderData: loaderData,
-  };
+  const contextStore: IContext = { axios, globalStore };
 
   return (
     <Context.Provider value={contextStore}>
       <SWRConfig value={swrConfig}>
-        <AppRoutes />
+        <Switch>
+          <Route path={routes.home} component={Todolist} />
+          <Route path={routes.newSession} component={Login} />
+          <Route path={routes.users} component={Users} />
+          <Route path={routes.user} component={User} />
+          <Route path={routes.projectStructure} component={ProjectStructureAsync} />
+        </Switch>
       </SWRConfig>
     </Context.Provider>
   );
