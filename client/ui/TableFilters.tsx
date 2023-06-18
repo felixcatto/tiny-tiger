@@ -1,7 +1,7 @@
 import cn from 'classnames';
 import { isEmpty } from 'lodash-es';
 import React from 'react';
-import { ISearchFilterProps, ISelectFilterProps, ISelectOption } from '../../lib/types.js';
+import { ISearchFilterProps, ISelectFilterProps, ISelectOption } from '../../server/lib/types.js';
 import { useMergeState } from '../lib/utils.js';
 import { Checkbox } from './Checkbox.js';
 

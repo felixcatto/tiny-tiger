@@ -4,15 +4,7 @@ import produce from 'immer';
 import { isArray, isEmpty, isString, isUndefined } from 'lodash-es';
 import React from 'react';
 import * as y from 'yup';
-import {
-  filterTypes,
-  getApiUrl,
-  getUrl,
-  paginationSchema,
-  sortOrders,
-  yupFromJson,
-} from '../../../lib/sharedUtils.js';
-import { IClientFSPSchema, IFiltersMap, IMixedFilter, ITodo } from '../../../lib/types.js';
+import { IClientFSPSchema, IFiltersMap, IMixedFilter, ITodo } from '../../../server/lib/types.js';
 import Layout from '../../common/Layout.jsx';
 import { session } from '../../globalStore/store.js';
 import { useRoute, useRouter } from '../../lib/router.jsx';
@@ -27,6 +19,14 @@ import {
   useStore,
   useSubmit,
 } from '../../lib/utils.js';
+import {
+  filterTypes,
+  getApiUrl,
+  getUrl,
+  paginationSchema,
+  sortOrders,
+  yupFromJson,
+} from '../../lib/utils.jsx';
 import { HeaderCell } from '../../ui/HeaderCell.js';
 import { makeNotification } from '../../ui/Notifications.jsx';
 import { Pagination } from '../../ui/Pagination.js';

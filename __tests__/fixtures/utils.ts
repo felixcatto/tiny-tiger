@@ -1,9 +1,8 @@
 import cookie from 'cookie';
 import { FastifyInstance } from 'fastify';
 import { isString } from 'lodash-es';
-import { getApiUrl } from '../../lib/utils.js';
+import { getApiUrl, sessionName } from '../../server/lib/utils.js';
 import usersFixture from './users.js';
-import { sessionName } from '../../lib/utils.js';
 
 const [admin] = usersFixture;
 export const getLoginCookie = async (server: FastifyInstance, user = admin) => {

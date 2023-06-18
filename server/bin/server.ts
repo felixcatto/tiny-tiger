@@ -1,6 +1,6 @@
+import * as Sentry from '@sentry/node';
 import { loadEnv } from '../lib/utils.js';
 import getApp from '../main/index.js';
-import * as Sentry from '@sentry/node';
 
 loadEnv();
 

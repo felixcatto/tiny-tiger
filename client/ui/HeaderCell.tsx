@@ -1,8 +1,8 @@
 import cn from 'classnames';
 import { isEmpty, isNil } from 'lodash-es';
 import React from 'react';
-import { filterTypes, sortOrders } from '../../lib/sharedUtils.js';
-import { IHeaderCellProps, ISortOrder } from '../../lib/types.js';
+import { IHeaderCellProps, ISortOrder } from '../../server/lib/types.js';
+import { filterTypes, sortOrders } from '../lib/utils.jsx';
 import s from './HeaderCell.module.css';
 import { Popup, usePopup } from './Popup.jsx';
 import { SearchFilter, SelectFilter } from './TableFilters.jsx';

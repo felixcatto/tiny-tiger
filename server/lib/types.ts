@@ -6,10 +6,10 @@ import { Draft } from 'immer';
 import { Knex } from 'knex';
 import * as y from 'yup';
 import { StoreApi } from 'zustand';
-import makeActions from '../client/globalStore/actions.js';
-import { storeSlice } from '../client/globalStore/store.js';
-import { Query } from '../client/gqlTypes/graphql.js';
-import { selectedRowsStates } from '../client/lib/utils.jsx';
+import makeActions from '../../client/globalStore/actions.js';
+import { storeSlice } from '../../client/globalStore/store.js';
+import { Query } from '../../client/gqlTypes/graphql.js';
+import { selectedRowsStates } from '../../client/lib/utils.jsx';
 import * as models from '../models/index.js';
 import {
   Todo,

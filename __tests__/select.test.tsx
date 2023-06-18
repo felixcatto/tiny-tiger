@@ -1,14 +1,13 @@
 /**
  * @jest-environment jsdom
  */
-
 import { jest } from '@jest/globals';
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { Select } from '../client/ui/Select.jsx';
 import { popoverRootId } from '../client/lib/utils.jsx';
-import { ISelectedOption } from '../lib/types.js';
+import { Select } from '../client/ui/Select.jsx';
+import { ISelectedOption } from '../server/lib/types.js';
 
 describe('Select', () => {
   const options = [

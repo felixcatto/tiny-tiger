@@ -12,11 +12,11 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createServer } from 'vite';
 import * as y from 'yup';
-import knexConfig from '../knexfile.js';
-import { guestUser, isAdmin, isSignedIn } from './sharedUtils.js';
+import knexConfig from '../../knexfile.js';
+import { guestUser, isAdmin, isSignedIn, isTest } from './sharedUtils.js';
 import { IAuthenticate, IGqlCtx, IValidate, IValidateMW } from './types.js';
 
-export { loadEnv } from './devUtils.js';
+export { loadEnv } from '../../devUtils.js';
 export * from './sharedUtils.js';
 
 export const dirname = url => fileURLToPath(path.dirname(url));
@@ -287,4 +287,15 @@ export const sentryPlugin = fp(async app => {
       Sentry.captureException(error);
     });
   });
+});
+
+export const loggerOptions = mode => ({
+  disableRequestLogging: true,
+  logger: {
+    level: isTest(mode) ? 'silent' : 'debug',
+    transport: {
+      target: 'pino-pretty',
+      options: { translateTime: 'SYS:HH:MM:ss', ignore: 'reqId,pid,hostname' },
+    },
+  },
 });

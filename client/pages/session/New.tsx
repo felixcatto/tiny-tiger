@@ -1,6 +1,5 @@
 import { Form, Formik } from 'formik';
-import { getApiUrl, getUrl } from '../../../lib/sharedUtils.js';
-import { IUser, IUserLoginCreds } from '../../../lib/types.js';
+import { IUser, IUserLoginCreds } from '../../../server/lib/types.js';
 import Layout from '../../common/Layout.jsx';
 import { Link, useRouter } from '../../lib/router.jsx';
 import {
@@ -12,6 +11,7 @@ import {
   useSetGlobalState,
   useSubmit,
 } from '../../lib/utils.js';
+import { getApiUrl, getUrl } from '../../lib/utils.jsx';
 
 const NewSessionRaw = () => {
   const { axios } = useContext();

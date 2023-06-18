@@ -7,8 +7,7 @@ import {
   dirname,
   isDevelopment,
   isProduction,
-  isTest,
-  modes,
+  loggerOptions,
   objectionPlugin,
   vitePlugin,
 } from '../lib/utils.js';
@@ -20,31 +19,13 @@ const getApp = () => {
   const keys = process.env.KEYS!.split(',');
   const keygrip = makeKeygrip(keys);
   const __dirname = dirname(import.meta.url);
+
+  const app = fastify(loggerOptions(mode));
+
   const pathPublic = path.resolve(__dirname, '../public');
-
-  const app = fastify({
-    disableRequestLogging: true,
-    logger: {
-      level: isTest(mode) ? 'silent' : 'debug',
-      transport: {
-        target: 'pino-pretty',
-        options: { translateTime: 'SYS:HH:MM:ss', ignore: 'reqId,pid,hostname' },
-      },
-    },
-  });
-
-  let templatePath;
-  switch (mode) {
-    case modes.production:
-      templatePath = path.resolve(pathPublic, 'index.html');
-      break;
-    case modes.development:
-      templatePath = path.resolve(__dirname, '../../index.html');
-      break;
-    case modes.test:
-      templatePath = path.resolve(__dirname, '../index.html');
-      break;
-  }
+  const templatePath = isProduction(mode)
+    ? path.resolve(pathPublic, 'index.html')
+    : path.resolve(__dirname, '../../index.html');
   const template = fs.readFileSync(templatePath, 'utf-8');
 
   app.decorate('orm', null);

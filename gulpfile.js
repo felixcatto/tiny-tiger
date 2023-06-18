@@ -8,26 +8,12 @@ import swc from 'gulp-swc';
 import madge from 'madge';
 import waitOn from 'wait-on';
 
-const { series, parallel } = gulp;
+const { series } = gulp;
 const spawnNpxAsync = async args => spawnAsync('npx', args, { stdio: 'inherit' });
 
 const paths = {
   dest: 'dist',
-  serverJs: {
-    src: [
-      '*/**/*.{js,ts,tsx}',
-      'knexfile.js',
-      '!node_modules/**',
-      '!dist/**',
-      '!public/**',
-      '!client/**',
-      '!__tests__/**',
-      '!seeds/**',
-      '!migrations/**',
-      '!services/**',
-    ],
-  },
-  misc: '.env*',
+  serverJs: { src: ['server/**/*.{js,ts,tsx}', 'knexfile.js'] },
 };
 
 let server;
@@ -57,13 +43,13 @@ const clean = async () => deleteAsync(['dist']);
 
 const transpileServerJs = () =>
   gulp
-    .src(paths.serverJs.src, { base: '.', since: gulp.lastRun(transpileServerJs) })
+    .src(paths.serverJs.src, { since: gulp.lastRun(transpileServerJs) })
     .pipe(swc({ jsc: { target: 'es2022' } }))
     .pipe(gulp.dest(paths.dest));
 
 const transpileServerJsWithSourcemaps = () =>
   gulp
-    .src(paths.serverJs.src, { base: '.', since: gulp.lastRun(transpileServerJs) })
+    .src(paths.serverJs.src, { since: gulp.lastRun(transpileServerJs) })
     .pipe(sourcemaps.init())
     .pipe(swc({ sourceMaps: true, inlineSourcesContent: true, jsc: { target: 'es2022' } }))
     .pipe(sourcemaps.write('.'))
@@ -74,16 +60,14 @@ const transpileServerJsWithSourcemaps = () =>
 //   await spawnNpxAsync(['sentry-cli', 'sourcemaps', 'upload', '--use-artifact-bundle', 'dist']);
 // };
 
-const copyMisc = () => gulp.src(paths.misc).pipe(gulp.dest(paths.dest));
-
-const viteBuildClient = async () => spawnNpxAsync(['vite', 'build', '--outDir', 'dist/public']);
+const viteBuildClient = async () => spawnNpxAsync(['vite', 'build']);
 
 const viteBuildSSR = async () =>
   spawnNpxAsync([
     'vite',
     'build',
     '--outDir',
-    'dist/server',
+    'dist/public/server',
     '--ssr',
     'client/main/entry-server.tsx',
   ]);
@@ -91,14 +75,14 @@ const viteBuildSSR = async () =>
 // const makeGqlTypes = async () => spawnNpxAsync(['graphql-codegen']);
 
 const makeProjectStructure = async () => {
-  const result = await madge(['client/main/entry-client.tsx', 'main/index.ts'], {
+  const result = await madge(['client/main/entry-client.tsx', 'server/main/index.ts'], {
     dependencyFilter: importedDependency => {
       const isTypeImport = importedDependency.match(/types\.ts$/);
       return !isTypeImport;
     },
   });
   const svg = await result.svg();
-  fs.writeFileSync('public/img/project-structure.svg', svg);
+  fs.writeFileSync('server/public/img/project-structure.svg', svg);
 };
 
 const trackChangesInDist = () => {
@@ -117,7 +101,7 @@ const watch = async () => {
 
 export const dev = series(
   clean,
-  parallel(transpileServerJs, copyMisc),
+  transpileServerJs,
   startServer,
   // makeGqlTypes,
   watch
@@ -125,7 +109,7 @@ export const dev = series(
 
 export const build = series(
   clean,
-  parallel(copyMisc, transpileServerJsWithSourcemaps),
+  transpileServerJsWithSourcemaps,
   // uploadServerSourcemaps,
   viteBuildClient,
   viteBuildSSR

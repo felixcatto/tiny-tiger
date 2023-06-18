@@ -1,5 +1,5 @@
 import React from 'react';
-import { IApiErrors } from '../../lib/types.js';
+import { IApiErrors } from '../../server/lib/types.js';
 
 export const Context = React.createContext(null as any);
 

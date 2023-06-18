@@ -1,8 +1,8 @@
 import { omit, orderBy } from 'lodash-es';
 import { deleteTodos, getTodos, postTodos, putTodos } from '../client/lib/graphql.js';
-import { ITodo } from '../lib/types.js';
-import { gqlApi, leftJoin, makeGqlPayload } from '../lib/utils.js';
-import getApp from '../main/index.js';
+import { ITodo } from '../server/lib/types.js';
+import { gqlApi, leftJoin, makeGqlPayload } from '../server/lib/utils.js';
+import getApp from '../server/main/index.js';
 import todosFixture, { extraTodos, fullTodos } from './fixtures/todos.js';
 import usersFixture from './fixtures/users.js';
 import { getLoginCookie } from './fixtures/utils.js';

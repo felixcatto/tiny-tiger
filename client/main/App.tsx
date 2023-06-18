@@ -2,16 +2,16 @@ import originalAxios from 'axios';
 import { SWRConfig } from 'swr';
 import { createStore } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import { getUrl, routes } from '../../lib/sharedUtils.js';
-import { IContext, IInitialState } from '../../lib/types.js';
+import { IContext, IInitialState } from '../../server/lib/types.js';
 import makeActions from '../globalStore/actions.js';
 import { storeSlice } from '../globalStore/store.js';
 import { Context } from '../lib/context.jsx';
 import { Route, Switch } from '../lib/router.jsx';
+import { getUrl, routes } from '../lib/utils.jsx';
 import { ProjectStructureAsync } from '../pages/projectStructure/Index.jsx';
 import { NewSession } from '../pages/session/New.jsx';
 import { Todos } from '../pages/todos/Index.jsx';
-import { User } from '../pages/users/#id.jsx';
+import { User } from '../pages/users/@id.jsx';
 import { Users } from '../pages/users/Index.jsx';
 
 export const App = (props: IInitialState) => {

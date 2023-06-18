@@ -5,20 +5,14 @@ import { match } from 'path-to-regexp';
 import React from 'react';
 import { createStore, useStore } from 'zustand';
 import {
-  asyncStates,
-  getApiUrl,
-  getGenericRouteByHref,
-  isBrowser,
-  qs,
-} from '../../lib/sharedUtils.js';
-import {
   IGetRouterState,
   IRoute,
   IRouterProps,
   ISetRouterState,
   IUseRouter,
-} from '../../lib/types.js';
+} from '../../server/lib/types.js';
 import { RouterContext } from '../lib/context.jsx';
+import { asyncStates, getApiUrl, getGenericRouteByHref, isBrowser, qs } from '../lib/utils.jsx';
 
 export const Router = (props: IRouterProps) => {
   const { loaderData: initialLoaderData, children } = props;

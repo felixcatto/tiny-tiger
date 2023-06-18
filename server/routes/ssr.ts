@@ -1,4 +1,5 @@
 import { FastifyInstance } from 'fastify';
+import path from 'path';
 import { getLoaderData } from '../lib/ssrRoutes.js';
 import { ILoaderDataSchema } from '../lib/types.js';
 import {
@@ -12,7 +13,7 @@ import {
 } from '../lib/utils.js';
 
 export const ssrRender = async (app: FastifyInstance) => {
-  const { mode, vite, orm, template: rawTemplate } = app;
+  const { mode, vite, orm, pathPublic, template: rawTemplate } = app;
 
   app.get('/*', async (req, reply) => {
     const { currentUser, url } = req;
@@ -25,8 +26,8 @@ export const ssrRender = async (app: FastifyInstance) => {
     const initialState = { loaderData, currentUser };
 
     if (isProduction(mode)) {
-      // @ts-ignore
-      const { render } = await import('../server/entry-server.js');
+      const serverEntryPath = path.resolve(pathPublic, 'server/entry-server.js');
+      const { render } = await import(serverEntryPath);
       appHtml = supressConsoleLog(() => render(routerProps, initialState));
     } else if (isDevelopment(mode)) {
       template = await vite.transformIndexHtml(pathname, template);

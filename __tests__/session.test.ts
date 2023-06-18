@@ -1,6 +1,12 @@
 import { omit } from 'lodash-es';
-import { authenticate, composeValue, getApiUrl, guestUser, sessionName } from '../lib/utils.js';
-import getApp from '../main/index.js';
+import {
+  authenticate,
+  composeValue,
+  getApiUrl,
+  guestUser,
+  sessionName,
+} from '../server/lib/utils.js';
+import getApp from '../server/main/index.js';
 import usersFixture from './fixtures/users.js';
 import { getLoginCookie } from './fixtures/utils.js';
 

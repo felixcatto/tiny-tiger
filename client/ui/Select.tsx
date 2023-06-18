@@ -2,7 +2,7 @@ import { Placement } from '@floating-ui/react';
 import cn from 'classnames';
 import { isEmpty, isFunction, isNull, isString } from 'lodash-es';
 import React from 'react';
-import { ISelectOption } from '../../lib/types.js';
+import { ISelectOption } from '../../server/lib/types.js';
 import { makeCaseInsensitiveRegex, useMergeState } from '../lib/utils.js';
 import { Popup, usePopup } from './Popup.js';
 import s from './Select.module.css';

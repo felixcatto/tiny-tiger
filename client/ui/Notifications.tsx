@@ -1,7 +1,7 @@
 import cn from 'classnames';
 import { uniqueId } from 'lodash-es';
 import React from 'react';
-import { IMakeNotification } from '../../lib/types.js';
+import { IMakeNotification } from '../../server/lib/types.js';
 import { getCssValue, useSetGlobalState, useStore } from '../lib/utils.jsx';
 import s from './Notifications.module.css';
 

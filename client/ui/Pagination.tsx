@@ -1,5 +1,5 @@
 import cn from 'classnames';
-import { makeEnum } from '../../lib/sharedUtils.js';
+import { makeEnum } from '../lib/utils.jsx';
 import s from './Pagination.module.css';
 import { Select } from './Select.js';
 

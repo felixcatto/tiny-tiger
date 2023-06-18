@@ -10,7 +10,7 @@ import { createPortal } from 'react-dom';
 import stringMath from 'string-math';
 import useSWR from 'swr';
 import { useStore as useStoreRaw } from 'zustand';
-import { filterTypes, makeEnum, roles } from '../../lib/sharedUtils.js';
+import { filterTypes, makeEnum, roles } from '../../server/lib/sharedUtils.js';
 import {
   IApiErrors,
   IClientFSPSchema,
@@ -28,8 +28,10 @@ import {
   IUseSubmit,
   IUseTable,
   IUseTableState,
-} from '../../lib/types.js';
+} from '../../server/lib/types.js';
 import { Context, FormContext } from './context.js';
+
+export * from '../../server/lib/sharedUtils.js';
 
 export const Spinner = (props: ISpinnerProps) => {
   const { wrapperClass = '', spinnerClass = '', isVisible = true } = props;

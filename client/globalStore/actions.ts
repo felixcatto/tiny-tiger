@@ -1,5 +1,5 @@
 import { isNull } from 'lodash-es';
-import { IGetGlobalState, INotification, ISetGlobalState } from '../../lib/types.js';
+import { IGetGlobalState, INotification, ISetGlobalState } from '../../server/lib/types.js';
 
 const makeActions = (set: ISetGlobalState, get: IGetGlobalState) => ({
   removeNotification: async id => {

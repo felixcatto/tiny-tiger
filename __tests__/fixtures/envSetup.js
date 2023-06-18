@@ -1,7 +1,7 @@
 import { configure } from '@testing-library/dom';
-import * as dotenv from 'dotenv';
+import { loadEnv } from '../../devUtils.js';
 
-dotenv.config({ path: `.env.development` });
+loadEnv({ useEnvConfig: 'development', isSilent: true });
 
 configure({ testIdAttribute: 'data-test' });
 

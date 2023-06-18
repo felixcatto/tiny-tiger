@@ -1,7 +1,6 @@
-import { getUrl } from '../../../lib/sharedUtils.js';
 import Layout from '../../common/Layout.jsx';
 import { Link } from '../../lib/router.jsx';
-import { Spinner, loadable } from '../../lib/utils.jsx';
+import { Spinner, getUrl, loadable } from '../../lib/utils.jsx';
 
 export const User = props => {
   const { user } = props;

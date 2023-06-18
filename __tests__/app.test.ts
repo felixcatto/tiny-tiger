@@ -1,4 +1,4 @@
-import getApp from '../main/index.js';
+import getApp from '../server/main/index.js';
 
 describe('requests', () => {
   const server = getApp();

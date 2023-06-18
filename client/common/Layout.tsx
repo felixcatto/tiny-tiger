@@ -1,5 +1,4 @@
 import cn from 'classnames';
-import { asyncStates, getApiUrl, getUrl } from '../../lib/sharedUtils.js';
 import { session } from '../globalStore/store.js';
 import { Link, NavLink, useRouter } from '../lib/router.jsx';
 import {
@@ -10,6 +9,7 @@ import {
   useStore,
   userRolesToIcons,
 } from '../lib/utils.js';
+import { asyncStates, getApiUrl, getUrl } from '../lib/utils.jsx';
 import { Notifications } from '../ui/Notifications.jsx';
 import s from './Layout.module.css';
 

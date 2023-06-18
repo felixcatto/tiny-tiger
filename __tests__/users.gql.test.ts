@@ -1,7 +1,7 @@
 import { omit } from 'lodash-es';
 import { getUsers } from '../client/lib/graphql.js';
-import { gqlApi, makeGqlPayload } from '../lib/utils.js';
-import getApp from '../main/index.js';
+import { gqlApi, makeGqlPayload } from '../server/lib/utils.js';
+import getApp from '../server/main/index.js';
 import usersFixture from './fixtures/users.js';
 
 describe('users', () => {

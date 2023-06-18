@@ -1,11 +1,11 @@
 import cn from 'classnames';
 import { isEmpty } from 'lodash-es';
 import React from 'react';
-import { filterTypes, getUrl, roles } from '../../../lib/sharedUtils.js';
-import { IFiltersMap } from '../../../lib/types.js';
+import { IFiltersMap } from '../../../server/lib/types.js';
 import Layout from '../../common/Layout.jsx';
 import { Link } from '../../lib/router.jsx';
 import { useSelectedRows, useTable, userRolesToIcons } from '../../lib/utils.js';
+import { filterTypes, getUrl, roles } from '../../lib/utils.jsx';
 import { Checkbox, Expandbox } from '../../ui/Checkbox.jsx';
 import { Collapse } from '../../ui/Collapse.jsx';
 import { HeaderCell } from '../../ui/HeaderCell.jsx';

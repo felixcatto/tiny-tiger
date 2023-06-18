@@ -1,6 +1,6 @@
 import { memoize } from 'proxy-memoize';
-import { guestUser, isAdmin, isSignedIn } from '../../lib/sharedUtils.js';
-import { INotification, IStoreSlice, IUser } from '../../lib/types.js';
+import { INotification, IStoreSlice, IUser } from '../../server/lib/types.js';
+import { guestUser, isAdmin, isSignedIn } from '../lib/utils.jsx';
 
 export const storeSlice = {
   currentUser: (initialState: IUser = guestUser) => initialState,

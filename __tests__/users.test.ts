@@ -1,7 +1,7 @@
 import { omit } from 'lodash-es';
-import { IUserClass } from '../lib/types.js';
-import { getApiUrl } from '../lib/utils.js';
-import getApp from '../main/index.js';
+import { IUserClass } from '../server/lib/types.js';
+import { getApiUrl } from '../server/lib/utils.js';
+import getApp from '../server/main/index.js';
 import usersFixture from './fixtures/users.js';
 
 describe('users', () => {
