@@ -20,11 +20,6 @@ import {
 } from '../../lib/types.js';
 import { RouterContext } from '../lib/context.jsx';
 
-export const useRouter: IUseRouter = (selector: any) => {
-  const routerStore = React.useContext(RouterContext);
-  return useStore(routerStore, selector);
-};
-
 export const Router = (props: IRouterProps) => {
   const { loaderData: initialLoaderData, children } = props;
 
@@ -107,22 +102,6 @@ export const Route = React.memo((props: IRoute) => {
   return shouldRender ? React.createElement(component, loaderData) : null;
 });
 
-export const useRoute = () => {
-  const initialPathname = useRouter(s => s.initialPathname);
-  const initialQuery = useRouter(s => s.initialQuery);
-  let query;
-  let pathname;
-  if (isBrowser()) {
-    pathname = window.location.pathname;
-    query = qs.parse(window.location.search.slice(1));
-  } else {
-    pathname = initialPathname;
-    query = initialQuery;
-  }
-
-  return { pathname, query };
-};
-
 export const Link = ({ href, children, className = 'link', shouldOverrideClass = false }) => {
   const navigate = useRouter(s => s.navigate);
   const onClick = () => navigate(href);
@@ -147,4 +126,25 @@ export const NavLink = ({ href, children }) => {
       {children}
     </Link>
   );
+};
+
+export const useRouter: IUseRouter = (selector: any) => {
+  const routerStore = React.useContext(RouterContext);
+  return useStore(routerStore, selector);
+};
+
+export const useRoute = () => {
+  const initialPathname = useRouter(s => s.initialPathname);
+  const initialQuery = useRouter(s => s.initialQuery);
+  let query;
+  let pathname;
+  if (isBrowser()) {
+    pathname = window.location.pathname;
+    query = qs.parse(window.location.search.slice(1));
+  } else {
+    pathname = initialPathname;
+    query = initialQuery;
+  }
+
+  return { pathname, query };
 };

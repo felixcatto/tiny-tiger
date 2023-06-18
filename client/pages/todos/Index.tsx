@@ -32,7 +32,7 @@ import { makeNotification } from '../../ui/Notifications.jsx';
 import { Pagination } from '../../ui/Pagination.js';
 import s from './styles.module.css';
 
-const TodoList = props => {
+const TodosRaw = props => {
   const { rows, totalRows } = props;
   console.log(rows);
   const refreshLoaderData = useRouter(s => s.refreshLoaderData);
@@ -300,4 +300,4 @@ const todoFilterSchema = y.object({
 
 const querySchema = paginationSchema.concat(todoSortSchema).concat(todoFilterSchema);
 
-export default WithApiErrors(TodoList);
+export const Todos = WithApiErrors(TodosRaw);

@@ -2,18 +2,17 @@ import originalAxios from 'axios';
 import { SWRConfig } from 'swr';
 import { createStore } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import { getUrl } from '../../lib/sharedUtils.js';
-import { routes } from '../../lib/sharedUtils.js';
+import { getUrl, routes } from '../../lib/sharedUtils.js';
 import { IContext, IInitialState } from '../../lib/types.js';
 import makeActions from '../globalStore/actions.js';
 import { storeSlice } from '../globalStore/store.js';
 import { Context } from '../lib/context.jsx';
 import { Route, Switch } from '../lib/router.jsx';
-import { ProjectStructureAsync } from '../pages/projectStructure/ProjectStructureAsync.jsx';
-import Login from '../pages/session/Login.jsx';
-import Todolist from '../pages/todoList/Todolist.jsx';
-import { User } from '../pages/users/User.jsx';
-import { Users } from '../pages/users/Users.jsx';
+import { ProjectStructureAsync } from '../pages/projectStructure/Index.jsx';
+import { NewSession } from '../pages/session/New.jsx';
+import { Todos } from '../pages/todos/Index.jsx';
+import { User } from '../pages/users/#id.jsx';
+import { Users } from '../pages/users/Index.jsx';
 
 export const App = (props: IInitialState) => {
   const { currentUser } = props;
@@ -57,8 +56,8 @@ export const App = (props: IInitialState) => {
     <Context.Provider value={contextStore}>
       <SWRConfig value={swrConfig}>
         <Switch>
-          <Route path={routes.home} component={Todolist} />
-          <Route path={routes.newSession} component={Login} />
+          <Route path={routes.home} component={Todos} />
+          <Route path={routes.newSession} component={NewSession} />
           <Route path={routes.users} component={Users} />
           <Route path={routes.user} component={User} />
           <Route path={routes.projectStructure} component={ProjectStructureAsync} />
