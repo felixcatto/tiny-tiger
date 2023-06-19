@@ -35,7 +35,7 @@ import s from './styles.module.css';
 const TodosRaw = props => {
   const { rows, totalRows } = props;
   console.log(rows);
-  const refreshLoaderData = useRouter(s => s.refreshLoaderData);
+  const refreshRouteData = useRouter(s => s.refreshRouteData);
   const navigate = useRouter(s => s.navigate);
   const { axios } = useContext();
   const { isSignedIn } = useStore(session);
@@ -83,7 +83,7 @@ const TodosRaw = props => {
       addNotification(makeNotification({ title: 'Todo', text: 'Created successfully' }));
     }
     fmActions.resetForm();
-    refreshLoaderData();
+    refreshRouteData();
     setEditingTodo(null);
   });
 
@@ -96,7 +96,7 @@ const TodosRaw = props => {
       ...todo,
       is_completed: !todo.is_completed,
     });
-    refreshLoaderData();
+    refreshRouteData();
   };
 
   const cancelEdit = () => {
@@ -105,7 +105,7 @@ const TodosRaw = props => {
 
   const deleteTodo = id => async () => {
     await axios.delete(getApiUrl('todo', { id }));
-    refreshLoaderData();
+    refreshRouteData();
   };
 
   const todoClass = todo =>

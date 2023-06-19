@@ -1,13 +1,8 @@
 import { isArray, isEmpty, isNumber, isString } from 'lodash-es';
+import { getGenericDataRoute } from '../../client/lib/routerUtils.js';
 import { todoFilterSchema, todoSortSchema } from '../models/Todo.js';
 import { IAnyObj, IFSPSchema, IOrm } from './types.js';
-import {
-  getGenericRouteByHref,
-  ivalidate,
-  paginationSchema,
-  routes,
-  routesWithLoaders,
-} from './utils.js';
+import { dataRoutes, ivalidate, paginationSchema, routes } from './utils.js';
 
 type IOpts = {
   pathname: string;
@@ -16,21 +11,24 @@ type IOpts = {
   orm: IOrm;
 };
 
-type ILoaderOpts = Omit<IOpts, 'params'>;
-
-type IRouteLoaders = {
-  [key in (typeof routesWithLoaders)[number]]: (opts: IOpts) => any;
+type IGetRouteDataOpts = {
+  url: string;
+  orm: IOrm;
 };
 
-export const getLoaderData = async (opts: ILoaderOpts) => {
-  const { pathname, query } = opts;
-  const genericRoute = getGenericRouteByHref(pathname);
-  if (!genericRoute) return {};
+type IRouteLoaders = {
+  [key in (typeof dataRoutes)[number]]: (opts: IOpts) => any;
+};
 
-  const loadRouteData = routeLoaders[genericRoute.url];
+export const getRouteData = async (opts: IGetRouteDataOpts) => {
+  const { url, ...restOpts } = opts;
+  const dataRoute = getGenericDataRoute(url, dataRoutes);
+  if (!dataRoute) return {};
+
+  const loadRouteData = routeLoaders[dataRoute.genericUrl];
   if (!loadRouteData) return {};
 
-  return loadRouteData({ ...opts, params: genericRoute.params, query });
+  return loadRouteData({ ...restOpts, params: dataRoute.params, query: dataRoute.query });
 };
 
 const routeLoaders: IRouteLoaders = {

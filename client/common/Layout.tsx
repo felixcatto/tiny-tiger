@@ -1,7 +1,9 @@
 import cn from 'classnames';
 import { session } from '../globalStore/store.js';
-import { Link, NavLink, useRouter } from '../lib/router.jsx';
+import { useRouter } from '../lib/router.jsx';
 import {
+  Link,
+  NavLink,
   Spinner,
   popoverRootId,
   useContext,
@@ -14,7 +16,7 @@ import { Notifications } from '../ui/Notifications.jsx';
 import s from './Layout.module.css';
 
 const Layout = ({ children }: any) => {
-  const loaderDataState = useRouter(s => s.loaderDataState);
+  const routeDataState = useRouter(s => s.routeDataState);
   const { axios } = useContext();
   const setGlobalState = useSetGlobalState();
   const { currentUser, isSignedIn } = useStore(session);
@@ -33,7 +35,7 @@ const Layout = ({ children }: any) => {
           <Spinner
             wrapperClass={s.spinnerWrapper}
             spinnerClass={s.spinner}
-            isVisible={loaderDataState === asyncStates.pending}
+            isVisible={routeDataState === asyncStates.pending}
           />
           <div className="flex items-center">
             <img src="/img/tiger3.webp" className={cn('mr-7', s.logo)} />

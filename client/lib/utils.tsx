@@ -30,6 +30,7 @@ import {
   IUseTableState,
 } from '../../server/lib/types.js';
 import { Context, FormContext } from './context.js';
+import { Link as RawLink, useRoute } from './router.jsx';
 
 export * from '../../server/lib/sharedUtils.js';
 
@@ -163,6 +164,30 @@ export const Portal = ({ children, selector }) => {
   }, [selector]);
 
   return mounted ? createPortal(children, ref.current) : null;
+};
+
+export const Link = ({ href, children, className = 'link', shouldOverrideClass = false }) => {
+  const linkClass = shouldOverrideClass ? className : cn('link', className);
+
+  return (
+    <RawLink className={linkClass} href={href}>
+      {children}
+    </RawLink>
+  );
+};
+
+export const NavLink = ({ href, children }) => {
+  const { pathname } = useRoute();
+  const className = cn('nav-link', {
+    'nav-link_active':
+      (href !== '/' && pathname.startsWith(href)) || (href === '/' && pathname === '/'),
+  });
+
+  return (
+    <Link href={href} className={className}>
+      {children}
+    </Link>
+  );
 };
 
 export const makeCaseInsensitiveRegex = str =>

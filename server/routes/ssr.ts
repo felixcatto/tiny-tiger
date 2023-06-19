@@ -1,13 +1,15 @@
 import { FastifyInstance } from 'fastify';
 import path from 'path';
-import { getLoaderData } from '../lib/ssrRoutes.js';
-import { ILoaderDataSchema } from '../lib/types.js';
+import { IRouterProps } from '../../client/lib/routerTypes.js';
+import { getRouteData } from '../lib/ssrRoutes.js';
+import { IInitialState, IRouteDataSchema } from '../lib/types.js';
 import {
+  dataRoutes,
   getUrl,
   isDevelopment,
   isProduction,
-  loaderDataSchema,
   qs,
+  routeDataSchema,
   supressConsoleLog,
   validate,
 } from '../lib/utils.js';
@@ -21,9 +23,9 @@ export const ssrRender = async (app: FastifyInstance) => {
     let appHtml;
 
     const { pathname, query } = qs.splitUrl(url);
-    const loaderData = await getLoaderData({ pathname, query, orm });
-    const routerProps = { loaderData, pathname, query };
-    const initialState = { loaderData, currentUser };
+    const routeData = await getRouteData({ orm, url });
+    const routerProps: IRouterProps = { routeData, pathname, query, dataRoutes };
+    const initialState: IInitialState = { routeData, currentUser };
 
     if (isProduction(mode)) {
       const serverEntryPath = path.resolve(pathPublic, 'server/entry-server.js');
@@ -50,17 +52,16 @@ export const ssrRender = async (app: FastifyInstance) => {
   });
 };
 
-export const loaderData = async (app: FastifyInstance) => {
+export const routeData = async (app: FastifyInstance) => {
   const { orm } = app;
 
   app.get(
-    getUrl('loaderData'),
-    { preHandler: validate(loaderDataSchema, 'query') },
+    getUrl('routeData'),
+    { preHandler: validate(routeDataSchema, 'query') },
     async (req, reply) => {
-      const { url } = req.vlQuery as ILoaderDataSchema;
-      const { pathname, query } = qs.splitUrl(url);
-      const loaderData = await getLoaderData({ orm, pathname, query });
-      reply.send(loaderData);
+      const { url } = req.vlQuery as IRouteDataSchema;
+      const routeData = await getRouteData({ orm, url });
+      reply.send(routeData);
     }
   );
 };

@@ -24,9 +24,9 @@ import {
   apiTypes,
   asyncStates,
   filterTypes,
-  loaderDataSchema,
   paginationSchema,
   roles,
+  routeDataSchema,
   sortOrders,
 } from './utils.js';
 
@@ -204,7 +204,7 @@ export type ISearchFilterObj = {
 export type IFilter = ISelectFilterObj | ISearchFilterObj;
 export type IFiltersMap = Record<string, Anyify<IFilter> & { filterOptions?: any }>;
 
-export type ILoaderDataSchema = y.InferType<typeof loaderDataSchema>;
+export type IRouteDataSchema = y.InferType<typeof routeDataSchema>;
 export type IPaginationSchema = y.InferType<typeof paginationSchema>;
 export type ISortSchema = {
   sortOrder?: Exclude<ISortOrder, 'none'>;
@@ -353,14 +353,7 @@ export type IMakeNotification = (opts: IMakeNotificationOpts) => INotification;
 
 export type IInitialState = {
   currentUser: IUser;
-  loaderData: IAnyObj;
-};
-
-export type IRouterProps = {
-  children: any;
-  loaderData: IAnyObj;
-  pathname?: string;
-  query?: IAnyObj;
+  routeData: IAnyObj;
 };
 
 declare global {
@@ -392,35 +385,3 @@ export type ILoadable = <T extends IAnyFn>(
   dynamicImportFn: T,
   opts?: { fallback: any }
 ) => Awaited<ReturnType<T>>['default'];
-
-export type IGetGenericRouteByHref = (href: string) => { url: string; params: object } | null;
-
-export type IRouterActions = {
-  setRouterState: ISetRouterState;
-  refreshLoaderData: () => Promise<void>;
-  navigate: (href: string) => Promise<void>;
-};
-
-export type IRouterSlice = {
-  initialQuery: IAnyObj;
-  initialPathname: string;
-
-  loaderDataState: IAsyncState;
-  dynamicPathname: string;
-  loaderData: IAnyObj;
-};
-
-type ISetRouterStateUpdateFn = (state: IRouterSlice) => Partial<IRouterSlice> | void;
-export type ISetRouterState = (arg: Partial<IRouterSlice> | ISetRouterStateUpdateFn) => void;
-export type IGetRouterState = () => IRouterSlice & IRouterActions;
-
-type IRouterStore = IRouterActions & IRouterSlice;
-
-export type IUseRouter = <T>(selector: (state: IRouterStore) => T) => T;
-
-export type IRoute = {
-  path: string;
-  component: React.FC;
-  shouldRender?: boolean;
-  [key: string]: any;
-};

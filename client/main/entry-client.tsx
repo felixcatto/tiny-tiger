@@ -4,6 +4,7 @@ import '../css/index.css'; // Import FIRST
 import { hydrateRoot } from 'react-dom/client';
 import { Router } from '../lib/router.jsx';
 import { App } from './App.jsx';
+import { dataRoutes, fetchRouteData } from '../lib/utils.jsx';
 
 // if (isProduction(import.meta.env.MODE)) {
 //   Sentry.init({
@@ -17,7 +18,11 @@ document.body.style.display = ''; // avoid FOUC in dev mode
 
 hydrateRoot(
   document.getElementById('root')!,
-  <Router loaderData={window.INITIAL_STATE.loaderData}>
+  <Router
+    routeData={window.INITIAL_STATE.routeData}
+    fetchRouteData={fetchRouteData}
+    dataRoutes={dataRoutes}
+  >
     <App {...window.INITIAL_STATE} />
   </Router>
 );

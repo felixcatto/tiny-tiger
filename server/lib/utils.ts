@@ -221,7 +221,7 @@ export const leftJoin = (mainEntities, joinedEntities, mainKey, joinedKey, joinP
     return { ...mainEntity, [joinProp]: result };
   });
 
-export const loaderDataSchema = y.object({
+export const routeDataSchema = y.object({
   url: y.string().required(),
 });
 

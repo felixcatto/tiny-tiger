@@ -1,7 +1,8 @@
+import axios from 'axios';
 import { isEmpty, isString } from 'lodash-es';
-import { compile, match } from 'path-to-regexp';
+import { compile } from 'path-to-regexp';
 import * as y from 'yup';
-import { IGetGenericRouteByHref, IGqlApi, IMakeEnum, IMakeUrlFor } from './types.js';
+import { IGqlApi, IMakeEnum, IMakeUrlFor } from './types.js';
 
 export const qs = {
   stringify: (obj = {}) => {
@@ -50,29 +51,18 @@ export const routes = {
   session: '/session',
   newSession: '/session/new',
   projectStructure: '/project-structure',
-  loaderData: '/loader-data',
+  routeData: '/route-data',
 } as const;
 
-export const routesWithLoaders = [routes.home, routes.users, routes.user] as const;
+export const dataRoutes = [routes.home, routes.users, routes.user] as const;
 
 export const getUrl = makeUrlFor(routes);
 export const getApiUrl = (name: keyof typeof routes, routeParams?, query?) =>
   `/api${getUrl(name, routeParams, query)}`;
 
-export const getGenericRouteByHref: IGetGenericRouteByHref = href => {
-  let matchedRoute = null as any;
-  const genericRoutes = routesWithLoaders;
-
-  for (let i = 0; i < genericRoutes.length; i++) {
-    const genericRoute = genericRoutes[i];
-    const isMatched = match(genericRoute)(href);
-    if (isMatched) {
-      matchedRoute = { url: genericRoute, params: isMatched.params };
-      break;
-    }
-  }
-
-  return matchedRoute;
+export const fetchRouteData = async url => {
+  const { data } = await axios.get(getApiUrl('routeData', {}, { url }));
+  return data;
 };
 
 export const makeEnum: IMakeEnum = (...args) =>
