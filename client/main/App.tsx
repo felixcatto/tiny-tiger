@@ -1,3 +1,4 @@
+import { NotificationsProvider } from '@felixcatto/ui';
 import originalAxios from 'axios';
 import { SWRConfig } from 'swr';
 import { createStore } from 'zustand';
@@ -55,13 +56,15 @@ export const App = (props: IInitialState) => {
   return (
     <Context.Provider value={contextStore}>
       <SWRConfig value={swrConfig}>
-        <Switch>
-          <Route path={routes.home} component={Todos} />
-          <Route path={routes.newSession} component={NewSession} />
-          <Route path={routes.users} component={Users} />
-          <Route path={routes.user} component={User} />
-          <Route path={routes.projectStructure} component={ProjectStructureAsync} />
-        </Switch>
+        <NotificationsProvider>
+          <Switch>
+            <Route path={routes.home} component={Todos} />
+            <Route path={routes.newSession} component={NewSession} />
+            <Route path={routes.users} component={Users} />
+            <Route path={routes.user} component={User} />
+            <Route path={routes.projectStructure} component={ProjectStructureAsync} />
+          </Switch>
+        </NotificationsProvider>
       </SWRConfig>
     </Context.Provider>
   );

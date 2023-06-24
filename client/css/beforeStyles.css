@@ -1,0 +1,5 @@
+@import './vendor/bootstrap-grid.css';
+@import './vendor/fontawesome.min.css';
+@import './vendor/regular.css';
+@import './vendor/solid.css';
+@tailwind base;

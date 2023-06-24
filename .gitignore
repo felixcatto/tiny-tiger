@@ -12,3 +12,7 @@ npm-debug.log*
 # typescript
 *.tsbuildinfo
 *.css.d.ts
+
+# Local Dev
+.yalc/
+yalc.lock

@@ -1,3 +1,4 @@
+import { HeaderCell, Pagination, makeNotification, useNotifications } from '@felixcatto/ui';
 import cn from 'classnames';
 import { Form, Formik } from 'formik';
 import produce from 'immer';
@@ -27,9 +28,6 @@ import {
   sortOrders,
   yupFromJson,
 } from '../../lib/utils.jsx';
-import { HeaderCell } from '../../ui/HeaderCell.js';
-import { makeNotification } from '../../ui/Notifications.jsx';
-import { Pagination } from '../../ui/Pagination.js';
 import s from './styles.module.css';
 
 const TodosRaw = props => {
@@ -39,7 +37,7 @@ const TodosRaw = props => {
   const navigate = useRouter(s => s.navigate);
   const { axios } = useContext();
   const { isSignedIn } = useStore(session);
-  const addNotification = useStore(state => state.addNotification);
+  const addNotification = useNotifications(state => state.addNotification);
   const { query } = useRoute();
 
   const FSPOpts = React.useMemo(() => decodeFSPOpts(querySchema, query, defaultFSPOpts), [query]);

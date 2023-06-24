@@ -11,6 +11,7 @@ loadEnv();
 
 let config = defineConfig({
   publicDir: 'server/public',
+  optimizeDeps: { exclude: ['@felixcatto/ui'] },
   build: { sourcemap: true, outDir: 'dist/public' },
   plugins: [
     react(),

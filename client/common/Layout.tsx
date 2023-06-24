@@ -1,3 +1,4 @@
+import { Notifications, popoverRootId } from '@felixcatto/ui';
 import cn from 'classnames';
 import { session } from '../globalStore/store.js';
 import { useRouter } from '../lib/router.jsx';
@@ -5,14 +6,12 @@ import {
   Link,
   NavLink,
   Spinner,
-  popoverRootId,
   useContext,
   useSetGlobalState,
   useStore,
   userRolesToIcons,
 } from '../lib/utils.js';
 import { asyncStates, getApiUrl, getUrl } from '../lib/utils.jsx';
-import { Notifications } from '../ui/Notifications.jsx';
 import s from './Layout.module.css';
 
 const Layout = ({ children }: any) => {

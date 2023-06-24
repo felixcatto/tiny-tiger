@@ -13,7 +13,7 @@
   "dependencies": {
     "@fastify/middie": "^8.1.0",
     "@fastify/static": "^6.9.0",
-    "@floating-ui/react": "^0.20.1",
+    "@felixcatto/ui": "0.0.37",
     "@loadable/component": "^5.15.3",
     "@sentry/browser": "^7.48.0",
     "@sentry/node": "^7.48.0",

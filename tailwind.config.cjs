@@ -24,7 +24,7 @@ const rem2px = (input, fontSize = 16) => {
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ['./client/**/*.{js,jsx,ts,tsx}'],
+  content: ['./client/**/*.{js,jsx,ts,tsx}', './node_modules/@felixcatto/ui/src/**/*.{ts,tsx}'],
   theme: {
     spacing: rem2px(defaultTheme.spacing),
     extend: {

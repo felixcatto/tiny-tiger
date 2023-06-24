@@ -1,3 +1,4 @@
+import { Checkbox, Collapse, Expandbox, HeaderCell, Pagination } from '@felixcatto/ui';
 import cn from 'classnames';
 import { isEmpty } from 'lodash-es';
 import React from 'react';
@@ -5,10 +6,6 @@ import { IFiltersMap } from '../../../server/lib/types.js';
 import Layout from '../../common/Layout.jsx';
 import { Link, useSelectedRows, useTable, userRolesToIcons } from '../../lib/utils.js';
 import { filterTypes, getUrl, roles } from '../../lib/utils.jsx';
-import { Checkbox, Expandbox } from '../../ui/Checkbox.jsx';
-import { Collapse } from '../../ui/Collapse.jsx';
-import { HeaderCell } from '../../ui/HeaderCell.jsx';
-import { Pagination } from '../../ui/Pagination.jsx';
 
 export const Users = props => {
   const { users } = props;

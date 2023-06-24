@@ -1,13 +1,12 @@
 /**
  * @jest-environment jsdom
  */
+import { Select } from '@felixcatto/ui';
 import { jest } from '@jest/globals';
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { popoverRootId } from '../client/lib/utils.jsx';
-import { Select } from '../client/ui/Select.jsx';
-import { ISelectedOption } from '../server/lib/types.js';
 
 describe('Select', () => {
   const options = [
@@ -18,7 +17,7 @@ describe('Select', () => {
     { label: 'Butter', value: 'Butter' },
   ];
 
-  const renderSelect = (onSelect, selectedOption: ISelectedOption = null) => (
+  const renderSelect = (onSelect, selectedOption: any = null) => (
     <div>
       <Select options={options} selectedOption={selectedOption} onSelect={onSelect} />
       <div id={popoverRootId}></div>
