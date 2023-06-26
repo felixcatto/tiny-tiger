@@ -1,6 +1,6 @@
 import { isArray, isEmpty, isNumber, isString } from 'lodash-es';
-import { getGenericDataRoute } from '../../client/lib/routerUtils.js';
 import { todoFilterSchema, todoSortSchema } from '../models/Todo.js';
+import { getGenericDataRoute } from './routerUtils.js';
 import { IAnyObj, IFSPSchema, IOrm } from './types.js';
 import { dataRoutes, ivalidate, paginationSchema, routes } from './utils.js';
 

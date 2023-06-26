@@ -1,5 +1,5 @@
 import { match } from 'path-to-regexp';
-import { IGetGenericDataRoute, IMakeEnum } from './routerTypes.js';
+import { IGetGenericDataRoute, IMakeEnum } from '../../client/lib/routerTypes.js';
 
 const makeEnum: IMakeEnum = (...args) =>
   args.reduce((acc, key) => ({ ...acc, [key]: key }), {} as any);

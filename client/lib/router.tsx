@@ -2,6 +2,7 @@ import { match } from 'path-to-regexp';
 import React from 'react';
 import invariant from 'tiny-invariant';
 import { createStore, useStore } from 'zustand';
+import { asyncStates, getGenericDataRoute, isBrowser, qs } from '../../server/lib/routerUtils.js';
 import {
   IGetRouterState,
   IRoute,
@@ -9,7 +10,6 @@ import {
   ISetRouterState,
   IUseRouter,
 } from './routerTypes.js';
-import { asyncStates, getGenericDataRoute, isBrowser, qs } from './routerUtils.js';
 
 export const Router = (props: IRouterProps) => {
   const { routeData: initialRouteData, fetchRouteData, dataRoutes, children } = props;
