@@ -1,9 +1,9 @@
 import { HeaderCell, Pagination, makeNotification, useNotifications } from '@felixcatto/ui';
 import cn from 'classnames';
-import { Form, Formik } from 'formik';
 import produce from 'immer';
 import { isArray, isEmpty, isString, isUndefined } from 'lodash-es';
 import React from 'react';
+import { useForm } from 'react-hook-form';
 import * as y from 'yup';
 import { IClientFSPSchema, IFiltersMap, IMixedFilter, ITodo } from '../../../server/lib/types.js';
 import Layout from '../../common/Layout.jsx';
@@ -11,14 +11,12 @@ import { session } from '../../globalStore/store.js';
 import { useRoute, useRouter } from '../../lib/router.jsx';
 import {
   ErrorMessage,
-  Field,
-  SubmitBtn,
-  WithApiErrors,
   decodeFSPOpts,
   encodeFSPOpts,
+  onRHFSubmit,
+  setFormValues,
   useContext,
   useStore,
-  useSubmit,
 } from '../../lib/utils.js';
 import {
   filterTypes,
@@ -30,7 +28,7 @@ import {
 } from '../../lib/utils.jsx';
 import s from './styles.module.css';
 
-const TodosRaw = props => {
+export const Todos = props => {
   const { rows, totalRows } = props;
   console.log(rows);
   const refreshRouteData = useRouter(s => s.refreshRouteData);
@@ -64,29 +62,39 @@ const TodosRaw = props => {
 
   const [editingTodo, setEditingTodo] = React.useState<ITodo | null>(null);
 
-  const initialValues = editingTodo
-    ? {
-        name: editingTodo.author?.name,
-        email: editingTodo.author?.email,
-        text: editingTodo.text,
-      }
-    : { name: '', email: '', text: '' };
+  const getDefaultValues = (todo?: ITodo) =>
+    todo
+      ? {
+          name: todo.author?.name,
+          email: todo.author?.email,
+          text: todo.text,
+        }
+      : { name: '', email: '', text: '' };
 
-  const onSubmit = useSubmit(async (values, fmActions) => {
-    if (editingTodo) {
-      await axios.put(getApiUrl('todo', { id: editingTodo.id }), { text: values.text });
-      addNotification(makeNotification({ title: 'Todo', text: 'Edited successfully' }));
-    } else {
-      await axios.post(getApiUrl('todos'), values);
-      addNotification(makeNotification({ title: 'Todo', text: 'Created successfully' }));
-    }
-    fmActions.resetForm();
-    refreshRouteData();
-    setEditingTodo(null);
+  const { register, handleSubmit, formState, setError, setValue, reset } = useForm({
+    defaultValues: getDefaultValues(),
   });
+  const { isSubmitting, errors } = formState;
 
-  const editTodo = todo => async () => {
+  const onSubmit = onRHFSubmit(
+    async values => {
+      if (editingTodo) {
+        await axios.put(getApiUrl('todo', { id: editingTodo.id }), { text: values.text });
+        addNotification(makeNotification({ title: 'Todo', text: 'Edited successfully' }));
+      } else {
+        await axios.post(getApiUrl('todos'), values);
+        addNotification(makeNotification({ title: 'Todo', text: 'Created successfully' }));
+      }
+      reset();
+      refreshRouteData();
+      setEditingTodo(null);
+    },
+    { setError }
+  );
+
+  const editTodo = todo => () => {
     setEditingTodo(todo);
+    setFormValues(setValue, getDefaultValues(todo));
   };
 
   const changeTodoStatus = todo => async () => {
@@ -99,6 +107,7 @@ const TodosRaw = props => {
 
   const cancelEdit = () => {
     setEditingTodo(null);
+    setFormValues(setValue, getDefaultValues());
   };
 
   const deleteTodo = id => async () => {
@@ -124,45 +133,45 @@ const TodosRaw = props => {
     <Layout>
       <div className="row">
         <div className="col-3">
-          <Formik key={editingTodo?.id ?? '?'} initialValues={initialValues} onSubmit={onSubmit}>
-            <Form>
-              <div className="flex mb-4 items-center">
-                {editingTodo ? (
-                  <>
-                    <h3 className="mb-0">Edit todo</h3>
-                    <i className="fa fa-pen ml-4 text-xl text-secondary"></i>
-                  </>
-                ) : (
-                  <h3 className="mb-0">Add new todo</h3>
-                )}
-              </div>
-              {!isSignedIn && !editingTodo && (
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <div className="flex mb-4 items-center">
+              {editingTodo ? (
                 <>
-                  <div className="mb-4">
-                    <label className="text-sm">Name</label>
-                    <Field className="input" name="name" />
-                    <ErrorMessage name="name" />
-                  </div>
-                  <div className="mb-4">
-                    <label className="text-sm">Email</label>
-                    <Field className="input" name="email" />
-                    <ErrorMessage name="email" />
-                  </div>
+                  <h3 className="mb-0">Edit todo</h3>
+                  <i className="fa fa-pen ml-4 text-xl text-secondary"></i>
                 </>
+              ) : (
+                <h3 className="mb-0">Add new todo</h3>
               )}
-              <div className="mb-6">
-                <label className="text-sm">Text</label>
-                <Field className="input" name="text" as="textarea" />
-                <ErrorMessage name="text" />
-              </div>
-              {editingTodo && (
-                <div className="link mr-3" onClick={cancelEdit}>
-                  Cancel
+            </div>
+            {!isSignedIn && !editingTodo && (
+              <>
+                <div className="mb-4">
+                  <label className="text-sm">Name</label>
+                  <input className="input" {...register('name')} />
+                  <ErrorMessage error={errors.name} />
                 </div>
-              )}
-              <SubmitBtn className="btn btn_primary">{editingTodo ? 'Edit' : 'Add'}</SubmitBtn>
-            </Form>
-          </Formik>
+                <div className="mb-4">
+                  <label className="text-sm">Email</label>
+                  <input className="input" {...register('email')} />
+                  <ErrorMessage error={errors.email} />
+                </div>
+              </>
+            )}
+            <div className="mb-6">
+              <label className="text-sm">Text</label>
+              <textarea className="input" {...register('text')} />
+              <ErrorMessage error={errors.text} />
+            </div>
+            {editingTodo && (
+              <div className="link mr-3" onClick={cancelEdit}>
+                Cancel
+              </div>
+            )}
+            <button type="submit" className="btn" disabled={isSubmitting}>
+              {editingTodo ? 'Edit' : 'Add'}
+            </button>
+          </form>
         </div>
 
         <div className="col-9">
@@ -297,5 +306,3 @@ const todoFilterSchema = y.object({
 });
 
 const querySchema = paginationSchema.concat(todoSortSchema).concat(todoFilterSchema);
-
-export const Todos = WithApiErrors(TodosRaw);

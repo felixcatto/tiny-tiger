@@ -71,16 +71,21 @@ h3 {
   color: #fff;
   background-color: var(--primary);
   border-color: var(--primary);
-  &:hover {
+
+  &:hover:not(&:disabled) {
     text-decoration: none;
     background-color: var(--primary-dark);
     border-color: var(--primary-dark);
   }
-  &:active,
-  &:focus {
+  &:active:not(&:disabled),
+  &:focus:not(&:disabled) {
     background-color: var(--primary-dark);
     border-color: var(--primary-dark);
     box-shadow: 0 0 0 3.2px var(--primary-rgba-50);
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   &_sm {

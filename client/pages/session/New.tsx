@@ -1,59 +1,56 @@
-import { Form, Formik } from 'formik';
+import { useForm } from 'react-hook-form';
 import { IUser, IUserLoginCreds } from '../../../server/lib/types.js';
 import Layout from '../../common/Layout.jsx';
 import { useRouter } from '../../lib/router.jsx';
-import {
-  ErrorMessage,
-  Field,
-  Link,
-  SubmitBtn,
-  WithApiErrors,
-  useContext,
-  useSetGlobalState,
-  useSubmit,
-} from '../../lib/utils.js';
+import { ErrorMessage, Link, onRHFSubmit, useContext, useSetGlobalState } from '../../lib/utils.js';
 import { getApiUrl, getUrl } from '../../lib/utils.jsx';
 
-const NewSessionRaw = () => {
+export const NewSession = () => {
   const { axios } = useContext();
   const setGlobalState = useSetGlobalState();
   const navigate = useRouter(s => s.navigate);
 
-  const onSubmit = useSubmit(async (userCreds: IUserLoginCreds) => {
-    const user = await axios.post<IUser>(getApiUrl('session'), userCreds);
-    setGlobalState({ currentUser: user });
-    navigate(getUrl('home'));
+  const { register, handleSubmit, formState, setError } = useForm({
+    defaultValues: { name: '', password: '' },
   });
+  const { isSubmitting, errors } = formState;
+
+  const onSubmit = onRHFSubmit(
+    async (userCreds: IUserLoginCreds) => {
+      const user = await axios.post<IUser>(getApiUrl('session'), userCreds);
+      setGlobalState({ currentUser: user });
+      navigate(getUrl('home'));
+    },
+    { setError }
+  );
 
   return (
     <Layout>
       <div className="row">
         <div className="col-4">
-          <Formik initialValues={{ name: '', password: '' }} onSubmit={onSubmit}>
-            <Form>
-              <div className="mb-4">
-                <label className="text-sm">Login</label>
-                <Field className="input" name="name" />
-                <ErrorMessage name="name" />
-              </div>
-              <div className="mb-4">
-                <label className="text-sm">Password</label>
-                <Field className="input" name="password" type="password" />
-                <ErrorMessage name="password" />
-              </div>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <div className="mb-4">
+              <label className="text-sm">Login</label>
+              <input className="input" {...register('name')} />
+              <ErrorMessage error={errors.name} />
+            </div>
+            <div className="mb-4">
+              <label className="text-sm">Password</label>
+              <input className="input" type="password" {...register('password')} />
+              <ErrorMessage error={errors.password} />
+            </div>
 
-              <div>
-                <Link href={getUrl('home')} className="mr-3">
-                  Cancel
-                </Link>
-                <SubmitBtn className="btn btn_primary">Sign in</SubmitBtn>
-              </div>
-            </Form>
-          </Formik>
+            <div>
+              <Link href={getUrl('home')} className="mr-3">
+                Cancel
+              </Link>
+              <button type="submit" className="btn" disabled={isSubmitting}>
+                Sign in
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </Layout>
   );
 };
-
-export const NewSession = WithApiErrors(NewSessionRaw);

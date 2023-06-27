@@ -1,7 +1,6 @@
 /// <reference types="vite/client" />
 import { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { FastifyInstance, FastifyReply } from 'fastify';
-import { FormikHelpers } from 'formik';
 import { Draft } from 'immer';
 import { Knex } from 'knex';
 import * as y from 'yup';
@@ -108,11 +107,6 @@ declare module 'fastify' {
   }
 }
 
-export type IApiErrors = {
-  apiErrors: any;
-  setApiErrors: any;
-};
-
 export type IYupError = {
   message: string;
   errors: IAnyObj;
@@ -166,10 +160,12 @@ export type IGetTodosResponse = {
   totalRows: number;
 };
 
-export type IOnSubmit = (values, actions: FormikHelpers<any>) => Promise<any>;
-export type IUseSubmit = (onSubmit: IOnSubmit) => IOnSubmit;
-
 type Anyify<T> = { [K in keyof T]: any };
+
+type IRHKActions = {
+  setError: any;
+};
+export type IOnRHFSubmit = (onSubmit, actions: IRHKActions) => (values) => Promise<any>;
 
 export type ISelectOption = {
   value: any;

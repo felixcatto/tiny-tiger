@@ -1,10 +1,9 @@
 import rawLoadable from '@loadable/component';
 import { AxiosError } from 'axios';
 import cn from 'classnames';
-import { useFormikContext } from 'formik';
 import { Variables, request } from 'graphql-request';
 import produce from 'immer';
-import { get, isArray, isEmpty, isFunction, isNumber, keyBy, omit, orderBy } from 'lodash-es';
+import { get, isArray, isEmpty, isFunction, isNumber, keyBy, orderBy } from 'lodash-es';
 import React from 'react';
 import { createPortal } from 'react-dom';
 import stringMath from 'string-math';
@@ -12,7 +11,6 @@ import useSWR from 'swr';
 import { useStore as useStoreRaw } from 'zustand';
 import { filterTypes, makeEnum, roles } from '../../server/lib/sharedUtils.js';
 import {
-  IApiErrors,
   IClientFSPSchema,
   IContext,
   IEncodeFSPOpts,
@@ -20,16 +18,16 @@ import {
   IFilter,
   ILoadable,
   IMixedFilter,
+  IOnRHFSubmit,
   ISelectFilterObj,
   ISpinnerProps,
   IUseMergeState,
   IUseSelectedRows,
   IUseStore,
-  IUseSubmit,
   IUseTable,
   IUseTableState,
 } from '../../server/lib/types.js';
-import { Context, FormContext } from './context.js';
+import { Context } from './context.js';
 import { Link as RawLink, useRoute } from './router.jsx';
 
 export * from '../../server/lib/sharedUtils.js';
@@ -80,32 +78,35 @@ export const userRolesToIcons = {
   [roles.guest]: 'fa fa-ghost',
 };
 
-export const WithApiErrors = (Component: React.ComponentType<IApiErrors>) => props => {
-  const [apiErrors, setApiErrors] = React.useState({});
-  return (
-    <FormContext.Provider value={{ apiErrors, setApiErrors }}>
-      <Component {...props} apiErrors={apiErrors} setApiErrors={setApiErrors} />
-    </FormContext.Provider>
-  );
-};
-
 const getAxiosErrorData = (axiosError: AxiosError): any => axiosError.response?.data || {};
 
 const getGqlErrorData = gqlError => gqlError.response?.errors?.[0].extensions || {};
 
-export const useSubmit: IUseSubmit = onSubmit => {
-  const { setApiErrors } = React.useContext(FormContext);
+export const setFormValues = (setValue, formValues) => {
+  Object.keys(formValues).forEach(field => {
+    setValue(field, formValues[field]);
+  });
+};
 
-  const wrappedSubmit = async (values, actions) => {
+export const onRHFSubmit: IOnRHFSubmit = (onSubmit, actions) => {
+  const wrappedSubmit = async values => {
     try {
       await onSubmit(values, actions);
-    } catch (e: any) {
+    } catch (e) {
+      const { setError } = actions;
+      const setErrors = errors => {
+        Object.keys(errors).forEach(fieldName => {
+          setError(fieldName, { message: errors[fieldName] });
+        });
+      };
+
       const { errors } = getAxiosErrorData(e);
       const { errors: gqlErrors } = getGqlErrorData(e);
+
       if (errors) {
-        setApiErrors(errors);
+        setErrors(errors);
       } else if (gqlErrors) {
-        setApiErrors(gqlErrors);
+        setErrors(gqlErrors);
       } else {
         throw e;
       }
@@ -115,42 +116,8 @@ export const useSubmit: IUseSubmit = onSubmit => {
   return wrappedSubmit;
 };
 
-export const ErrorMessage = ({ name }) => {
-  const { apiErrors } = React.useContext(FormContext);
-  const error = apiErrors[name];
-  return error ? <div className="error">{error}</div> : null;
-};
-
-export const Field = props => {
-  const { apiErrors, setApiErrors } = React.useContext(FormContext);
-  const { values, handleBlur: onBlur, handleChange }: any = useFormikContext();
-  const value = values[props.name];
-  const { as, children, ...restProps } = props;
-  const asElement = as || 'input';
-  const onChange = e => {
-    setApiErrors(omit(apiErrors, e.target.name));
-    handleChange(e);
-  };
-
-  return React.createElement(asElement, { ...restProps, onChange, onBlur, value }, children);
-};
-
-export const SubmitBtn = ({ children, ...props }) => {
-  const { isSubmitting, submitForm } = useFormikContext();
-  return (
-    <button
-      type="submit"
-      disabled={isSubmitting}
-      {...props}
-      onClick={e => {
-        e.preventDefault();
-        submitForm(); // needed because original Formik submit suppress Error's
-      }}
-    >
-      {children}
-    </button>
-  );
-};
+export const ErrorMessage = ({ error }) =>
+  error ? <div className="error">{error.message}</div> : null;
 
 export const popoverRootId = 'popoverRoot';
 
