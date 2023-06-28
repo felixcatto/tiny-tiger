@@ -2,15 +2,16 @@
   --headerHeight: 70px;
   --content-py: 20px;
 
-  --primary: #512da8;
-  --primary-light: #8e24aa;
-  --primary-dark: #311b92;
-  --primary-rgba-50: rgba(81, 45, 168, 0.5);
-  --primary-rgba-25: rgba(81, 45, 168, 0.25);
-  --secondary: #1976d2;
-  --secondary-light: #e3f2fd;
-  --secondary-dark: #1156b0; /* #0d47a1 #1565c0 */
-  --secondary-rgba-25: rgba(25, 118, 210, 0.25);
+  --primary: hsl(257.56deg 57.75% 41.76%);
+  --primary-light: hsl(257.56deg 57.75% calc(41.76% * 1.2));
+  --primary-dark: hsl(257.56deg 57.75% calc(41.76% / 1.2));
+  --primary-rgba-25: hsl(257.56deg 57.75% 41.76% / 50%);
+  --primary-rgba-25: hsl(257.56deg 57.75% 41.76% / 25%);
+
+  --secondary: hsl(209.84deg 78.72% 46.08%);
+  --secondary-light: hsl(209.84deg 78.72% calc(46.08% * 2));
+  --secondary-dark: hsl(209.84deg 78.72% calc(46.08% / 1.2));
+  --secondary-rgba-25: hsl(209.84deg 78.72% 46.08% / 25%);
 }
 
 html,
@@ -123,6 +124,7 @@ h3 {
     color: white;
     background-color: var(--secondary);
     border-color: var(--secondary);
+
     &:hover,
     &:active,
     &:focus {

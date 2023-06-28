@@ -1,5 +1,5 @@
-@import './beforeStyles.css';
+@import './indexBefore.css';
 
-@import './globalStyles.css';
+@import './styles.css';
 
-@import './afterStyles.css';
+@import './indexAfter.css';

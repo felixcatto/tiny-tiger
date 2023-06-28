@@ -6,7 +6,7 @@ start:
 	--exec 'node --loader @swc-node/register/esm' server/bin/server.ts
 # 	npx graphql-codegen
 
-start-production:
+start-prod:
 	NODE_ENV=production node dist/bin/server.js
 
 build:
