@@ -5,7 +5,7 @@ WORKDIR app
 COPY package.json package-lock.json /app/
 RUN npm i
 COPY . .
-RUN make build
+RUN NODE_OPTIONS="--max-old-space-size=950" make build
 
 EXPOSE 3000
 ENV NODE_ENV=production
