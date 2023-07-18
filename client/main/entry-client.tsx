@@ -6,6 +6,15 @@ import { Router } from '../lib/router.jsx';
 import { App } from './App.jsx';
 import { dataRoutes, fetchRouteData } from '../lib/utils.jsx';
 
+const registerServiceWorker = async () => {
+  try {
+    const registration = await navigator.serviceWorker.register('/sw.js');
+    console.log(registration);
+  } catch (error) {
+    console.error(`Registration failed with ${error}`);
+  }
+};
+
 // if (isProduction(import.meta.env.MODE)) {
 //   Sentry.init({
 //     dsn: import.meta.env.VITE_SENTRY_DSN,
@@ -26,3 +35,7 @@ hydrateRoot(
     <App {...window.INITIAL_STATE} />
   </Router>
 );
+
+if (import.meta.env.PROD) {
+  window.addEventListener('load', registerServiceWorker);
+}

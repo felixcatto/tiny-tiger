@@ -1,3 +1,7 @@
+.responseTable {
+  min-width: 696px;
+}
+
 .todoRow {
   &_completed {
     background: var(--secondary-light);

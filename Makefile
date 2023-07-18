@@ -16,10 +16,14 @@ build:
 # 	npx sentry-cli sourcemaps upload --use-artifact-bundle dist
 	npx vite build
 	npx vite build --outDir dist/public/server --ssr client/main/entry-server.tsx
+	NODE_ENV=production node server/lib/generateSW.js
 
 analyze-bundle:
 	ANALYZE=true npx vite build
 	google-chrome dist/stats.html
+
+generateSW:
+	node server/lib/generateSW.js
 
 migrate:
 	npx knex migrate:latest

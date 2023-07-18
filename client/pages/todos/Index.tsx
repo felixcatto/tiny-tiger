@@ -132,7 +132,7 @@ export const Todos = props => {
   return (
     <Layout>
       <div className="row">
-        <div className="col-3">
+        <div className="col-12 col-lg-3 mb-7 lg:mb-0">
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="flex mb-4 items-center">
               {editingTodo ? (
@@ -174,67 +174,76 @@ export const Todos = props => {
           </form>
         </div>
 
-        <div className="col-9">
+        <div className="col-12 col-lg-9">
           <h3 className="mb-4">List of todos</h3>
 
-          <table className="table table-fixed">
-            <thead>
-              <tr>
-                <HeaderCell {...headerCellProps} name="author.name" className="w-32" sortable>
-                  <div>Name</div>
-                </HeaderCell>
-                <HeaderCell {...headerCellProps} name="author.email" className="w-44" sortable>
-                  <div>Email</div>
-                </HeaderCell>
-                <HeaderCell {...headerCellProps} name="text" sortable>
-                  <div>Text</div>
-                </HeaderCell>
-                <HeaderCell {...headerCellProps} name="is_completed" className="w-32" sortable>
-                  <div>Status</div>
-                </HeaderCell>
-                {isSignedIn && <th className="w-32"></th>}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map(todo => (
-                <tr key={todo.id} className={todoRowClass(todo)}>
-                  <td>{todo.author?.name}</td>
-                  <td className="truncate">{todo.author?.email}</td>
-                  <td className="text-justify">{todo.text}</td>
-                  <td>
-                    <i
-                      className={todoClass(todo)}
-                      title={todo.is_completed ? 'Completed' : 'Incomplete'}
-                    ></i>
-                    {todo.is_edited_by_admin && (
-                      <i className="fa fa-pen ml-2" title="Edited by admin"></i>
-                    )}
-                  </td>
-                  {isSignedIn && (
-                    <td className="text-right">
-                      <i
-                        className={changeStatusIconClass(todo)}
-                        title={changeStatusIconTitle(todo)}
-                        onClick={changeTodoStatus(todo)}
-                      ></i>
-                      <i
-                        className="fa fa-edit fa_big mr-3 clickable"
-                        title="Edit"
-                        onClick={editTodo(todo)}
-                      ></i>
-                      <i
-                        className="far fa-trash-can fa_big clickable"
-                        title="Delete"
-                        onClick={deleteTodo(todo.id)}
-                      ></i>
-                    </td>
-                  )}
+          <div className="w-0 min-w-full overflow-x-auto">
+            <table className={cn('table table-fixed', s.responseTable)}>
+              <thead>
+                <tr>
+                  <HeaderCell {...headerCellProps} name="author.name" className="w-32" sortable>
+                    <div>Name</div>
+                  </HeaderCell>
+                  <HeaderCell {...headerCellProps} name="author.email" className="w-44" sortable>
+                    <div>Email</div>
+                  </HeaderCell>
+                  <HeaderCell {...headerCellProps} name="text" sortable>
+                    <div>Text</div>
+                  </HeaderCell>
+                  <HeaderCell {...headerCellProps} name="is_completed" className="w-32" sortable>
+                    <div>Status</div>
+                  </HeaderCell>
+                  {isSignedIn && <th className="w-32"></th>}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {rows.map(todo => (
+                  <tr key={todo.id} className={todoRowClass(todo)}>
+                    <td>{todo.author?.name}</td>
+                    <td className="truncate">{todo.author?.email}</td>
+                    <td className="text-justify">{todo.text}</td>
+                    <td>
+                      <i
+                        className={todoClass(todo)}
+                        title={todo.is_completed ? 'Completed' : 'Incomplete'}
+                      ></i>
+                      {todo.is_edited_by_admin && (
+                        <i className="fa fa-pen ml-2" title="Edited by admin"></i>
+                      )}
+                    </td>
+                    {isSignedIn && (
+                      <td className="text-right">
+                        <i
+                          className={changeStatusIconClass(todo)}
+                          title={changeStatusIconTitle(todo)}
+                          onClick={changeTodoStatus(todo)}
+                        ></i>
+                        <i
+                          className="fa fa-edit fa_big mr-3 clickable"
+                          title="Edit"
+                          onClick={editTodo(todo)}
+                        ></i>
+                        <i
+                          className="far fa-trash-can fa_big clickable"
+                          title="Delete"
+                          onClick={deleteTodo(todo.id)}
+                        ></i>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
 
-          {rows && <Pagination {...paginationProps} className="mt-3" totalRows={totalRows} />}
+            {rows && (
+              <Pagination
+                {...paginationProps}
+                className="mt-3 pb-2"
+                totalRows={totalRows}
+                siblings={1}
+              />
+            )}
+          </div>
         </div>
       </div>
     </Layout>

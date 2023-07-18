@@ -1,0 +1,13 @@
+{
+  "name": "Tiny Tiger",
+  "short_name": "TT",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "/android-icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ],
+  "display": "standalone"
+}
